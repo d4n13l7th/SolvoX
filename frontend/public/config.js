@@ -11,5 +11,5 @@
 // The host serving this file sets it on deploy, e.g. Vercel project setting
 //   VITE_BACKEND_URL / BACKEND_URL
 window.SOLVOX_CONFIG = {
-  backendUrl: 'https://recipients-stat-margin-vocabulary.trycloudflare.com',
+  backendUrl: 'https://combined-principal-nat-went.trycloudflare.com',
 };
