@@ -1,0 +1,78 @@
+/* ============================================================
+   V75 — Solvox utility artwork
+   Uses the supplied Main / Dashboard / Feedback / Settings / Back
+   artwork as compact pictograms while keeping all visible labels
+   localized by the existing UI text.
+   ============================================================ */
+
+.solvox-utility-art{
+  display:block;
+  flex:none;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  user-select:none;
+  pointer-events:none;
+}
+
+.solvox-utility-art.icon{
+  width:30px;
+  height:30px;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.28));
+}
+
+.icon-action-v27 .solvox-utility-art{
+  width:30px;
+  height:30px;
+}
+
+.solvox-back-art{
+  width:28px;
+  height:28px;
+}
+
+.battle-home-back-v43 .solvox-back-art{
+  width:30px;
+  height:30px;
+}
+
+.utility-art-modal-head{
+  display:grid;
+  grid-template-columns:96px minmax(0,1fr);
+  align-items:center;
+  gap:16px;
+  margin-bottom:18px;
+}
+
+.utility-art-modal-head img{
+  width:96px;
+  height:82px;
+  object-fit:contain;
+  filter:drop-shadow(0 14px 24px rgba(0,0,0,.30));
+}
+
+.profile-panel-head-v28.utility-profile-head{
+  display:grid;
+  grid-template-columns:138px minmax(0,1fr) auto;
+  align-items:center;
+  gap:16px;
+}
+
+.utility-profile-head img{
+  width:138px;
+  height:108px;
+  object-fit:contain;
+  filter:drop-shadow(0 16px 26px rgba(0,0,0,.34));
+}
+
+@media(max-width:700px){
+  .utility-art-modal-head{
+    grid-template-columns:72px minmax(0,1fr);
+    gap:12px;
+  }
+  .utility-art-modal-head img{width:72px;height:64px}
+  .profile-panel-head-v28.utility-profile-head{
+    grid-template-columns:92px minmax(0,1fr);
+  }
+  .utility-profile-head img{width:92px;height:78px}
+}

@@ -1,0 +1,23 @@
+{
+  "name": "solvox-v62",
+  "version": "4.3.0",
+  "private": true,
+  "description": "Solvox V62 — cleaned project structure, single-player reference battle layout, settings language switch, and multiplayer moved behind Main mode selection.",
+  "main": "server.js",
+  "scripts": {
+    "build": "npm run qa && npm --workspace frontend run build",
+    "start": "npm run build && node server.js",
+    "dev": "npm --workspace frontend run dev",
+    "qa": "node qa-check.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "workspaces": [
+    "frontend"
+  ]
+}

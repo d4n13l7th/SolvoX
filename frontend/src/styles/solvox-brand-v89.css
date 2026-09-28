@@ -1,0 +1,19 @@
+/* V89 — single-source Solvox logo sizing. */
+.solvox-brand-v89{
+  width:min(100%,520px);
+  display:block;
+  line-height:0;
+}
+.solvox-brand-v89 img{
+  width:100%;
+  height:auto;
+  display:block;
+  user-select:none;
+}
+.solvox-brand-v89.is-compact{
+  width:clamp(130px,15vw,220px);
+}
+@media(max-width:640px){
+  .solvox-brand-v89{width:min(100%,440px)}
+  .solvox-brand-v89.is-compact{width:150px}
+}

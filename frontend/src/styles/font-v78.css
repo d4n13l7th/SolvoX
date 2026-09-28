@@ -1,0 +1,49 @@
+/* V78 — selective 04B pixel display font.
+   This font is intentionally limited to high-salience headings and navigation.
+   Body copy, question text, hints, keypad labels, and long-form feedback keep
+   the existing readable fonts. */
+@font-face {
+  font-family: "Solvox04B";
+  src: url("/assets/fonts/04b-30.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  --font-display-solvox: "Solvox04B", monospace;
+}
+
+.home-menu-v83-item {
+  font-family: var(--font-display-solvox);
+  font-weight: 400;
+  letter-spacing: .015em;
+}
+
+.mode-select-header-v45 h1,
+.mode-card-v45-copy h2,
+.chapter-select-title-v44 h1,
+.chapter-card-copy-v44 strong,
+.stage-crown-v43 b {
+  font-family: var(--font-display-solvox);
+  font-weight: 400;
+}
+
+.stage-crown-v43 span,
+.question-chip-v66.is-title,
+.utility-art-modal-head h2 {
+  font-family: var(--font-display-solvox);
+  font-weight: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .font-v78-motion-safe { animation: none !important; }
+}
+
+/* V82 — Back navigation only: keep the 04B display font limited to this high-salience label. */
+.solvox-back-label-v82 {
+  font-family: var(--font-display-solvox);
+  font-weight: 400;
+  letter-spacing: .02em;
+  line-height: 1;
+}

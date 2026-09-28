@@ -1,0 +1,1379 @@
+/* ============================================================================
+   BATTLE V43 — Single-player combat layout
+   ----------------------------------------------------------------------------
+   This file owns only the current battle shell. The old V20–V41 geometry is
+   intentionally kept out of this layer so the battle page has one source of
+   truth for spacing, grid placement, and visual styling.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   1. Full-page shell
+   --------------------------------------------------------------------------- */
+.battle-reference-v43 {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  color: #f4f7f2;
+  background: #061315;
+}
+
+.battle-world-v43 {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+.battle-ui-v43 {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 10px 12px;
+  grid-template-rows: 74px minmax(0, 1fr) clamp(300px, 34vh, 350px);
+  gap: 8px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.battle-world-v43 > .arena-background {
+  position: absolute;
+  inset: 0 0 calc(clamp(300px, 34vh, 350px) + 16px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.battle-world-v43 > .arena-background .arena-background-media {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  filter: brightness(.80) saturate(.92) contrast(1.04);
+}
+
+.battle-ui-v43 .arena-vignette {
+  opacity: .62;
+}
+
+/* ---------------------------------------------------------------------------
+   2. Top HUD — stable battle HUD
+   --------------------------------------------------------------------------- */
+.battle-top-rail-v43 {
+  position: relative;
+  z-index: 50;
+  display: grid;
+  width: 100%;
+  height: 74px;
+  grid-template-columns: 58px minmax(270px, 1fr) minmax(330px, 390px) minmax(270px, 1fr);
+  gap: 10px;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.battle-top-rail-v43 > * {
+  min-width: 0;
+}
+
+.battle-home-back-v43 {
+  width: 54px;
+  height: 54px;
+  justify-self: center;
+  border: 1px solid rgba(214, 198, 110, .22);
+  border-radius: 12px;
+  background: rgba(4, 15, 18, .56);
+  color: #f2ebc3;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .25), inset 0 1px rgba(255,255,255,.04);
+  backdrop-filter: blur(7px);
+}
+
+.battle-home-back-v43:hover {
+  border-color: rgba(214, 198, 110, .48);
+  background: rgba(7, 21, 23, .70);
+}
+
+
+.stage-crown-v43 {
+  width: 100%;
+  height: 62px;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 18px 9px;
+  border: 1px solid rgba(214, 198, 110, .26);
+  border-radius: 14px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(8, 19, 21, .82), rgba(4, 11, 14, .78));
+  clip-path: polygon(4% 0,96% 0,100% 50%,96% 100%,4% 100%,0 50%);
+  box-shadow: 0 14px 30px rgba(0,0,0,.18), inset 0 1px rgba(255,255,255,.04);
+  backdrop-filter: blur(8px);
+}
+
+.stage-crown-v43 span {
+  display: block;
+  font: 700 9px/1.1 Georgia, serif;
+  letter-spacing: .14em;
+  color: #cddbd6;
+  text-transform: uppercase;
+}
+
+.stage-crown-v43 b {
+  display: block;
+  margin-top: 3px;
+  font: 700 16px/1.05 Georgia, serif;
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------------------
+   3. Arena — the background and fighters stay above the learning dock.
+   --------------------------------------------------------------------------- */
+.battle-reference-arena-v43 {
+  position: relative;
+  z-index: 15;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+  overflow: visible;
+  border-radius: 14px;
+}
+
+.battle-reference-arena-v43 .combat-stage-v43 {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
+  padding: 0 clamp(42px, 6vw, 96px);
+  overflow: visible;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.battle-reference-arena-v43 .combat-stage-v43::before {
+  content: '';
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: 2%;
+  height: 29%;
+  border-bottom: 1px solid rgba(97, 219, 205, .17);
+  background: radial-gradient(ellipse at 50% 100%, rgba(80, 200, 177, .12), transparent 64%);
+  pointer-events: none;
+}
+
+/* The animation itself uses --boss-distance computed from the real arena gap. */
+.battle-reference-arena-v43,
+.battle-reference-arena-v43 .combat-stage-v43,
+.battle-reference-arena-v43 .fighter-player-v43 .sprite-wrap,
+.battle-reference-arena-v43 .fighter-boss-v43 .asset-boss-sprite-v40 {
+  overflow: visible;
+}
+
+
+
+
+/* ---------------------------------------------------------------------------
+   4. Learning dock — V66 clean question console.
+   --------------------------------------------------------------------------- */
+.battle-question-panel-v43 {
+  position: relative;
+  z-index: 30;
+  grid-row: 3;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  grid-template-columns: minmax(0, 1.62fr) minmax(215px, .72fr) minmax(260px, .92fr);
+  gap: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid rgba(110, 213, 201, .20);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(112, 231, 215, .08), transparent 35%),
+    radial-gradient(circle at 86% 100%, rgba(214, 198, 110, .05), transparent 28%),
+    linear-gradient(180deg, rgba(8, 22, 24, .97), rgba(3, 11, 14, .985));
+  box-shadow: 0 22px 58px rgba(0,0,0,.34), inset 0 1px rgba(255,255,255,.055), inset 0 -1px rgba(0,0,0,.35);
+}
+.battle-question-panel-v43::before {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(214,198,110,.46), rgba(103,219,207,.18), transparent);
+  pointer-events: none;
+}
+.battle-question-panel-v43 .battle-question-main-v66,
+.battle-question-panel-v43 .hint-rail-v37,
+.battle-question-panel-v43 .battle-keypad-side-v35 {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.battle-question-panel-v43 .battle-question-main-v66 {
+  display: grid;
+  grid-column: 1;
+  grid-template-rows: 48px minmax(0, 1fr) 68px 36px;
+  border-right: 1px solid rgba(109,209,198,.12);
+  background: linear-gradient(135deg, rgba(9,28,29,.90), rgba(4,14,17,.96));
+}
+.battle-question-panel-v43 .question-header-v66 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 8px 15px;
+  border-bottom: 1px solid rgba(110,213,201,.10);
+  background: linear-gradient(180deg, rgba(13,31,33,.72), rgba(6,15,17,.30));
+}
+.battle-question-panel-v43 .question-meta-v66 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  overflow: hidden;
+}
+.battle-question-panel-v43 .question-chip-v66 {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 3px 9px;
+  border: 1px solid rgba(110,213,201,.12);
+  border-radius: 999px;
+  background: rgba(4,14,16,.46);
+  color: #dbe8e3;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+}
+.battle-question-panel-v43 .question-chip-v66.is-stage {
+  border-color: rgba(214,198,110,.18);
+  color: #e4d989;
+}
+.battle-question-panel-v43 .question-chip-v66.is-title {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.battle-question-panel-v43 .question-chip-v66.is-round {
+  color: #9ec8c0;
+}
+.battle-question-panel-v43 .question-progress-v66 {
+  display: grid;
+  grid-template-columns: auto minmax(70px,130px);
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+.battle-question-panel-v43 .question-progress-v66 b {
+  color: #dce9e4;
+  font-size: 10px;
+  font-weight: 900;
+}
+.battle-question-panel-v43 .question-progress-v66 > span {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 999px;
+  background: rgba(2,8,10,.72);
+}
+.battle-question-panel-v43 .question-progress-v66 i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #42b59f, #76e4bf 75%, #d5e382);
+}
+.battle-question-panel-v43 .question-content-v66 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+  padding: 14px 22px 8px;
+}
+
+/* Chapter 5 story questions use a contained reading viewport. Other chapters
+   keep the fixed, non-scrolling question layout. */
+.battle-question-panel-v43.is-story-chapter-v74 .question-content-v66.is-scrollable-v74 {
+  justify-content: flex-start;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(112, 219, 205, .42) rgba(4, 13, 15, .18);
+  scrollbar-gutter: stable;
+  padding-top: 18px;
+  padding-bottom: 16px;
+}
+
+.battle-question-panel-v43.is-story-chapter-v74 .question-content-v66.is-scrollable-v74::-webkit-scrollbar {
+  width: 7px;
+}
+
+.battle-question-panel-v43.is-story-chapter-v74 .question-content-v66.is-scrollable-v74::-webkit-scrollbar-track {
+  background: rgba(3, 11, 13, .22);
+  border-radius: 999px;
+}
+
+.battle-question-panel-v43.is-story-chapter-v74 .question-content-v66.is-scrollable-v74::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(122, 226, 211, .62), rgba(62, 133, 123, .52));
+  border-radius: 999px;
+}
+
+.battle-question-panel-v43.is-story-chapter-v74 .question-content-v66.is-scrollable-v74 .question-text-v66 {
+  padding-right: 12px;
+}
+
+.battle-question-panel-v43.is-story-chapter-v74 .question-content-v66.is-scrollable-v74 .question-context-v66 {
+  max-width: 95ch;
+}
+.battle-question-panel-v43 .question-content-v66::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  bottom: 18px;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #7fe0ca, #3f8d82);
+  box-shadow: 0 0 14px rgba(88,207,186,.12);
+}
+.battle-question-panel-v43 .question-kicker-v66 {
+  margin-left: 11px;
+  color: #d7ca77;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.battle-question-panel-v43 .question-context-v66 {
+  margin: 6px 0 5px 11px;
+  color: #9db6b0;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.battle-question-panel-v43 .question-text-v66 {
+  margin: 0 0 0 11px;
+  max-width: 100%;
+  color: #f6f7f0;
+  font: 700 clamp(21px,1.75vw,31px)/1.14 Georgia, serif;
+  letter-spacing: -.01em;
+  text-wrap: balance;
+}
+.battle-question-panel-v43 .question-concept-v66 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 9px 0 0 11px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(106,204,193,.08);
+  color: #8fa7a2;
+  font-size: 9px;
+}
+.battle-question-panel-v43 .question-concept-v66 span { color: #718b86; }
+.battle-question-panel-v43 .question-concept-v66 b { color: #bfe0d9; font-weight: 800; }
+.battle-question-panel-v43 .question-answer-v66 {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  padding: 8px 18px;
+  border-top: 1px solid rgba(106,204,193,.08);
+  background: linear-gradient(180deg, rgba(4,13,15,.35), rgba(4,12,14,.78));
+}
+.battle-question-panel-v43 .answer-shell-v66 {
+  display: grid;
+  grid-template-columns: 38px minmax(0,1fr) auto;
+  align-items: center;
+  min-width: 0;
+  min-height: 52px;
+  flex: 1 1 auto;
+  border: 1px solid rgba(100,213,199,.24);
+  border-radius: 11px;
+  background: linear-gradient(180deg, rgba(7,21,23,.96), rgba(2,10,13,.94));
+  box-shadow: inset 0 1px rgba(255,255,255,.028), 0 8px 18px rgba(0,0,0,.12);
+}
+.battle-question-panel-v43 .answer-shell-v66:focus-within {
+  border-color: rgba(105,231,215,.54);
+  box-shadow: 0 0 0 3px rgba(70,204,184,.08), inset 0 1px rgba(255,255,255,.04), 0 10px 22px rgba(0,0,0,.16);
+}
+.battle-question-panel-v43 .answer-icon-v66 { display:grid; place-items:center; color:#82d9cb; }
+.battle-question-panel-v43 .battle-answer-input-v66 {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 10px 0 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #f4f8f4;
+  caret-color: #83e7d5;
+  font-size: 15px;
+  font-weight: 800;
+}
+.battle-question-panel-v43 .battle-answer-input-v66::placeholder { color:#6f8984; opacity:1; }
+.battle-question-panel-v43 .answer-shell-v66 kbd {
+  margin-right: 9px;
+  padding: 4px 7px;
+  border: 1px solid rgba(110,213,201,.10);
+  border-radius: 6px;
+  background: rgba(8,24,26,.72);
+  color: #7ea59e;
+  font: 800 8px/1 inherit;
+  letter-spacing: .08em;
+}
+.battle-question-panel-v43 .attack-btn-v66 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: 0 0 148px;
+  min-height: 52px;
+  border: 1px solid rgba(214,198,110,.36);
+  border-radius: 11px;
+  background: linear-gradient(180deg, #42ab9b, #245f59);
+  color: #fbf6d8;
+  box-shadow: 0 10px 24px rgba(23,118,104,.18), inset 0 1px rgba(255,255,255,.10);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+.battle-question-panel-v43 .attack-btn-v66:hover:not(:disabled) { transform:translateY(-1px); background:linear-gradient(180deg,#4bb7a8,#2a7b72); }
+.battle-question-panel-v43 .attack-btn-v66:disabled { opacity:.48; box-shadow:none; }
+.battle-question-panel-v43 .question-tools-v66 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 0;
+  padding: 4px 18px 7px;
+  border-top: 1px solid rgba(106,204,193,.06);
+  background: rgba(3,11,13,.20);
+}
+.battle-question-panel-v43 .keypad-toggle-v66 {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:28px;
+  padding:0 9px;
+  border:1px solid rgba(108,218,204,.15);
+  border-radius:8px;
+  background:rgba(17,40,41,.56);
+  color:#bcd1cc;
+  font-size:9px;
+}
+.battle-question-panel-v43 .keypad-toggle-v66:hover:not(:disabled) { border-color:rgba(108,218,204,.32); background:rgba(24,56,56,.70); color:#e4f1ed; }
+.battle-question-panel-v43 .attempts-v66 { color:#7e9a95; font-size:10px; font-weight:700; }
+
+/* Hint rail. */
+.battle-question-panel-v43 .hint-rail-v37,
+.battle-question-panel-v43 .battle-keypad-side-v35 { display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(7,20,22,.92), rgba(3,11,14,.985)); }
+.battle-question-panel-v43 .hint-rail-v37 { grid-column:2; padding:10px 11px 11px; border-right:1px solid rgba(109,209,198,.12); }
+.battle-question-panel-v43 .hint-rail-head-v37,
+.battle-question-panel-v43 .battle-keypad-side-head-v35 { min-height:42px; padding:4px 5px 9px; border-bottom:1px solid rgba(110,213,201,.10); background:linear-gradient(180deg, rgba(11,26,28,.62), rgba(6,15,17,.18)); }
+.battle-question-panel-v43 .hint-rail-head-v37 b { color:#eef5ef; font-size:13px; }
+.battle-question-panel-v43 .hint-rail-head-v37 small { color:#7fa09a; font-size:9px; }
+.battle-question-panel-v43 .hint-rail-body-v37 { display:flex; flex:1; min-height:0; flex-direction:column; gap:8px; padding:9px 2px; overflow:auto; scrollbar-width:thin; scrollbar-color:rgba(111,214,201,.20) transparent; }
+.battle-question-panel-v43 .hint-reveal-v37,
+.battle-question-panel-v43 .hint-empty-v37 { border:1px solid rgba(110,213,201,.10); border-radius:10px; background:rgba(7,18,20,.50); }
+.battle-question-panel-v43 .hint-reveal-v37 { display:grid; grid-template-columns:28px minmax(0,1fr); gap:9px; padding:11px; }
+.battle-question-panel-v43 .hint-reveal-v37 > span { display:grid; place-items:center; width:26px; height:26px; border:1px solid rgba(92,198,183,.22); border-radius:8px; background:rgba(72,159,146,.17); color:#90e2d4; font-size:10px; font-weight:900; }
+.battle-question-panel-v43 .hint-reveal-v37 p,
+.battle-question-panel-v43 .hint-empty-v37 p { margin:0; color:#c3d5d0; font-size:12px; line-height:1.55; }
+.battle-question-panel-v43 .hint-empty-v37 { padding:13px 12px; }
+.battle-question-panel-v43 .hint-empty-v37 strong { display:block; margin-bottom:4px; color:#e6ede8; font-size:12px; }
+.battle-question-panel-v43 .hint-reveal-btn-v37 { width:100%; min-height:46px; flex:0 0 auto; margin-top:auto; border:1px solid rgba(214,198,110,.28); border-radius:9px; background:linear-gradient(180deg, rgba(99,127,67,.92), rgba(63,79,38,.92)); color:#f7f0ce; font-size:10px; }
+.battle-question-panel-v43 .hint-reveal-btn-v37 em { margin-left:5px; color:#d9d1a0; font-style:normal; }
+
+/* Keypad — keep the V64 design unchanged, but own it in the current panel block. */
+.battle-question-panel-v43 .battle-keypad-side-v35 { grid-column:3; padding:10px 12px 11px; }
+.battle-question-panel-v43 .battle-keypad-side-head-v35 { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.battle-question-panel-v43 .battle-keypad-side-head-v35 > span { display:inline-flex; align-items:center; gap:7px; color:#e6efeb; }
+.battle-question-panel-v43 .battle-keypad-side-head-v35 b { font-size:12px; }
+.battle-question-panel-v43 .keypad-status-v66 { padding:4px 7px; border:1px solid rgba(109,218,203,.13); border-radius:999px; background:rgba(15,35,36,.60); color:#7fa39c; font-size:7px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+.battle-question-panel-v43 .battle-keypad-side-v35 .keypad-panel-v24 { display:flex; flex:1; min-height:0; flex-direction:column; gap:8px; }
+.battle-question-panel-v43 .battle-keypad-side-v35 .keypad-grid-v24 { display:grid; flex:1; min-height:0; grid-template-columns:repeat(5,minmax(0,1fr)); grid-template-rows:repeat(5,minmax(0,1fr)); gap:6px; }
+.battle-question-panel-v43 .keypad-key-v64 { position:relative; min-width:0; min-height:0; height:auto; border:1px solid rgba(118,205,195,.12); border-radius:9px; background:linear-gradient(180deg, rgba(22,46,47,.95), rgba(9,23,25,.98)); color:#eaf2ed; box-shadow:inset 0 1px rgba(255,255,255,.035), 0 7px 16px rgba(0,0,0,.12); font-size:12px; font-weight:900; }
+.battle-question-panel-v43 .keypad-key-v64.is-number-v64 { background:linear-gradient(180deg, rgba(27,57,57,.98), rgba(10,24,26,.99)); }
+.battle-question-panel-v43 .keypad-key-v64.is-operator-v64 { border-color:rgba(211,200,115,.18); background:linear-gradient(180deg, rgba(61,55,31,.68), rgba(28,27,18,.88)); color:#f0df9c; }
+.battle-question-panel-v43 .keypad-key-v64.is-variable-v64 { border-color:rgba(104,187,224,.18); background:linear-gradient(180deg, rgba(23,46,59,.84), rgba(10,24,31,.96)); color:#a9dbf1; }
+.battle-question-panel-v43 .keypad-key-v64.is-power-v64 { border-color:rgba(199,159,233,.22); background:linear-gradient(180deg, rgba(49,34,65,.82), rgba(20,15,28,.97)); color:#d9b9f1; }
+.battle-question-panel-v43 .keypad-key-v64:hover:not(:disabled),
+.battle-question-panel-v43 .keypad-key-v64:focus-visible:not(:disabled) { transform:translateY(-1px); border-color:rgba(123,222,209,.38); background:linear-gradient(180deg, rgba(41,78,77,.98), rgba(13,30,31,.99)); box-shadow:inset 0 1px rgba(255,255,255,.06), 0 10px 18px rgba(0,0,0,.16); outline:none; }
+.battle-question-panel-v43 .keypad-footer-v34 { display:grid; grid-template-columns:1fr 1.35fr 1fr; gap:6px; height:42px; margin-top:0; }
+.battle-question-panel-v43 .keypad-footer-v34 .keypad-key-v24 { width:auto; height:42px; border-radius:9px; font-size:10px; font-weight:900; }
+.battle-question-panel-v43 .keypad-footer-v34 .is-backspace { border-color:rgba(216,138,124,.18); background:linear-gradient(180deg, rgba(66,38,36,.78), rgba(29,18,18,.94)); color:#f2c3bc; }
+.battle-question-panel-v43 .keypad-footer-v34 .is-clear { border-color:rgba(214,198,110,.22); background:linear-gradient(180deg, rgba(56,53,31,.76), rgba(27,25,17,.94)); color:#eadb9c; }
+.battle-question-panel-v43 .keypad-footer-v34 .is-enter { border-color:rgba(92,209,192,.34); background:linear-gradient(180deg,#3d9688,#235d56); color:#effcf7; box-shadow:0 10px 22px rgba(26,122,108,.18), inset 0 1px rgba(255,255,255,.10); }
+.battle-question-panel-v43 .battle-keypad-hidden-v35 { display:grid; flex:1; min-height:0; place-items:center; align-content:center; gap:9px; border:1px dashed rgba(106,201,190,.14); border-radius:12px; background:rgba(8,21,23,.44); color:#688984; font-size:9px; }
+.battle-reference-footer-v43 { display:none; }
+
+@media (max-width:1180px) {
+  .battle-question-panel-v43 { grid-template-columns:minmax(0,1.50fr) minmax(0, .70fr) minmax(0, .86fr); }
+  .battle-question-panel-v43 .question-chip-v66.is-title { max-width:220px; }
+}
+@media (max-width:900px) {
+  .battle-question-panel-v43 { grid-template-columns:minmax(0,1.40fr) minmax(0,.68fr) minmax(0,.82fr); }
+  .battle-question-panel-v43 .question-text-v66 { font-size:clamp(20px,3vw,28px); }
+  .battle-question-panel-v43 .question-answer-v66 { padding-left:14px; padding-right:14px; }
+  .battle-question-panel-v43 .attack-btn-v66 { flex-basis:138px; }
+}
+@media (max-width:760px) {
+  .battle-question-panel-v43 { grid-template-columns:1fr; grid-template-rows:minmax(185px,1fr) 112px 176px; }
+  .battle-question-panel-v43 .battle-question-main-v66 { grid-column:1; grid-row:1; border-right:0; border-bottom:1px solid rgba(110,213,201,.12); }
+  .battle-question-panel-v43 .hint-rail-v37 { grid-column:1; grid-row:2; border-right:0; border-bottom:1px solid rgba(110,213,201,.12); }
+  .battle-question-panel-v43 .battle-keypad-side-v35 { grid-column:1; grid-row:3; }
+  .battle-question-panel-v43 .question-header-v66 { padding-left:11px; padding-right:11px; }
+  .battle-question-panel-v43 .question-chip-v66.is-title { max-width:170px; }
+  .battle-question-panel-v43 .question-progress-v66 { display:none; }
+  .battle-question-panel-v43 .question-content-v66 { padding-left:16px; padding-right:16px; }
+  .battle-question-panel-v43 .question-content-v66::before { left:13px; }
+  .battle-question-panel-v43 .question-kicker-v66,
+  .battle-question-panel-v43 .question-context-v66,
+  .battle-question-panel-v43 .question-text-v66,
+  .battle-question-panel-v43 .question-concept-v66 { margin-left:9px; }
+  .battle-question-panel-v43 .question-text-v66 { font-size:clamp(19px,5vw,25px); }
+  .battle-question-panel-v43 .question-answer-v66 { padding:7px 12px; }
+  .battle-question-panel-v43 .attack-btn-v66 { flex-basis:120px; }
+}
+
+/* ---------------------------------------------------------------------------
+   5. Mistake warning — visually related to Home rather than legacy neon UI.
+   --------------------------------------------------------------------------- */
+.battle-mistake-banner-v41 {
+  position: absolute;
+  top: 80px;
+  left: 76px;
+  right: 16px;
+  z-index: 54;
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: 30px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid rgba(239, 157, 111, .28);
+  border-left: 3px solid rgba(246, 174, 91, .72);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(46, 22, 18, .90), rgba(27, 14, 13, .92));
+  color: #f6eadf;
+  box-shadow: 0 12px 30px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.04);
+  backdrop-filter: blur(10px);
+  animation: battleMistakeEnterV41 .18s ease-out;
+}
+
+.battle-mistake-icon-v41 {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(246,174,91,.28);
+  border-radius: 8px;
+  background: rgba(246,174,91,.10);
+  color: #ffd59d;
+}
+
+.battle-mistake-copy-v41 { min-width: 0; }
+.battle-mistake-heading-v41 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.battle-mistake-heading-v41 b {
+  color: #ffe7c9;
+  font-size: 11px;
+  letter-spacing: .02em;
+}
+.battle-mistake-heading-v41 span {
+  color: #c9a98c;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.battle-mistake-copy-v41 p {
+  margin: 0;
+  color: #e8d8cb;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.battle-mistake-tag-v41 {
+  align-self: start;
+  max-width: 170px;
+  padding: 4px 7px;
+  border: 1px solid rgba(239,157,111,.20);
+  border-radius: 999px;
+  background: rgba(239,157,111,.08);
+  color: #d9b39a;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+}
+
+@keyframes battleMistakeEnterV41 {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------------------------------------------------------------------------
+   6. Responsive collapse
+   --------------------------------------------------------------------------- */
+@media (max-width: 1180px) {
+  .battle-ui-v43 {
+    grid-template-rows: 70px minmax(0,1fr) clamp(290px, 35vh, 335px);
+  }
+  .battle-top-rail-v43 {
+    grid-template-columns: 52px minmax(210px,1fr) minmax(260px,330px) minmax(210px,1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .battle-ui-v43 {
+    grid-template-rows: 68px minmax(0,1fr) 42vh;
+    gap: 6px;
+    padding: 7px;
+  }
+  .battle-top-rail-v43 {
+    height: 68px;
+    grid-template-columns: 46px minmax(160px,1fr) minmax(200px,260px) minmax(160px,1fr);
+    gap: 6px;
+  }
+  .battle-home-back-v43 { width: 44px; height: 44px; }
+}
+
+
+
+
+
+/* ---------------------------------------------------------------------------
+   Battle render support — the only place that owns fighter / sprite / hit FX
+   geometry. Keeping these rules here prevents global legacy CSS from
+   overriding the active battle renderer.
+   --------------------------------------------------------------------------- */
+
+/* Arena background */
+.arena-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #071018;
+}
+
+.arena-background-media {
+  position: absolute;
+  inset: var(--bg-inset, -1.5%);
+  width: var(--bg-width, 103%);
+  height: var(--bg-height, 103%);
+  display: block;
+  object-fit: var(--bg-fit, cover);
+  object-position: var(--bg-object-position, center);
+  transform: scale(var(--bg-scale, 1.03));
+  filter: brightness(var(--bg-brightness, 1)) saturate(var(--bg-saturation, 1));
+  will-change: transform;
+}
+
+.arena-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 52% 54%, transparent 34%, rgba(0, 0, 0, .16) 72%, rgba(0, 0, 0, .38) 100%);
+  pointer-events: none;
+}
+
+.arena-atmosphere {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: .18;
+}
+
+.arena-atmosphere-a {
+  background:
+    radial-gradient(circle at 22% 25%, rgba(91, 213, 255, .18), transparent 28%),
+    radial-gradient(circle at 78% 18%, rgba(255, 180, 90, .10), transparent 24%);
+  animation: arenaLightDrift 18s ease-in-out infinite alternate;
+}
+
+.arena-atmosphere-b {
+  background: linear-gradient(180deg, rgba(0, 0, 0, .03) 0 70%, rgba(0, 0, 0, .10) 100%);
+}
+
+.arena-mist {
+  position: absolute;
+  left: -15%;
+  bottom: 0;
+  width: 130%;
+  height: 30%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(212, 242, 255, .20), rgba(212, 242, 255, 0) 68%);
+  filter: blur(20px);
+  opacity: .12;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.arena-mist-a { animation: mistSlide 22s linear infinite; }
+.arena-mist-b {
+  bottom: 8%;
+  opacity: .08;
+  transform: scaleY(.85);
+  animation: mistSlide 31s linear infinite reverse;
+}
+
+@keyframes arenaLightDrift {
+  from { transform: translate3d(-1%, 0, 0) scale(1); }
+  to { transform: translate3d(1%, 1%, 0) scale(1.02); }
+}
+
+@keyframes mistSlide {
+  0%, 100% { transform: translateX(-2%); }
+  50% { transform: translateX(2%); }
+}
+
+.sprite-wrap {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  min-height: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.sprite-wrap canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  filter: none;
+  pointer-events: none;
+}
+
+.fighter-shadow-anchor {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: min(230px, 70%);
+  height: 18px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, .48), transparent 72%);
+  filter: blur(4px);
+  opacity: .72;
+  pointer-events: none;
+}
+
+
+/* WebP bosses are canvas-driven; CSS never animates their transform. */
+.asset-boss-sprite-v40 {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  transform: none;
+  animation: none;
+  will-change: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 26px 30px rgba(0, 0, 0, .66));
+}
+
+.asset-boss-sprite-v40 canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+.asset-boss-aura-v40 {
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  width: 86%;
+  height: 24%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--boss-accent, #38d8ff) 25%, transparent), transparent 68%);
+  filter: blur(9px);
+  pointer-events: none;
+}
+
+.asset-boss-ground-v40 {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 72%;
+  height: 20px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, .72), transparent 70%);
+  filter: blur(6px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Hit feedback */
+.hit-effect-v20 {
+  position: absolute;
+  z-index: 22;
+  top: 59%;
+  width: 170px;
+  height: 170px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.hit-player { left: 22%; transform: translate(-50%, -50%); }
+.hit-boss { left: 78%; transform: translate(-50%, -50%); }
+
+.hit-core-v20 {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .98), rgba(117, 229, 255, .70) 26%, rgba(117, 229, 255, 0) 72%);
+  animation: hitCore .22s ease-out forwards;
+}
+
+.hit-ring-v20 {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border: 4px solid #d9fbff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px rgba(104, 233, 255, .16), 0 0 32px rgba(104, 233, 255, .62);
+  animation: hitRing .56s cubic-bezier(.16, 1, .3, 1) forwards;
+}
+
+.hit-ring-v20.secondary {
+  width: 70px;
+  height: 70px;
+  border-width: 2px;
+  opacity: .7;
+  animation-delay: .04s;
+}
+
+.hit-sparks-v20 {
+  position: absolute;
+  color: #f6ffff;
+  letter-spacing: 10px;
+  font-size: 17px;
+  text-shadow: 0 0 12px #6de4ff;
+  animation: hitSparks .52s ease-out forwards;
+}
+
+.hit-effect-v20 strong {
+  position: absolute;
+  bottom: 0;
+  color: #fff;
+  font-size: 23px;
+  font-weight: 1000;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, .62);
+  animation: hitNumber .52s ease-out forwards;
+}
+
+.hit-theme-boss .hit-ring-v21 { border-color: #d884ff; box-shadow: 0 0 0 4px rgba(150, 59, 255, .24), 0 0 32px rgba(174, 69, 255, .82); }
+.hit-theme-boss .hit-sparks-v21 { color: #eed4ff; text-shadow: 0 0 13px #b45cff; }
+.hit-theme-boss strong { color: #f3d9ff; text-shadow: 0 0 14px rgba(176, 73, 255, .65), 0 3px 12px rgba(0, 0, 0, .6); }
+.hit-theme-player .hit-ring-v21 { border-color: #b8f5ff; }
+
+@keyframes hitCore {
+  0% { opacity: 0; transform: scale(.25); }
+  30% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 0; transform: scale(1.85); }
+}
+
+@keyframes hitRing {
+  0% { opacity: .95; transform: scale(.25); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: scale(3.2); }
+}
+
+@keyframes hitSparks {
+  0% { opacity: 0; transform: scale(.4); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-38px) scale(1.15) rotate(-12deg); }
+}
+
+@keyframes hitNumber {
+  0% { opacity: 0; transform: translateY(15px) scale(.6); }
+  22% { opacity: 1; transform: translateY(0) scale(1.08); }
+  100% { opacity: 0; transform: translateY(-58px) scale(1); }
+}
+
+/* Battle-only loading / orientation UI */
+.loading-screen {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 30%, #1a2543, #070b15 62%);
+  color: #f6f8ff;
+  text-align: center;
+}
+
+.spinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid rgba(255, 255, 255, .18);
+  border-top-color: #4de7ff;
+  border-radius: 50%;
+  animation: battleSpin .85s linear infinite;
+}
+
+@keyframes battleSpin {
+  to { transform: rotate(360deg); }
+}
+
+
+
+
+
+.rotate-icon {
+  font-size: 28px;
+  color: #4de7ff;
+}
+
+
+
+.question-fallback-banner {
+  margin: 8px auto 0;
+  max-width: 980px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 193, 7, .28);
+  border-radius: 999px;
+  background: rgba(255, 193, 7, .12);
+  color: #ffe7a0;
+  font-size: .78rem;
+  text-align: center;
+}
+
+/* ============================================================================
+   V62 — Stable fighter anchors + smooth animation pipeline + new HP HUD
+   ----------------------------------------------------------------------------
+   The battle page now has one vertical baseline for every chapter. Character
+   art is rendered inside fixed-height slots, so different sprite aspect ratios
+   cannot push either fighter toward the question panel.
+   ============================================================================ */
+.battle-reference-v43 .battle-top-rail-v43 {
+  grid-template-columns: 44px minmax(270px, 1fr) minmax(330px, 390px) minmax(270px, 1fr);
+}
+
+.battle-reference-v43 .battle-home-back-v43 {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+}
+
+.hp-card-v62 {
+  position: relative;
+  width: 100%;
+  height: 62px;
+  align-self: center;
+  min-width: 0;
+  padding: 7px 10px 6px;
+  border: 1px solid rgba(130, 218, 208, .20);
+  border-radius: 14px;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 8% 12%, rgba(92, 225, 204, .10), transparent 34%),
+    linear-gradient(180deg, rgba(7, 25, 25, .92), rgba(3, 12, 15, .96));
+  box-shadow: 0 14px 30px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.05);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.hp-card-v62::after {
+  content: '';
+  position: absolute;
+  inset: auto 10px 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(216,201,104,.38), transparent);
+  opacity: .6;
+}
+
+.hp-player-v62 { border-color: rgba(100, 220, 199, .22); }
+.hp-boss-v62 {
+  border-color: rgba(234, 108, 125, .22);
+  background:
+    radial-gradient(circle at 92% 12%, rgba(255, 74, 112, .10), transparent 34%),
+    linear-gradient(180deg, rgba(30, 10, 18, .92), rgba(11, 7, 13, .96));
+}
+
+.hp-card-head-v62 {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.hp-avatar-v62 {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(144, 235, 221, .22);
+  background: linear-gradient(145deg, rgba(31, 92, 83, .45), rgba(5, 18, 20, .92));
+  box-shadow: inset 0 1px rgba(255,255,255,.06), 0 6px 14px rgba(0,0,0,.20);
+}
+.hp-avatar-v62.boss {
+  border-color: rgba(255, 120, 140, .22);
+  background: linear-gradient(145deg, rgba(83, 27, 43, .50), rgba(15, 8, 14, .94));
+}
+.hp-avatar-v62 img { width: 100%; height: 100%; object-fit: cover; }
+.hp-skull-v62 { color: #ffc5d0; opacity: .88; }
+.hp-copy-v62 { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.hp-copy-v62 small {
+  color: #9db8b1;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hp-copy-v62 b {
+  color: #f4f8ef;
+  font-size: 13px;
+  line-height: 1.05;
+  letter-spacing: .02em;
+}
+.hp-boss-v62 .hp-copy-v62 small { color: #d9a5ae; }
+.hp-percent-v62 {
+  align-self: start;
+  padding-top: 1px;
+  color: #dce8de;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .03em;
+}
+.hp-boss-v62 .hp-percent-v62 { color: #ffd1d8; }
+
+.hp-track-v62 {
+  height: 8px;
+  margin: 5px 1px 4px;
+  padding: 1px;
+  border-radius: 999px;
+  background: rgba(1, 7, 9, .80);
+  border: 1px solid rgba(255,255,255,.06);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,.35);
+  overflow: hidden;
+}
+.hp-track-v62 span {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #46b89f, #78e4bd, #d0e87b);
+  box-shadow: 0 0 12px rgba(86, 223, 188, .28);
+  transition: width .26s cubic-bezier(.22,.8,.2,1);
+}
+.hp-boss-v62 .hp-track-v62 span {
+  background: linear-gradient(90deg, #a53e58, #ed627b, #ff9b8a);
+  box-shadow: 0 0 12px rgba(242, 80, 110, .24);
+}
+.hp-footer-v62 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #78918f;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+}
+.hp-footer-v62 span:last-child { display: inline-flex; align-items: center; gap: 4px; }
+.hp-footer-v62 img { width: 11px; height: 11px; object-fit: contain; opacity: .82; }
+
+.battle-reference-arena-v43 .fighter-slot-v62 {
+  position: relative;
+  height: min(420px, 100%);
+  min-height: 300px;
+  align-self: end;
+  display: flex;
+  align-items: flex-end;
+  overflow: visible;
+  pointer-events: none;
+}
+.battle-reference-arena-v43 .fighter-player-slot-v62 { justify-content: flex-start; }
+.battle-reference-arena-v43 .fighter-boss-slot-v62 { justify-content: flex-end; }
+
+.battle-reference-arena-v43 .fighter-player-v43,
+.battle-reference-arena-v43 .fighter-boss-v43 {
+  position: relative;
+  width: auto !important;
+  height: auto;
+  min-height: 0;
+  align-self: flex-end;
+  transform: none !important;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: visible;
+}
+.battle-reference-arena-v43 .player-lane-shift { margin-left: clamp(10px, 1.6vw, 28px); }
+.battle-reference-arena-v43 .fighter-player-v43 .sprite-wrap {
+  width: 278px !important;
+  aspect-ratio: 278 / 317;
+  min-height: 0;
+  margin: 0 !important;
+  overflow: visible;
+}
+.battle-reference-arena-v43 .fighter-boss-v43 .asset-boss-sprite-v40 {
+  width: 310px !important;
+  aspect-ratio: 5 / 6;
+  max-width: none;
+  margin: 0 !important;
+  overflow: visible;
+}
+.battle-reference-arena-v43 .fighter-shadow-anchor { bottom: 0; }
+
+/* V73 Chapter 3 boss footing: lift only the Equation Drake so its feet stay fully above the learning dock. */
+.battle-reference-arena-v43 .combat-stage-v43[data-level="3"] .fighter-boss-v43 {
+  margin-bottom: clamp(16px, 2.2vh, 28px);
+}
+
+/* Prevent old CSS animations from competing with the JS/canvas transform. */
+.battle-reference-v43 .asset-boss-canvas-v62 {
+  animation: none !important;
+  transform: none !important;
+  will-change: auto;
+}
+.battle-reference-v43 .asset-boss-canvas-v62 canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.battle-reference-v43 .asset-boss-canvas-v62 .asset-boss-aura-v40,
+.battle-reference-v43 .asset-boss-canvas-v62 .asset-boss-ground-v40 {
+  pointer-events: none;
+}
+
+@media (max-width: 1180px) {
+  .battle-reference-v43 .battle-top-rail-v43 {
+    grid-template-columns: 40px minmax(220px,1fr) minmax(280px,330px) minmax(220px,1fr);
+  }
+  .battle-reference-arena-v43 .fighter-slot-v62 { height: min(390px, 100%); }
+  .battle-reference-arena-v43 .fighter-player-v43 .sprite-wrap { width: 250px !important; min-height: 285px; }
+  .battle-reference-arena-v43 .fighter-boss-v43 .asset-boss-sprite-v40 { width: 285px !important; }
+}
+
+@media (max-width: 900px) {
+  .battle-reference-v43 .battle-top-rail-v43 {
+    grid-template-columns: 38px minmax(170px,1fr) minmax(220px,260px) minmax(170px,1fr);
+  }
+  .hp-card-v62 { height: 56px; padding: 5px 8px 5px; }
+  .hp-avatar-v62 { width: 30px; height: 30px; }
+  .hp-card-head-v62 { grid-template-columns: 30px minmax(0,1fr) auto; gap: 6px; }
+  .hp-copy-v62 b { font-size: 11px; }
+  .hp-track-v62 { height: 7px; margin-top: 3px; }
+  .battle-reference-arena-v43 .fighter-slot-v62 { height: min(330px, 100%); min-height: 245px; }
+  .battle-reference-arena-v43 .fighter-player-v43 .sprite-wrap { width: 210px !important; min-height: 240px; }
+  .battle-reference-arena-v43 .fighter-boss-v43 .asset-boss-sprite-v40 { width: 235px !important; }
+}
+
+
+
+
+/* ---------------------------------------------------------------------------
+   Animation transport — keep this independent from question styling.
+   --------------------------------------------------------------------------- */
+.battle-reference-arena-v43 .sprite-wrap canvas,
+.battle-reference-arena-v43 .asset-boss-canvas-v62 canvas {
+  position: relative;
+  z-index: 3;
+  overflow: visible;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.battle-reference-arena-v43 .fighter-player-v43,
+.battle-reference-arena-v43 .fighter-boss-v43 { isolation:isolate; }
+.battle-reference-arena-v43 .fighter-player-v43 .sprite-wrap { position:relative; z-index:4; overflow:visible; isolation:isolate; }
+.battle-reference-arena-v43 .fighter-player-v43 .sprite-wrap canvas { position:relative; z-index:5; display:block; opacity:1; visibility:visible; overflow:visible; pointer-events:none; }
+.battle-reference-arena-v43 .fighter-player-slot-v62 { overflow:visible; }
+
+/* ---------------------------------------------------------------------------
+   V72 Chapter 3 boss transport
+   The WebP boss canvas is wider than its slot so the elemental attack can
+   travel into the player lane without clipping at the bitmap boundary.
+   CSS does not animate or translate this canvas; JS owns the motion.
+   --------------------------------------------------------------------------- */
+.battle-reference-v43 .asset-boss-canvas-v62 {
+  position: relative;
+  overflow: visible;
+  isolation: isolate;
+}
+.battle-reference-v43 .asset-boss-canvas-v62 canvas {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  max-width: none;
+  height: auto;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+}
+.battle-reference-v43 .asset-boss-equation-drake-v40 canvas {
+  filter: none;
+  image-rendering: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   V79 — chapter-aware battle question surface
+   Visual-only skinning: geometry, grid, spacing, interaction and responsive
+   layout remain owned by the existing V43/V66 rules above.
+   --------------------------------------------------------------------------- */
+.battle-question-panel-v43 {
+  background:
+    radial-gradient(circle at 16% 0%, var(--panel-hue-1, rgba(112,231,215,.08)), transparent 35%),
+    radial-gradient(circle at 86% 100%, var(--panel-hue-2, rgba(214,198,110,.05)), transparent 28%),
+    linear-gradient(180deg, var(--panel-top, rgba(8,22,24,.97)), var(--panel-bottom, rgba(3,11,14,.985)));
+  border-color: var(--panel-border, rgba(110,213,201,.20));
+  box-shadow:
+    0 22px 58px rgba(0,0,0,.34),
+    0 0 0 1px color-mix(in srgb, var(--panel-glow, transparent) 38%, transparent),
+    inset 0 1px rgba(255,255,255,.055),
+    inset 0 -1px rgba(0,0,0,.35);
+}
+
+.battle-question-panel-v43::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--panel-accent-2, #6ad0c2) 58%, transparent),
+    color-mix(in srgb, var(--panel-accent, #d6c66e) 30%, transparent),
+    transparent
+  );
+}
+
+.battle-question-panel-v43 .battle-question-main-v66 {
+  background: linear-gradient(135deg, var(--panel-main-top, rgba(9,28,29,.90)), var(--panel-main-bottom, rgba(4,14,17,.96)));
+  border-right-color: var(--panel-border-soft, rgba(109,209,198,.12));
+}
+
+.battle-question-panel-v43 .question-header-v66,
+.battle-question-panel-v43 .battle-keypad-side-head-v35,
+.battle-question-panel-v43 .hint-rail-head-v37 {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-accent-2, #6ad0c2) 9%, rgba(13,31,33,.72)), rgba(6,15,17,.26));
+  border-bottom-color: var(--panel-border-soft, rgba(110,213,201,.10));
+}
+
+.battle-question-panel-v43 .question-chip-v66 {
+  border-color: var(--panel-border-soft, rgba(110,213,201,.12));
+}
+.battle-question-panel-v43 .question-chip-v66.is-stage {
+  border-color: color-mix(in srgb, var(--panel-accent-2, #6ad0c2) 30%, transparent);
+  color: var(--panel-accent, #e4d989);
+}
+.battle-question-panel-v43 .question-chip-v66.is-round { color: var(--panel-text-muted, #9ec8c0); }
+
+.battle-question-panel-v43 .question-progress-v66 > span {
+  border-color: color-mix(in srgb, var(--panel-accent-2, #6ad0c2) 20%, transparent);
+}
+.battle-question-panel-v43 .question-progress-v66 i {
+  background: linear-gradient(90deg, var(--panel-accent-2, #42b59f), var(--panel-accent, #d5e382));
+}
+
+.battle-question-panel-v43 .question-content-v66::before {
+  background: linear-gradient(180deg, var(--panel-accent, #7fe0ca), var(--panel-accent-2, #3f8d82));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--panel-glow, rgba(88,207,186,.12)) 85%, transparent);
+}
+.battle-question-panel-v43 .question-kicker-v66 { color: var(--panel-accent, #d7ca77); }
+.battle-question-panel-v43 .question-context-v66,
+.battle-question-panel-v43 .question-concept-v66 span { color: var(--panel-text-muted, #9db6b0); }
+.battle-question-panel-v43 .question-concept-v66 b { color: color-mix(in srgb, var(--panel-accent, #bfe0d9) 72%, #ffffff 28%); }
+
+.battle-question-panel-v43 .question-answer-v66,
+.battle-question-panel-v43 .question-tools-v66 {
+  border-color: var(--panel-border-soft, rgba(106,204,193,.08));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-accent-2, #6ad0c2) 4%, rgba(4,13,15,.35)), rgba(4,12,14,.78));
+}
+
+.battle-question-panel-v43 .answer-shell-v66 {
+  border-color: color-mix(in srgb, var(--panel-accent-2, #64d5c7) 32%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-accent-2, #64d5c7) 5%, rgba(7,21,23,.96)), rgba(2,10,13,.95));
+}
+.battle-question-panel-v43 .answer-shell-v66:focus-within {
+  border-color: color-mix(in srgb, var(--panel-accent, #69e7d7) 62%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--panel-glow, rgba(70,204,184,.08)) 78%, transparent), inset 0 1px rgba(255,255,255,.04), 0 10px 22px rgba(0,0,0,.16);
+}
+.battle-question-panel-v43 .answer-icon-v66 { color: var(--panel-accent, #82d9cb); }
+.battle-question-panel-v43 .battle-answer-input-v66 { caret-color: var(--panel-accent, #83e7d5); }
+.battle-question-panel-v43 .attack-btn-v66 {
+  border-color: color-mix(in srgb, var(--panel-accent, #d6c66e) 46%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-accent-2, #42ab9b) 80%, #ffffff 0%), color-mix(in srgb, var(--panel-accent-2, #245f59) 72%, #06110f 28%));
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--panel-glow, rgba(23,118,104,.18)) 75%, transparent), inset 0 1px rgba(255,255,255,.10);
+}
+.battle-question-panel-v43 .attack-btn-v66:hover:not(:disabled) {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-accent-2, #4bb7a8) 92%, #ffffff 8%), color-mix(in srgb, var(--panel-accent-2, #2a7b72) 78%, #07100f 22%));
+}
+
+.battle-question-panel-v43 .hint-rail-v37,
+.battle-question-panel-v43 .battle-keypad-side-v35 {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-hue-1, rgba(7,20,22,.92)) 48%, rgba(7,20,22,.92)), color-mix(in srgb, var(--panel-hue-2, rgba(3,11,14,.985)) 24%, rgba(3,11,14,.985)));
+}
+.battle-question-panel-v43 .hint-rail-v37 { border-right-color: var(--panel-border-soft, rgba(109,209,198,.12)); }
+.battle-question-panel-v43 .hint-reveal-v37,
+.battle-question-panel-v43 .hint-empty-v37 {
+  border-color: var(--panel-border-soft, rgba(110,213,201,.10));
+  background: color-mix(in srgb, var(--panel-hue-1, rgba(7,18,20,.50)) 32%, rgba(7,18,20,.50));
+}
+.battle-question-panel-v43 .hint-reveal-v37 > span {
+  border-color: color-mix(in srgb, var(--panel-accent-2, #5cc6b7) 34%, transparent);
+  background: color-mix(in srgb, var(--panel-accent-2, #489f92) 20%, transparent);
+  color: color-mix(in srgb, var(--panel-accent, #90e2d4) 86%, #ffffff 14%);
+}
+.battle-question-panel-v43 .hint-reveal-btn-v37 {
+  border-color: color-mix(in srgb, var(--panel-accent, #d6c66e) 40%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-accent, #637f43) 80%, #ffffff 0%), color-mix(in srgb, var(--panel-accent-2, #3f4f26) 70%, #10160d 30%));
+}
+
+.battle-question-panel-v43 .battle-keypad-side-v35 .keypad-status-v66,
+.battle-question-panel-v43 .keypad-toggle-v66 {
+  border-color: var(--panel-border-soft, rgba(109,218,203,.13));
+}
+.battle-question-panel-v43 .keypad-key-v64 {
+  border-color: color-mix(in srgb, var(--panel-accent-2, #76cdc3) 20%, transparent);
+  background: linear-gradient(180deg, var(--panel-key-bg, rgba(22,46,47,.95)), var(--panel-key-bg-strong, rgba(9,23,25,.98)));
+}
+.battle-question-panel-v43 .keypad-key-v64:hover:not(:disabled),
+.battle-question-panel-v43 .keypad-key-v64:focus-visible:not(:disabled) {
+  border-color: color-mix(in srgb, var(--panel-accent, #7bddd1) 48%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-key-bg, rgba(41,78,77,.98)) 94%, #ffffff 6%), var(--panel-key-bg-strong, rgba(13,30,31,.99)));
+}
+
