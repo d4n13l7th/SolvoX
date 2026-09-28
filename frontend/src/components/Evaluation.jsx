@@ -2,13 +2,14 @@ import React,{useEffect,useMemo} from 'react';
 import {classifyMastery,summarizePerformance} from '../services/evaluation';
 import { evaluateSolvoxChapter } from '../services/solvoxEvaluation';
 import PixelIcon from './PixelIcon';
+import {apiUrl} from '../config';
 
 export default function Evaluation({result,onClose,onRematch,onNext,nextLevel,t,lang}){
   const summary=useMemo(()=>summarizePerformance(result),[result]);
   const solvoxEvaluation=useMemo(()=>result.chapterEvaluation || evaluateSolvoxChapter({...result, ...summary}),[result,summary]);
   const cls=classifyMastery(summary.mastery).key;
   useEffect(()=>{
-    fetch('/api/evaluation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    fetch(apiUrl('/api/evaluation'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       chapterId:result.chapterId,
       won:!!result.won,
       mastery:summary.mastery,

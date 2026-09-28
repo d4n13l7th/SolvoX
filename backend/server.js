@@ -10,6 +10,21 @@ const questions=require('./questions');
 const app=express();
 const server=http.createServer(app);
 const io=new Server(server,{cors:{origin:true,credentials:false},transports:['websocket','polling']});
+
+// REST CORS: needed when the frontend is hosted apart from this server (e.g.
+// static frontend on Vercel). Socket.IO handles its own CORS above.
+const ALLOWED_ORIGINS=(process.env.CORS_ORIGINS||'').split(',').map(s=>s.trim()).filter(Boolean);
+app.use((req,res,next)=>{
+  const origin=req.headers.origin;
+  if(origin&&(ALLOWED_ORIGINS.length===0||ALLOWED_ORIGINS.includes(origin))){
+    res.setHeader('Access-Control-Allow-Origin',origin);
+    res.setHeader('Vary','Origin');
+    res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers','Content-Type');
+  }
+  if(req.method==='OPTIONS')return res.sendStatus(204);
+  next();
+});
 const PORT=process.env.PORT||3000;
 const rooms=new Map();
 const ROOM_GRACE_MS=30000;

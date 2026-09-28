@@ -4,11 +4,12 @@ import CharacterPicker,{MULTIPLAYER_CHARACTERS} from './CharacterPicker';
 import PixelIcon from './PixelIcon';
 import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 import {GAME_META} from '../config/game';
+import {apiUrl,BACKEND_URL} from '../config';
 
 function findCharacter(id){return MULTIPLAYER_CHARACTERS.find(x=>x.id===id)||MULTIPLAYER_CHARACTERS[0];}
 
 export default function Multiplayer({lang,onBack,t,playerName=''} ){
-  const [socket]=useState(()=>io({autoConnect:false}));
+  const [socket]=useState(()=>io(BACKEND_URL||undefined,{autoConnect:false}));
   const [battleMode,setBattleMode]=useState('turn');
   const [name,setName]=useState(playerName||'Player');
   const [char,setChar]=useState('mage');
@@ -26,7 +27,7 @@ export default function Multiplayer({lang,onBack,t,playerName=''} ){
 
   const loadDashboard=()=>{
     setDashboardLoading(true);
-    fetch('/api/dashboard?limit=20').then(r=>r.ok?r.json():Promise.reject()).then(data=>setDashboard(data)).catch(()=>setDashboard(null)).finally(()=>setDashboardLoading(false));
+    fetch(apiUrl('/api/dashboard?limit=20')).then(r=>r.ok?r.json():Promise.reject()).then(data=>setDashboard(data)).catch(()=>setDashboard(null)).finally(()=>setDashboardLoading(false));
   };
   useEffect(()=>{if(playerName)setName(playerName)},[playerName]);
   useEffect(()=>{loadDashboard();},[]);

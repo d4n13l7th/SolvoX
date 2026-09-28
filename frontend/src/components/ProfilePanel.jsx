@@ -1,6 +1,7 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import PixelIcon from './PixelIcon';
 import {deriveProfile} from '../services/profile';
+import {apiUrl} from '../config';
 
 function fmtTime(seconds){
   const s=Math.max(0,Number(seconds)||0);
@@ -20,7 +21,7 @@ export default function ProfilePanel({progress,profile,onClose,onSave,t,lang}){
     let alive=true;
     const lookupName=String(profile?.name||progress.playerName||'Player').trim();
     setLoading(true);
-    fetch(`/api/player-profile?name=${encodeURIComponent(lookupName)}`)
+    fetch(apiUrl(`/api/player-profile?name=${encodeURIComponent(lookupName)}`))
       .then(r=>r.ok?r.json():Promise.reject())
       .then(data=>{if(alive)setMp(data?.player||null)})
       .catch(()=>{if(alive)setMp(null)})
