@@ -26,3 +26,6 @@ npm-debug.log*
 # Tooling scratch
 .playwright-mcp/
 
+# Vercel CLI project link (per-project, not shareable)
+.vercel/
+
