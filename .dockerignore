@@ -1,4 +1,8 @@
-node_modules
+# The image is backend-only: it never COPYs frontend/, so keeping the folder out
+# of the build context stops ~107MB of bundled video from being uploaded on every
+# build. Local `node server.js` runs are unaffected and still find frontend/dist.
+frontend
+**/node_modules
 npm-debug.log
 .git
 .gitignore
