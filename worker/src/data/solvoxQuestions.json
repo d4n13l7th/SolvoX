@@ -1,0 +1,879 @@
+[
+  {
+    "id": 1,
+    "chapterId": 1,
+    "chapter": "Penjumlahan dan Pengurangan",
+    "context": "Penjumlahan & Pengurangan PLSV",
+    "text": "Tentukan nilai x yang memenuhi persamaan x+ 7 = 15",
+    "answer": "8",
+    "concept": "Penjumlahan & Pengurangan PLSV",
+    "errorTag": "Operasi invers",
+    "hints": [
+      "Untuk mencari x, kamu harus memindahkan angka +7 ke ruas kanan.",
+      "Ingat, jika angka positif pindah ruas melewati tanda sama dengan (=), tandanya berubah menjadi negatif (dikurang).",
+      "Hitung hasil dari x=15-7."
+    ],
+    "feedback": "Hati-hati! Saat +7 berpindah ke ruas kanan, tandanya berubah dari penjumlahan menjadi pengurangan (15-7). Periksa kembali hasil penguranganmu.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 2,
+    "chapterId": 1,
+    "chapter": "Penjumlahan dan Pengurangan",
+    "context": "Penjumlahan & Pengurangan PLSV",
+    "text": "Nilai y yang memenuhi persamaan y - 9 = 4 adalah...",
+    "answer": "13",
+    "concept": "Penjumlahan & Pengurangan PLSV",
+    "errorTag": "Operasi invers",
+    "hints": [
+      "Pisahkan variabel y agar berdiri sendiri di ruas kiri.",
+      "Pindahkan -9 ke ruas kanan. Operasi pengurangan akan berubah menjadi penjumlahan.",
+      "Hitung hasil dari y=4+9."
+    ],
+    "feedback": "Perhatikan tanda operasionalnya. Karena di ruas kiri adalah dikurang 9 (-9), maka ketika pindah ke ruas kanan harus ditambah 9 (4+9).",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 3,
+    "chapterId": 1,
+    "chapter": "Penjumlahan dan Pengurangan",
+    "context": "Penjumlahan & Pengurangan PLSV",
+    "text": "Tentukan penyelesaian dari persamaan a + 12 = 5.",
+    "answer": "-7",
+    "concept": "Penjumlahan & Pengurangan PLSV",
+    "errorTag": "Perubahan tanda",
+    "hints": [
+      "Pindahkan +12 ke ruas kanan.",
+      "Persamaan menjadi a=5-12.",
+      "Karena 5 lebih kecil dari 12, hasilnya akan bernilai negatif."
+    ],
+    "feedback": "Ingat, a=5-12. Karena angka pengurangnya (12) lebih besar daripada bilangan yang dikurangi (5), hasilnya harus bernilai negatif.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 4,
+    "chapterId": 1,
+    "chapter": "Penjumlahan dan Pengurangan",
+    "context": "Penjumlahan & Pengurangan PLSV",
+    "text": "Jika m - 15 = -8, maka nilai m adalah...",
+    "answer": "7",
+    "concept": "Penjumlahan & Pengurangan PLSV",
+    "errorTag": "Perubahan tanda",
+    "hints": [
+      "Pindahkan -15 ke ruas kanan menjadi +15.",
+      "Tulis persamaannya menjadi m=-8+15.",
+      "Sama artinya dengan 15-8."
+    ],
+    "feedback": "Pindahkan -15 menjadi +15 di ruas kanan, sehingga persamaannya menjadi m=-8+15. Sama artinya dengan 15-8.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 5,
+    "chapterId": 1,
+    "chapter": "Penjumlahan dan Pengurangan",
+    "context": "Penjumlahan & Pengurangan PLSV",
+    "text": "Hasil penyelesaian dari 18 + x = 30 adalah...",
+    "answer": "12",
+    "concept": "Penjumlahan & Pengurangan PLSV",
+    "errorTag": "Operasi invers",
+    "hints": [
+      "Pindahkan angka 18 ke ruas kanan.",
+      "Karena 18 bernilai positif, maka di ruas kanan menjadi pengurang.",
+      "Hitung nilai x=30-18."
+    ],
+    "feedback": "Jangan terkecoh oleh posisi angka 18. Karena 18 bernilai positif, maka di ruas kanan menjadi pengurang (30-18).",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 6,
+    "chapterId": 1,
+    "chapter": "Penjumlahan dan Pengurangan",
+    "context": "Penjumlahan & Pengurangan PLSV",
+    "text": "Tentukan nilai p dari persamaan p - 6,5 = 3,5",
+    "answer": "10",
+    "concept": "Penjumlahan & Pengurangan PLSV",
+    "errorTag": "Operasi invers",
+    "hints": [
+      "Pindahkan -6,5 ke ruas kanan.",
+      "Persamaan menjadi p=3,5+6,5.",
+      "Jumlahkan kedua bilangan desimal tersebut (3,5+6,5)."
+    ],
+    "feedback": "Untuk menghilangkan -6,5 di ruas kiri, tambahkan 6,5 di ruas kanan (3,5+6,5). Hitung kembali penjumlahan desimalnya dengan teliti.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 7,
+    "chapterId": 1,
+    "chapter": "Penjumlahan dan Pengurangan",
+    "context": "Penjumlahan & Pengurangan PLSV",
+    "text": "Penyelesaian dari k +(1/2) = 3 adalah...",
+    "answer": [
+      "2.5",
+      "5/2"
+    ],
+    "concept": "Penjumlahan & Pengurangan PLSV",
+    "errorTag": "Operasi invers",
+    "hints": [
+      "Pindahkan +(1/2) ke ruas kanan.",
+      "Ubah bentuk persamaannya menjadi k=3-(1/2).",
+      "Kurangi utuh 3 dengan setengah ((1/2))."
+    ],
+    "feedback": "Ubah persamaannya menjadi k=3-(1/2). Utuh 3 jika dikurangi setengah ((1/2)) akan tersisa 2,5 atau (5/2).",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 8,
+    "chapterId": 1,
+    "chapter": "Penjumlahan dan Pengurangan",
+    "context": "Penjumlahan & Pengurangan PLSV",
+    "text": "Nilai n yang memenuhi -7 + n = 14 adalah...",
+    "answer": "21",
+    "concept": "Penjumlahan & Pengurangan PLSV",
+    "errorTag": "Perubahan tanda",
+    "hints": [
+      "Pindahkan angka -7 dari ruas kiri ke ruas kanan.",
+      "Tanda negatif dari -7 berubah menjadi positif +7 di ruas kanan.",
+      "Hitung n=14+7."
+    ],
+    "feedback": "Angka -7 bernilai negatif di ruas kiri. Jika dipindahkan ke ruas kanan, tandanya menjadi positif (14+7).",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 9,
+    "chapterId": 1,
+    "chapter": "Penjumlahan dan Pengurangan",
+    "context": "Penjumlahan & Pengurangan PLSV",
+    "text": "Tentukan penyelesaian dari x - 14 = -20.",
+    "answer": "-6",
+    "concept": "Penjumlahan & Pengurangan PLSV",
+    "errorTag": "Perubahan tanda",
+    "hints": [
+      "Pindahkan -14 ke ruas kanan menjadi +14.",
+      "Tulis persamaannya: x=-20+14.",
+      "Kamu punya hutang 20 lalu dibayar 14, sisa hutangmu adalah hasilnya."
+    ],
+    "feedback": "Persamaan menjadi x=-20+14. Ibarat punya hutang 20 lalu dibayar 14, sisa hutangmu masih 6 (bernilai -6).",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 10,
+    "chapterId": 1,
+    "chapter": "Penjumlahan dan Pengurangan",
+    "context": "Penjumlahan & Pengurangan PLSV",
+    "text": "Jika y + 25 = 11, maka nilai y adalah...",
+    "answer": "-14",
+    "concept": "Penjumlahan & Pengurangan PLSV",
+    "errorTag": "Perubahan tanda",
+    "hints": [
+      "Pindahkan +25 ke ruas kanan.",
+      "Ubah persamaannya menjadi y=11-25.",
+      "Kurangi 11 dengan 25, hasilnya bernilai negatif."
+    ],
+    "feedback": "Pindahkan +25 ke ruas kanan menjadi 11-25. Karena 25>11, hasil akhirnya adalah bilangan negatif.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 11,
+    "chapterId": 2,
+    "chapter": "Perkalian dan Pembagian",
+    "context": "Perkalian & Pembagian PLSV",
+    "text": "Tentukan nilai x dari persamaan 4x = 28.",
+    "answer": "7",
+    "concept": "Perkalian & Pembagian PLSV",
+    "errorTag": "Koefisien",
+    "hints": [
+      "4x artinya 4 dikali x. Kebalikan dari perkalian adalah pembagian.",
+      "Pindahkan angka 4 ke ruas kanan sebagai pembagi.",
+      "Hitung x=(28/4)."
+    ],
+    "feedback": "Bentuk 4x berarti 4 dikali x. Untuk mencari x, kamu harus membagi 28 dengan 4, bukan menguranginya.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 12,
+    "chapterId": 2,
+    "chapter": "Perkalian dan Pembagian",
+    "context": "Perkalian & Pembagian PLSV",
+    "text": "Penyelesaian dari -3y = 21 adalah...",
+    "answer": "-7",
+    "concept": "Perkalian & Pembagian PLSV",
+    "errorTag": "Aturan tanda",
+    "hints": [
+      "Bagilah kedua ruas dengan angka -3.",
+      "Persamaan menjadi y=(21/-3).",
+      "Ingat, bilangan positif dibagi bilangan negatif hasilnya adalah negatif."
+    ],
+    "feedback": "Ingat aturan tanda pembagian! Bilangan positif (21) dibagi bilangan negatif (-3) selalu menghasilkan bilangan negatif.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 13,
+    "chapterId": 2,
+    "chapter": "Perkalian dan Pembagian",
+    "context": "Perkalian & Pembagian PLSV",
+    "text": "Nilai a yang memenuhi (a/5)= 6 adalah...",
+    "answer": "30",
+    "concept": "Perkalian & Pembagian PLSV",
+    "errorTag": "Operasi kebalikan",
+    "hints": [
+      "(a/5) artinya a dibagi 5. Kebalikan dari pembagian adalah perkalian.",
+      "Pindahkan angka 5 ke ruas kanan menjadi pengali.",
+      "Hitung a=6×5."
+    ],
+    "feedback": "Angka 5 berada di posisi pembagi (penyebut). Saat pindah ke ruas kanan, operasionalnya berubah menjadi perkalian (6×5).",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 14,
+    "chapterId": 2,
+    "chapter": "Perkalian dan Pembagian",
+    "context": "Perkalian & Pembagian PLSV",
+    "text": "Jika (m/4) = -9, maka nilai m adalah...",
+    "answer": "-36",
+    "concept": "Perkalian & Pembagian PLSV",
+    "errorTag": "Operasi kebalikan",
+    "hints": [
+      "Pindahkan pembagi -4 ke ruas kanan dengan cara dikalikan.",
+      "Ubah menjadi m=-9×4.",
+      "Perkalian antara dua bilangan negatif akan menghasilkan bilangan positif."
+    ],
+    "feedback": "Perhatikan tanda perkalian bilangan negatif dan positif. Perkalian antara -9 dengan 4 menghasilkan bilangan negatif.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 15,
+    "chapterId": 2,
+    "chapter": "Perkalian dan Pembagian",
+    "context": "Perkalian & Pembagian PLSV",
+    "text": "Tentukan penyelesaian dari (2/3) x= 12",
+    "answer": "18",
+    "concept": "Perkalian & Pembagian PLSV",
+    "errorTag": "Operasi kebalikan",
+    "hints": [
+      "Kalikan kedua ruas dengan penyebutnya (3) terlebih dahulu, atau langsung kalikan 12 dengan kebalikan pecahannya ((3/2)).",
+      "Tulis persamaannya: 2x=12×3⟹2x=36.",
+      "Hitung nilai x=(36/2)."
+    ],
+    "feedback": "Untuk mengisolasi x, kalikan 12 dengan kebalikan dari pecahan (2/3), yaitu (3/2). Hasilnya adalah 12×3÷2.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 16,
+    "chapterId": 2,
+    "chapter": "Perkalian dan Pembagian",
+    "context": "Perkalian & Pembagian PLSV",
+    "text": "Hasil dari -8p = -56 adalah...",
+    "answer": "7",
+    "concept": "Perkalian & Pembagian PLSV",
+    "errorTag": "Aturan tanda",
+    "hints": [
+      "Pindahkan -8 ke ruas kanan sebagai pembagi.",
+      "Tulis bentuknya: p=(-56/-8).",
+      "Bilangan negatif dibagi negatif menghasilkan bilangan positif."
+    ],
+    "feedback": "Pembagian dua bilangan negatif (-56÷-8) akan menghasilkan bilangan positif. Cek kembali tandamu.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 17,
+    "chapterId": 2,
+    "chapter": "Perkalian dan Pembagian",
+    "context": "Perkalian & Pembagian PLSV",
+    "text": "Penyelesaian dari (y/0,5) = 14 adalah...",
+    "answer": "7",
+    "concept": "Perkalian & Pembagian PLSV",
+    "errorTag": "Koefisien",
+    "hints": [
+      "Kebalikan dari pembagian 0,5 adalah perkalian dengan 0,5.",
+      "Tulis persamaannya: y=14×0,5.",
+      "Mengalikan dengan 0,5 sama artinya dengan membagi angka tersebut dengan 2."
+    ],
+    "feedback": "Kalikan 14 dengan 0,5. Mengalikan dengan 0,5 sama nilainya dengan membagi bilangan tersebut dengan 2.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 18,
+    "chapterId": 2,
+    "chapter": "Perkalian dan Pembagian",
+    "context": "Perkalian & Pembagian PLSV",
+    "text": "Tentukan nilai k jika 0,4k = 1,6",
+    "answer": "4",
+    "concept": "Perkalian & Pembagian PLSV",
+    "errorTag": "Koefisien",
+    "hints": [
+      "Pindahkan 0,4 ke ruas kanan sebagai pembagi.",
+      "Hilangkan koma dengan mengalikan pembilang dan penyebut dengan 10: k=(16/4).",
+      "Hitung hasil pembagian 16÷4."
+    ],
+    "feedback": "Untuk memudahkan pembagian desimal 1,6÷0,4, hilangkan komanya dengan mengalikan keduanya dengan 10 menjadi 16÷4.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 19,
+    "chapterId": 2,
+    "chapter": "Perkalian dan Pembagian",
+    "context": "Perkalian & Pembagian PLSV",
+    "text": "Nilai n yang memenuhi (3/4) n = 15 adalah...",
+    "answer": "-20",
+    "concept": "Perkalian & Pembagian PLSV",
+    "errorTag": "Operasi kebalikan",
+    "hints": [
+      "Kalikan kedua ruas dengan -4 untuk menghilangkan penyebut.",
+      "Persamaan menjadi 3n=15×-4⟹3n=-60.",
+      "Bagi -60 dengan 3 untuk mendapatkan nilai n."
+    ],
+    "feedback": "Hati-hati dengan tanda negatifnya. Persamaan ini berujung pada n=15×-(4/3), sehingga hasilnya bernilai negatif.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 20,
+    "chapterId": 2,
+    "chapter": "Perkalian dan Pembagian",
+    "context": "Perkalian & Pembagian PLSV",
+    "text": "Penyelesaian dari 15z = -75 adalah...",
+    "answer": "-5",
+    "concept": "Perkalian & Pembagian PLSV",
+    "errorTag": "Aturan tanda",
+    "hints": [
+      "Pindahkan angka 15 ke ruas kanan sebagai pembagi.",
+      "Persamaan menjadi z=(-75/15).",
+      "Hitung 75÷15 dan tambahkan tanda negatif pada hasilnya."
+    ],
+    "feedback": "Membagi -75 dengan 15 menghasilkan bilangan negatif. Periksa kembali tabel perkalian 15.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 21,
+    "chapterId": 3,
+    "chapter": "Operasi Campuran",
+    "context": "Operasi Campuran PLSV",
+    "text": "Tentukan nilai x dari persamaan 2x + 5 = 17",
+    "answer": "6",
+    "concept": "Operasi Campuran PLSV",
+    "errorTag": "Urutan langkah",
+    "hints": [
+      "Pindahkan suku tanpa variabel (+5) ke ruas kanan terlebih dahulu.",
+      "Sederhanakan menjadi 2x=17-5⟹2x=12.",
+      "Bagi kedua ruas dengan 2 untuk menentukan x."
+    ],
+    "feedback": "Lakukan operasi penjumlahan/pengurangan terlebih dahulu (17-5=12), baru kemudian lakukan pembagian (12÷2).",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 22,
+    "chapterId": 3,
+    "chapter": "Operasi Campuran",
+    "context": "Operasi Campuran PLSV",
+    "text": "Penyelesaian dari 3y - 8 = 13 adalah...",
+    "answer": "7",
+    "concept": "Operasi Campuran PLSV",
+    "errorTag": "Urutan langkah",
+    "hints": [
+      "Pindahkan -8 ke ruas kanan menjadi +8.",
+      "Sederhanakan menjadi 3y=13+8⟹3y=21.",
+      "Bagi 21 dengan 3."
+    ],
+    "feedback": "Pindahkan -8 terlebih dahulu menjadi +8 (13+8=21). Setelah itu bagi 21 dengan 3.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 23,
+    "chapterId": 3,
+    "chapter": "Operasi Campuran",
+    "context": "Operasi Campuran PLSV",
+    "text": "Jika 5a + 12 = -3, maka nilai a adalah...",
+    "answer": "-3",
+    "concept": "Operasi Campuran PLSV",
+    "errorTag": "Urutan langkah",
+    "hints": [
+      "Pindahkan +12 ke ruas kanan menjadi -12.",
+      "Sederhanakan menjadi 5a=-3-12⟹5a=-15.",
+      "Hitung a=(-15/5)."
+    ],
+    "feedback": "Pindahkan +12 ke ruas kanan menjadi -3-12=-15. Lalu bagi -15 dengan 5.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 24,
+    "chapterId": 3,
+    "chapter": "Operasi Campuran",
+    "context": "Operasi Campuran PLSV",
+    "text": "Tentukan nilai m dari 4(m - 2) = 16.",
+    "answer": "6",
+    "concept": "Operasi Campuran PLSV",
+    "errorTag": "Sifat distributif",
+    "hints": [
+      "Bagi kedua ruas dengan 4 terlebih dahulu untuk menghilangkan tanda kurung.",
+      "Persamaan menjadi m-2=(16/4)⟹m-2=4.",
+      "Pindahkan -2 ke ruas kanan: m=4+2."
+    ],
+    "feedback": "Kamu bisa membagi 16 dengan 4 terlebih dahulu untuk mendapat m-2=4, lalu tambahkan 2 ke ruas kanan.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 25,
+    "chapterId": 3,
+    "chapter": "Operasi Campuran",
+    "context": "Operasi Campuran PLSV",
+    "text": "Penyelesaian dari (x + 4/3) = 5 adalah...",
+    "answer": "11",
+    "concept": "Operasi Campuran PLSV",
+    "errorTag": "Urutan langkah",
+    "hints": [
+      "Hilangkan pembagi 3 dengan memindahkannya ke ruas kanan sebagai perkalian.",
+      "Sederhanakan menjadi x+4=5×3⟹x+4=15.",
+      "Hitung x=15-4."
+    ],
+    "feedback": "Jangan kurangkan 4 sebelum memindahkan pembagi 3. Kalikan 5 dengan 3 terlebih dahulu (15), baru kurangi dengan 4.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 26,
+    "chapterId": 3,
+    "chapter": "Operasi Campuran",
+    "context": "Operasi Campuran PLSV",
+    "text": "Nilai p dari -2p + 9 = 25 adalah...",
+    "answer": "-8",
+    "concept": "Operasi Campuran PLSV",
+    "errorTag": "Urutan langkah",
+    "hints": [
+      "Pindahkan +9 ke ruas kanan menjadi -9.",
+      "Sederhanakan menjadi -2p=25-9⟹-2p=16.",
+      "Bagi 16 dengan -2."
+    ],
+    "feedback": "Sederhanakan dulu menjadi -2p=25-9=16. Lalu bagi 16 dengan -2 (perhatikan tanda negatifnya!).",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 27,
+    "chapterId": 3,
+    "chapter": "Operasi Campuran",
+    "context": "Operasi Campuran PLSV",
+    "text": "Hasil penyelesaian dari 7 - 3k = -11 adalah...",
+    "answer": "6",
+    "concept": "Operasi Campuran PLSV",
+    "errorTag": "Urutan langkah",
+    "hints": [
+      "Pindahkan konstanta 7 ke ruas kanan.",
+      "Persamaan menjadi -3k=-11-7⟹-3k=-18.",
+      "Bagi -18 dengan -3."
+    ],
+    "feedback": "Ingat bahwa tanda negatif melekat pada 3k (menjadi -3k). Maka -3k=-11-7=-18. Bagi -18 dengan -3.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 28,
+    "chapterId": 3,
+    "chapter": "Operasi Campuran",
+    "context": "Operasi Campuran PLSV",
+    "text": "Penyelesaian dari (2y/5)- 3 = 7 adalah...",
+    "answer": "25",
+    "concept": "Operasi Campuran PLSV",
+    "errorTag": "Urutan langkah",
+    "hints": [
+      "Pindahkan -3 ke ruas kanan terlebih dahulu hingga menjadi (2y/5)=10.",
+      "Dapatkan 2y dengan mengalikan 10 dengan penyebut 5 (2y=50).",
+      "Bagi 50 dengan 2 untuk mendapatkan y."
+    ],
+    "feedback": "Langkah pertama: tambahkan 3 ke ruas kanan (7+3=10). Langkah kedua: kalikan dengan 5 (50). Langkah ketiga: bagi dengan 2.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 29,
+    "chapterId": 3,
+    "chapter": "Operasi Campuran",
+    "context": "Operasi Campuran PLSV",
+    "text": "Tentukan nilai n dari 3(2n + 1) = 27.",
+    "answer": "4",
+    "concept": "Operasi Campuran PLSV",
+    "errorTag": "Sifat distributif",
+    "hints": [
+      "Kalikan masuk angka 3 ke dalam kurung, atau bagi ruas kanan dengan 3.",
+      "Jika dibagi 3, bentuknya menjadi 2n+1=9.",
+      "Sederhanakan menjadi 2n=8, lalu tentukan nilai n."
+    ],
+    "feedback": "Jika dikali masuk: 6n+3=27⟹6n=24. Jika dibagi 3 dulu: 2n+1=9⟹2n=8. Periksa kembali perhitunganmu.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 30,
+    "chapterId": 3,
+    "chapter": "Operasi Campuran",
+    "context": "Operasi Campuran PLSV",
+    "text": "Penyelesaian dari 10 - 2(x + 3) = 2 adalah...",
+    "answer": "1",
+    "concept": "Operasi Campuran PLSV",
+    "errorTag": "Sifat distributif",
+    "hints": [
+      "Jabarkan tanda kurung: 10-2x-6=2.",
+      "Gabungkan konstanta di ruas kiri: 4-2x=2⟹-2x=2-4.",
+      "Hitung -2x=-2⟹x=(-2/-2)."
+    ],
+    "feedback": "Hati-hati saat menjabarkan -2x+3! Hasilnya adalah -2x-6 (bukan +6). Jadi 10-2x-6=2⟹4-2x=2.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 31,
+    "chapterId": 4,
+    "chapter": "Variabel di Kedua Ruas",
+    "context": "Variabel di Kedua Ruas",
+    "text": "Tentukan penyelesaian dari 5x - 3 = 2x + 9.",
+    "answer": "4",
+    "concept": "Variabel di Kedua Ruas",
+    "errorTag": "Pengelompokan suku sejenis",
+    "hints": [
+      "Kumpulkan suku ber-variabel x di ruas kiri dan angka/konstanta di ruas kanan.",
+      "Persamaan menjadi 5x-2x=9+3.",
+      "Sederhanakan menjadi 3x=12, lalu bagi dengan 3."
+    ],
+    "feedback": "Gabungkan suku ber-variabel di satu ruas (5x-2x=3x) dan konstanta di ruas lainnya (9+3=12).",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 32,
+    "chapterId": 4,
+    "chapter": "Variabel di Kedua Ruas",
+    "context": "Variabel di Kedua Ruas",
+    "text": "Nilai y yang memenuhi 7y + 4 = 3y - 12 adalah...",
+    "answer": "-4",
+    "concept": "Variabel di Kedua Ruas",
+    "errorTag": "Pengelompokan suku sejenis",
+    "hints": [
+      "Pindahkan 3y ke ruas kiri dan +4 ke ruas kanan.",
+      "Persamaan menjadi 7y-3y=-12-4⟹4y=-16.",
+      "Hitung y=(-16/4)."
+    ],
+    "feedback": "Saat memindahkan 3y ke ruas kiri menjadi -3y (4y), jangan lupa +4 pindah ke ruas kanan menjadi -4 (-12-4=-16).",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 33,
+    "chapterId": 4,
+    "chapter": "Variabel di Kedua Ruas",
+    "context": "Variabel di Kedua Ruas",
+    "text": "Penyelesaian dari 4a + 10 = 6a - 2 adalah...",
+    "answer": "6",
+    "concept": "Variabel di Kedua Ruas",
+    "errorTag": "Pengelompokan suku sejenis",
+    "hints": [
+      "Kumpulkan konstanta di ruas kiri dan variabel di ruas kanan (atau sebaliknya).",
+      "Tulis persamaannya: 10+2=6a-4a⟹12=2a.",
+      "Bagi 12 dengan 2 untuk mengetahui nilai a."
+    ],
+    "feedback": "Jika memindahkan 4a ke kanan (6a-4a=2a), pindahkan -2 ke kiri (10+2=12). Hasilnya 2a=12.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 34,
+    "chapterId": 4,
+    "chapter": "Variabel di Kedua Ruas",
+    "context": "Variabel di Kedua Ruas",
+    "text": "Tentukan nilai m dari 3(m + 2) = 2(m + 7).",
+    "answer": "8",
+    "concept": "Variabel di Kedua Ruas",
+    "errorTag": "Pengelompokan suku sejenis",
+    "hints": [
+      "Gunakan sifat distributif untuk membuka kedua kurung.",
+      "Hasil penjabaran: 3m+6=2m+14.",
+      "Pindahkan variabel dan konstanta: 3m-2m=14-6."
+    ],
+    "feedback": "Jabarkan kedua ruas dengan benar lebih dulu: Ruas kiri =3m+6, Ruas kanan =2m+14. Baru kumpulkan suku sejenis.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 35,
+    "chapterId": 4,
+    "chapter": "Variabel di Kedua Ruas",
+    "context": "Variabel di Kedua Ruas",
+    "text": "Jika 8 - 2p = 4p + 20, maka nilai p adalah...",
+    "answer": "-2",
+    "concept": "Variabel di Kedua Ruas",
+    "errorTag": "Pengelompokan suku sejenis",
+    "hints": [
+      "Pindahkan -2p ke ruas kanan agar koefisien variabel bernilai positif.",
+      "Ubah bentuknya menjadi 8-20=4p+2p⟹-12=6p.",
+      "Hitung p=(-12/6)."
+    ],
+    "feedback": "Kumpulkan variabel p: -2p-4p=-6p dan konstanta: 20-8=12. Pembagian -6p=12 menghasilkan nilai negatif.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 36,
+    "chapterId": 4,
+    "chapter": "Variabel di Kedua Ruas",
+    "context": "Variabel di Kedua Ruas",
+    "text": "Penyelesaian dari 6k - 5 = 2k + 15 adalah...",
+    "answer": "5",
+    "concept": "Variabel di Kedua Ruas",
+    "errorTag": "Pengelompokan suku sejenis",
+    "hints": [
+      "Pindahkan 2k ke ruas kiri dan -5 ke ruas kanan.",
+      "Persamaan menjadi 6k-2k=15+5⟹4k=20.",
+      "Tentukan k dengan membagi 20 dengan 4."
+    ],
+    "feedback": "Kurangkan 6k dengan 2k (4k) dan jumlahkan 15 dengan 5 (20). Lalu hitung 20÷4.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 37,
+    "chapterId": 4,
+    "chapter": "Variabel di Kedua Ruas",
+    "context": "Variabel di Kedua Ruas",
+    "text": "Tentukan penyelesaian dari 1/2 x + 3 = 1/4 x + 5.",
+    "answer": "8",
+    "concept": "Variabel di Kedua Ruas",
+    "errorTag": "Pecahan di kedua ruas",
+    "hints": [
+      "Kumpulkan pecahan di ruas kiri: (1/2)x-(1/4)x=5-3.",
+      "Samakan penyebut pecahan: (2/4)x-(1/4)x=2⟹(1/4)x=2.",
+      "Kalikan 2 dengan 4 untuk mendapatkan x."
+    ],
+    "feedback": "Kurangkan pecahan: (1/2)x-(1/4)x=(1/4)x. Sedangkan konstanta: 5-3=2. Maka (1/4)x=2.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 38,
+    "chapterId": 4,
+    "chapter": "Variabel di Kedua Ruas",
+    "context": "Variabel di Kedua Ruas",
+    "text": "Nilai n dari 5(n - 1) = 3(n + 3) adalah...",
+    "answer": "7",
+    "concept": "Variabel di Kedua Ruas",
+    "errorTag": "Pengelompokan suku sejenis",
+    "hints": [
+      "Buka tanda kurung di kedua ruas: 5n-5=3n+9.",
+      "Pindahkan suku-suku sejenis: 5n-3n=9+5.",
+      "Hitung 2n=14⟹n=(14/2)."
+    ],
+    "feedback": "Hasil kurung diuraikan menjadi 5n-5=3n+9. Pindah ruas menjadi 5n-3n=9+5⟹2n=14.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 39,
+    "chapterId": 4,
+    "chapter": "Variabel di Kedua Ruas",
+    "context": "Variabel di Kedua Ruas",
+    "text": "Penyelesaian dari 9x - (2x + 5) = 3x + 11 adalah...",
+    "answer": "4",
+    "concept": "Variabel di Kedua Ruas",
+    "errorTag": "Minus di depan kurung",
+    "hints": [
+      "Hati-hati dengan tanda negatif di depan kurung! Sederhanakan menjadi 9x-2x-5=3x+11.",
+      "Sederhanakan ruas kiri: 7x-5=3x+11⟹7x-3x=11+5.",
+      "Hitung 4x=16⟹x=(16/4)."
+    ],
+    "feedback": "Tanda minus di depan kurung mengubah semua tanda di dalam kurung: -2x+5 menjadi -2x-5. Gabungkan menjadi 7x-5=3x+11.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 40,
+    "chapterId": 4,
+    "chapter": "Variabel di Kedua Ruas",
+    "context": "Variabel di Kedua Ruas",
+    "text": "Tentukan nilai z jika 4(2z - 1) = 2(3z + 5).",
+    "answer": "7",
+    "concept": "Variabel di Kedua Ruas",
+    "errorTag": "Pengelompokan suku sejenis",
+    "hints": [
+      "Jabarkan perkalian dalam kurung: 8z-4=6z+10.",
+      "Kumpulkan variabel di ruas kiri: 8z-6z=10+4.",
+      "Sederhanakan: 2z=14⟹z=7."
+    ],
+    "feedback": "Uraikan menjadi 8z-4=6z+10. Pindahkan suku sejenis: 8z-6z=10+4⟹2z=14.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 41,
+    "chapterId": 5,
+    "chapter": "Soal Cerita Etnomatematika",
+    "context": "Pemodelan Etnomatematika",
+    "text": "(Kain Batik Parang - Jawa) Seorang pengrajin memproduksi kain batik motif Parang. Harga 3 lembar kain batik Parang setelah mendapat diskon voucher sebesar Rp20.000,00 adalah Rp250.000,00. Berapakah harga awal 1 lembar kain batik Parang tersebut?",
+    "answer": [
+      "90000",
+      "90.000",
+      "Rp90000",
+      "Rp90.000",
+      "Rp90.000,00"
+    ],
+    "concept": "Pemodelan Etnomatematika",
+    "errorTag": "Informasi cerita",
+    "hints": [
+      "Pemodelan: Misal harga 1 batik =x. Maka 3 batik dikurangi diskon 20.000 sama dengan 250.000.",
+      "Tulis persamaan matematikasinya: 3x-20.000=250.000.",
+      "Pindahkan 20.000 ke ruas kanan: 3x=270.000⟹x=(270.000/3)."
+    ],
+    "feedback": "Model matematikasinya adalah 3x-20.000=250.000. Tambahkan diskon 20.000 ke total harga (270.000), baru bagi dengan 3.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 42,
+    "chapterId": 5,
+    "chapter": "Soal Cerita Etnomatematika",
+    "context": "Pemodelan Etnomatematika",
+    "text": "(Candi Borobudur - Jawa Tengah) Sebuah miniatur Candi Borobudur dirancang menggunakan susunan batu relief mini. Jumlah batu pada tingkatan bawah adalah 15 buah lebih banyak daripada tingkatan atas. Jika total batu pada kedua tingkatan adalah 85 buah, berapakah jumlah batu pada tingkatan atas?",
+    "answer": "35",
+    "concept": "Pemodelan Etnomatematika",
+    "errorTag": "Pemodelan matematika",
+    "hints": [
+      "Misal jumlah batu atas =x, maka batu bawah =x+15. Totalnya =85.",
+      "Tulis persamaannya: x+x+15=85⟹2x+15=85.",
+      "Sederhanakan: 2x=85-15⟹2x=70."
+    ],
+    "feedback": "Model persamaannya adalah x+x+15=85⟹2x+15=85. Kurangi 85 dengan 15 (70), lalu bagi 2.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 43,
+    "chapterId": 5,
+    "chapter": "Soal Cerita Etnomatematika",
+    "context": "Pemodelan Etnomatematika",
+    "text": "(Alat Musik Angklung - Jawa Barat) Pak Mamat menjual angklung ukuran kecil dan besar. Harga sebuah angklung besar adalah Rp15.000,00 lebih mahal daripada angklung kecil. Jika seorang pembeli membayar Rp105.000,00 untuk 2 angklung kecil dan 1 angklung besar, berapakah harga 1 buah angklung kecil?",
+    "answer": [
+      "30000",
+      "30.000",
+      "Rp30000",
+      "Rp30.000",
+      "Rp30.000,00"
+    ],
+    "concept": "Pemodelan Etnomatematika",
+    "errorTag": "Informasi cerita",
+    "hints": [
+      "Misal harga angklung kecil =x, maka angklung besar =x+15.000.",
+      "Susun model matematika dari 2 kecil +1 besar: 2x+x+15.000=105.000.",
+      "Sederhanakan: 3x+15.000=105.000⟹3x=90.000."
+    ],
+    "feedback": "Gabungkan harga 2 angklung kecil (2x) dan 1 angklung besar (x+15.000): 3x+15.000=105.000. Kurangi dulu dengan 15.000 sebelum dibagi 3.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 44,
+    "chapterId": 5,
+    "chapter": "Soal Cerita Etnomatematika",
+    "context": "Pemodelan Etnomatematika",
+    "text": "(Rumah Gadang - Sumatra Barat) Panjang ukiran dinding Rumah Gadang yang berbentuk persegipanjang adalah $(2x + 3)$ cm dan lebarnya $x$ cm. Jika keliling ukiran tersebut adalah 54 cm, berapakah nilai $x$?",
+    "answer": "8",
+    "concept": "Pemodelan Etnomatematika",
+    "errorTag": "Konsep geometri/pecahan budaya",
+    "hints": [
+      "Rumus keliling persegipanjang adalah 2p+l=54.",
+      "Masukkan nilai p=2x+3 dan l=x: 22x+3+x=54⟹23x+3=54.",
+      "Bagi kedua ruas dengan 2: 3x+3=27⟹3x=24."
+    ],
+    "feedback": "Keliling persegipanjang =2p+l. Masukkan nilai p dan l: 22x+3+x=54⟹23x+3=54⟹3x+3=27.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 45,
+    "chapterId": 5,
+    "chapter": "Soal Cerita Etnomatematika",
+    "context": "Pemodelan Etnomatematika",
+    "text": "(Kue Tradisional Lupis - Jawa) Ibu membeli 5 bungkus kue lupis dan menyerahkan uang sebesar Rp50.000,00 kepada penjual. Jika Ibu menerima uang kembalian sebesar Rp15.000,00, berapakah harga 1 bungkus kue lupis?",
+    "answer": [
+      "7000",
+      "7.000",
+      "Rp7000",
+      "Rp7.000",
+      "Rp7.000,00"
+    ],
+    "concept": "Pemodelan Etnomatematika",
+    "errorTag": "Pemodelan matematika",
+    "hints": [
+      "Uang bayar dikurangi total harga kue = uang kembalian. Misal harga 1 kue =x.",
+      "Bentuk persamaannya: 50.000-5x=15.000.",
+      "Pindahkan 50.000 ke ruas kanan: -5x=15.000-50.000⟹-5x=-35.000."
+    ],
+    "feedback": "Total belanja kue =Uang bayar-Kembalian. Jadi 5x=50.000-15.000=35.000. Bagi 35.000 dengan 5.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 46,
+    "chapterId": 5,
+    "chapter": "Soal Cerita Etnomatematika",
+    "context": "Pemodelan Etnomatematika",
+    "text": "(Senjata Tradisional Keris - Nusantara) Seorang kolektor mengukur panjang keris Luk 3 dan keris Luk 5. Panjang keris Luk 5 adalah 8 cm lebih panjang daripada keris Luk 3. Jika total panjang kedua keris saat diletakkan berdampingan adalah 72 cm, berapakah panjang keris Luk 3?",
+    "answer": "32",
+    "concept": "Pemodelan Etnomatematika",
+    "errorTag": "Pemodelan matematika",
+    "hints": [
+      "Misal panjang Keris Luk 3 =x, maka Keris Luk 5 =x+8.",
+      "Jumlahkan kedua panjang keris: x+x+8=72.",
+      "Sederhanakan: 2x+8=72⟹2x=64."
+    ],
+    "feedback": "Modelnya adalah Keris Luk 3+Keris Luk 5=72⟹x+x+8=72⟹2x+8=72.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 47,
+    "chapterId": 5,
+    "chapter": "Soal Cerita Etnomatematika",
+    "context": "Pemodelan Etnomatematika",
+    "text": "(Permainan Tradisional Congklak) Dalam permainan congklak, jumlah biji milik Budi adalah 3 kali lipat dari jumlah biji milik Ani. Jika Budi memberikan 10 biji miliknya kepada Ani, maka jumlah biji mereka menjadi sama banyak. Berapakah jumlah biji congklak milik Ani pada awal permainan?",
+    "answer": "10",
+    "concept": "Pemodelan Etnomatematika",
+    "errorTag": "Informasi cerita",
+    "hints": [
+      "Misal biji Ani =x, Budi =3x. Jika Budi beri 10 ke Ani, biji Budi berkurang 10 dan Ani bertambah 10.",
+      "Persamaan saat biji mereka sama: 3x-10=x+10.",
+      "Pindahkan variabel ke ruas kiri: 3x-x=10+10⟹2x=20."
+    ],
+    "feedback": "Karena Budi memberikan 10 biji, biji Budi menjadi 3x-10 dan biji Ani menjadi x+10. Persamaannya: 3x-10=x+10⟹2x=20.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 48,
+    "chapterId": 5,
+    "chapter": "Soal Cerita Etnomatematika",
+    "context": "Pemodelan Etnomatematika",
+    "text": "(Kain Ulos - Sumatra Utara) Dua lembar kain Ulos (kualitas standar dan kualitas super) dijual dengan total harga Rp450.000,00. Jika harga Ulos kualitas super adalah Rp90.000,00 lebih mahal daripada kualitas standar, berapakah harga kain Ulos kualitas standar?",
+    "answer": [
+      "180000",
+      "180.000",
+      "Rp180000",
+      "Rp180.000",
+      "Rp180.000,00"
+    ],
+    "concept": "Pemodelan Etnomatematika",
+    "errorTag": "Pemodelan matematika",
+    "hints": [
+      "Misal Ulos standar =x, Ulos super =x+90.000.",
+      "Total harga 2 kain: x+x+90.000=450.000⟹2x+90.000=450.000.",
+      "Kurangi 450.000 dengan 90.000, lalu bagi hasilnya dengan 2."
+    ],
+    "feedback": "Model matematikanya: x+x+90.000=450.000⟹2x+90.000=450.000. Kurangi 450.000 dengan 90.000 lalu bagi 2.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 49,
+    "chapterId": 5,
+    "chapter": "Soal Cerita Etnomatematika",
+    "context": "Pemodelan Etnomatematika",
+    "text": "(Tari Piring - Sumatra Barat) Dalam sebuah seni pertunjukan Tari Piring, jumlah piring cadangan yang disiapkan adalah $\\frac{1}{4}$ dari jumlah piring utama yang dipegang para penari. Jika jumlah keseluruhan piring adalah 25 buah, berapakah jumlah piring utama yang digunakan penari?",
+    "answer": "20",
+    "concept": "Pemodelan Etnomatematika",
+    "errorTag": "Konsep geometri/pecahan budaya",
+    "hints": [
+      "Misal jumlah piring penari =x, maka piring cadangan =(1/4)x.",
+      "Persamaan total piring: x+(1/4)x=25.",
+      "Sederhanakan pecahan: (5/4)x=25⟹x=25×(4/5)."
+    ],
+    "feedback": "Penjumlahan pecahan: x+(1/4)x=(5/4)x. Persamaannya menjadi (5/4)x=25. Kalikan 25 dengan 4, lalu bagi 5.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  },
+  {
+    "id": 50,
+    "chapterId": 5,
+    "chapter": "Soal Cerita Etnomatematika",
+    "context": "Pemodelan Etnomatematika",
+    "text": "(Upacara Adat Sekaten - Yogyakarta) Pada susunan gunungan Sekaten, jumlah kue wajik merah adalah 20 buah lebih sedikit dari dua kali jumlah kue wajik putih. Jika jumlah kue wajik merah adalah 80 buah, berapakah jumlah kue wajik putih pada gunungan tersebut?",
+    "answer": "50",
+    "concept": "Pemodelan Etnomatematika",
+    "errorTag": "Pemodelan matematika",
+    "hints": [
+      "Misal jumlah wajik putih =x. Wajik merah =2x-20.",
+      "Diketahui jumlah wajik merah =80, maka persamaannya adalah 2x-20=80.",
+      "Pindahkan -20 ke ruas kanan: 2x=80+20⟹2x=100."
+    ],
+    "feedback": "Model matematikanya: 2x-20=80. Pindahkan -20 ke ruas kanan menjadi +20 (2x=100), lalu bagi dengan 2.",
+    "source": "SOAL SOAL SOLVOX.docx / HINT SOAL SOLVOX.docx / FEEDBACK SOAL SOAL SOLVOX.docx"
+  }
+]

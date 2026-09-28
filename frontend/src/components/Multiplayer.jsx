@@ -1,5 +1,5 @@
 import React,{useEffect,useMemo,useState} from 'react';
-import {io} from 'socket.io-client';
+import {io} from '../services/realtime';
 import CharacterPicker,{MULTIPLAYER_CHARACTERS} from './CharacterPicker';
 import PixelIcon from './PixelIcon';
 import { SolvoxUtilityArt } from './SolvoxUtilityArt';

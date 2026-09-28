@@ -4,12 +4,9 @@
 // edit it on a live deployment (Vercel, or `frontend/dist/` on a static host)
 // without rebuilding the app.
 //
-// `backendUrl` must point at the machine running Express + Socket.IO.
-// Leave it empty to use the same origin that served the page (the default,
-// which is what you want when the backend also serves this frontend).
-//
-// The host serving this file sets it on deploy, e.g. Vercel project setting
-//   VITE_BACKEND_URL / BACKEND_URL
+// `backendUrl` targets the Cloudflare Worker (Workers + Durable Object) that
+// runs the 24/7 multiplayer backend.
+// Leave it empty to use the same origin that served the page.
 window.SOLVOX_CONFIG = {
-  backendUrl: 'https://combined-principal-nat-went.trycloudflare.com',
+  backendUrl: 'https://solvox-api.solvox-worker.workers.dev',
 };

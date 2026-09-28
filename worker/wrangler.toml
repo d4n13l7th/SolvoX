@@ -1,0 +1,25 @@
+name = "solvox-api"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# The room is the only piece that needs a single-threaded, stateful home, so the
+# Durable Object class is bound here and routed to by room code.
+[[durable_objects.bindings]]
+name = "SOLVOX_ROOM"
+class_name = "SolvoxRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SolvoxRoom"]
+
+# ── option (a), later ────────────────────────────────────────────────────────
+# 1. wrangler d1 create solvox
+# 2. wrangler d1 execute solvox --file=./src/schema.sql
+# 3. uncomment the binding below, then port the bodies in src/store.js
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "solvox"
+# database_id = "<paste from step 1>"
+
+[observability]
+enabled = true
