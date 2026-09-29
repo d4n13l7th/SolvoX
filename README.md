@@ -1,67 +1,169 @@
-V89 — Chapter 4 Titan + Chapter 5 Axiom boss integration.
+# Solvox
 
-# Solvox V62
+**V103** — math-first RPG dengan chapter battles, UI bilingual, progresi
+single-player, dan duel multiplayer real-time.
 
-Solvox is a math-first RPG with chapter battles, bilingual UI, single-player progression, and multiplayer duels.
+| Dokumen | Isi |
+|---|---|
+| [`V103.md`](V103.md) | Ringkasan perubahan versi V93 → V103 |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Pondasi teknis: struktur, aturan main, cara integrasi |
 
-## What's changed in V42
+---
 
-- Home uses the cinematic MP4 background and is locked to the viewport so the page does not scroll.
-- Multiplayer is no longer a direct Home navigation item. `Main` opens a mode selector with **Single Player** and **Multiplayer**.
-- Single-player battle HUD follows the supplied reference composition: back button + player HP on the left, Chapter/Stage centered, enemy HP on the right; characters occupy the arena above the learning deck; the lower deck is **Question / Hint / Math Keypad**.
-- Wrong-answer learning feedback is a compact warning ribbon below the HUD instead of another large panel inside the question card.
-- Settings now owns the **Indonesia / English** language switch; the language control is removed from Home.
-- Old backup sprites, the obsolete home GIF, pause raster, obsolete revision notes, and the old bottom home banner were removed.
+## ⚠️ Baca dulu: dua backend
 
-## Project structure
+Repo ini berisi **dua** backend, dan hanya satu yang dipakai produksi.
 
-```text
-Solvox-V62/
-├─ package.json
-├─ server.js
-├─ qa-check.js
-├─ backend/
-├─ data/
-└─ frontend/
-   ├─ package.json
-   ├─ src/
-   │  ├─ components/
-   │  ├─ data/
-   │  ├─ services/
-   │  ├─ config/
-   │  └─ styles/
-   └─ public/assets/
-      ├─ characters/
-      ├─ home/
-      └─ ui/reference/
-```
+| Backend | Lokasi | Status |
+|---|---|---|
+| Cloudflare Workers + Durable Objects | `worker/` | ✅ **INI YANG DIPAKAI** |
+| Express + Socket.IO | `server.js`, `backend/` | 📦 arsip saja |
 
-## Windows quick start
+Migrasi ke Workers terjadi di commit `8c6cb5b`. Berkas Express sengaja
+dipertahankan sebagai referensi historis.
 
-Run these commands **from the folder that directly contains `package.json`**:
+Konsekuensi praktisnya:
 
-```powershell
+- `npm start` di root menjalankan **server Express lama** — bukan produksi.
+  Jangan pakai hasilnya untuk menilai perilaku multiplayer yang sebenarnya.
+- `frontend/` talking ke Worker, bukan ke `server.js`.
+- Jangan pernah deploy `server.js` / `backend/`.
+
+Produksi:
+
+- Frontend — https://solvoxweb.vercel.app
+- Worker — https://solvox-api.solvox-worker.workers.dev
+- Health — `GET /health` (menyentuh Durable Object, balas 503 kalau mati)
+
+---
+
+## Quick start
+
+```bash
 npm install
-npm start
+npm run dev     # Vite dev server untuk frontend saja
 ```
 
-For development:
+### ⚠️ `npm run dev` menembak backend **produksi**
 
-```powershell
+Tidak ada proxy Vite. `frontend/public/config.js` dilayani apa adanya dan
+sekarang berisi:
+
+```js
+window.SOLVOX_CONFIG = {
+  backendUrl: 'https://solvox-api.solvox-worker.workers.dev',
+};
+```
+
+Artinya menjalankan `npm run dev` lalu mencoba duel **membuat room sungguhan
+di produksi** dan memakai kuota Worker harian. Untuk menentukan backend:
+
+```bash
+# frontend → backend lokal (Wrangler)
+VITE_BACKEND_URL=http://127.0.0.1:8787 npm run dev
+
+# frontend → backend produksi
 npm run dev
 ```
 
-For structural QA:
+Kalau diuji dengan room uji, tetap ingat: `http://127.0.0.1:8787`
+tidak punya CORS untuk origin Vite, jadi panggilan dari browser akan gagal
+dengan error CORS, bukan 404. Itu normal — backend lokal bukan untuk diuji
+lewat browser tanpa penyesuaian CORS.
 
-```powershell
-npm run qa
+### Backend Worker di lokal
+
+```bash
+cd worker
+npm install
+npm run dev      # wrangler dev, default http://127.0.0.1:8787
 ```
 
-Open `http://localhost:3000` after the server starts.
+Untuk menjalankan backend Express lama (arsip — **bukan** produksi):
 
-Node.js 18 LTS or newer is required.
-V54 notes: Home background slightly brightened and previously approved Home button styling restored. No experimental Solfox assets added.
-V77 HOME REWORK
-- Home uses the supplied Solvox logo and a reference-inspired text-only menu: Main, Dashboard, Settings, Feedback.
-## V91 update
-Chapter 4 and Chapter 5 now use the newly supplied video backgrounds. Mobile battle fighter sizing, attack travel, and question-panel typography were refined without changing the battle layout or gameplay flow.
+```bash
+npm start          # build + server Express di http://localhost:3000
+```
+
+## Perintah
+
+| Perintah | Fungsi |
+|---|---|
+| `npm run dev` | Vite dev server (frontend) |
+| `npm run build` | QA statis + build produksi frontend |
+| `npm run qa` | Static QA (`node qa-check.js`) |
+| `npm start` | ⚠️ build + **Express lama** — bukan produksi |
+| `cd worker && npm run dev` | Wrangler dev (backend Worker) |
+| `cd worker && npm run deploy` | Deploy Worker ke Cloudflare |
+| `cd worker && npm run tail` | Live log Worker |
+
+Node.js 18 LTS atau lebih baru.
+
+## Struktur
+
+```text
+solvox/
+├─ frontend/            # React + Vite (deploy ke Vercel)
+│  ├─ src/
+│  │  ├─ components/    # satu file satu tanggung jawab
+│  │  ├─ data/          # hanya data — tidak ada CSS
+│  │  ├─ services/      # realtime, evaluation, feedback, i18n, profile
+│  │  ├─ config.js      # BACKEND_URL + apiUrl()
+│  │  └─ styles/        # battle-v43.css = sumber geometri battle
+│  └─ public/
+│     ├─ config.js      # runtime backend URL, tidak di-bundle
+│     └─ assets/
+├─ worker/              # Cloudflare Workers + Durable Objects (PRODUKSI)
+│  ├─ src/{index,room,game}.js
+│  ├─ wrangler.toml
+│  └─ test/             # duel, poll, reconnect, timeout
+├─ backend/, server.js  # arsip Express + Socket.IO
+├─ data/
+├─ qa-check.js
+├─ V103.md
+└─ ARCHITECTURE.md
+```
+
+## Aturan singkat
+
+- **Jangan** import `socket.io-client` di komponen — semua lewat
+  `frontend/src/services/realtime.js`
+- **Jangan** `fetch('/api/...')` polos — pakai `apiUrl()`, kalau tidak akan
+  404 senyap di domain Vercel
+- **Jangan** tata battle di stylesheet lain — `styles/battle-v43.css` satu-satunya
+- **Jangan** menimpa `worker/`, `.github/`, `src/config.js`,
+  `src/services/realtime.js`, atau `public/config.js` saat mengintegrasikan
+  folder versi baru
+- Detail lengkap + alasannya ada di [`ARCHITECTURE.md`](ARCHITECTURE.md)
+
+## Deploy
+
+Frontend otomatis: Vercel terhubung ke branch `main`, jadi cukup `git push`.
+Backend harus manual:
+
+```bash
+cd worker && npm run deploy
+```
+
+Setelah deploy worker, cek:
+
+```bash
+curl -s https://solvox-api.solvox-worker.workers.dev/health
+```
+
+## Rollback
+
+```bash
+git tag -l
+# known-good-v93-multiplayer   versi sebelum V103
+# v103-live                    V103 yang sedang produksi
+```
+
+```bash
+git checkout known-good-v93-multiplayer
+```
+
+## Riwayat versi
+
+Catatan versi V93 → V103 diringkas di [`V103.md`](V103.md).
+Riwayat commit penuh tetap tersedia di git, dan tag di atas.
