@@ -1,0 +1,42 @@
+/* V102 — Home tutorial / guide surface. No gameplay logic lives here. */
+.tutorial-backdrop-v102{
+  position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(1,8,5,.62);backdrop-filter:blur(10px);overflow:auto;touch-action:pan-y;
+}
+.tutorial-card-v102{
+  width:min(920px,100%);max-height:calc(100dvh - 40px);overflow:auto;min-width:0;
+  border-radius:24px;border:1px solid rgba(174,224,145,.16);
+  background:linear-gradient(180deg,rgba(12,34,23,.97),rgba(5,18,12,.98));
+  box-shadow:0 28px 90px rgba(0,0,0,.52),inset 0 1px rgba(255,255,255,.05);
+  color:#eef9e9;padding:26px;
+}
+.tutorial-head-v102{padding-bottom:18px;border-bottom:1px solid rgba(171,221,148,.09)}
+.tutorial-kicker-v102{font-family:var(--font-display-solvox,system-ui,sans-serif);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:#cce98d}
+.tutorial-title-wrap-v102{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:16px;min-width:0}
+.tutorial-title-wrap-v102 h2{margin:6px 0 7px;font-family:Georgia,'Times New Roman',serif;font-size:clamp(1.7rem,4vw,2.6rem);line-height:1.03;overflow-wrap:anywhere}
+.tutorial-title-wrap-v102 p{margin:0;max-width:720px;color:#b4cdbb;font-size:.88rem;line-height:1.55;overflow-wrap:anywhere}
+.tutorial-close-v102{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;border:1px solid rgba(190,226,165,.14);background:rgba(255,255,255,.025);color:#ebf6eb;padding:5px;flex:none}
+.tutorial-close-v102 img{width:16px!important;height:16px!important;filter:none!important;box-shadow:none!important}
+.tutorial-grid-v102{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
+.tutorial-step-v102{display:grid;grid-template-columns:34px minmax(0,1fr);gap:11px;align-items:start;padding:15px 14px;border-radius:14px;border:1px solid rgba(166,218,147,.10);background:linear-gradient(180deg,rgba(22,55,36,.42),rgba(5,18,12,.56));min-width:0}
+.tutorial-step-index-v102{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;border:1px solid rgba(177,224,153,.18);background:rgba(92,154,92,.08);color:#d7eea7;font-family:var(--font-display-solvox,system-ui,sans-serif);font-size:.55rem;letter-spacing:.05em}
+.tutorial-step-copy-v102 h3{margin:0 0 4px;font-size:.92rem;line-height:1.25;overflow-wrap:anywhere}
+.tutorial-step-copy-v102 p{margin:0;color:#a8c2ae;font-size:.78rem;line-height:1.52;overflow-wrap:anywhere}
+.tutorial-footer-v102{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(171,221,148,.09)}
+.tutorial-footer-v102 p{margin:0;color:#87a693;font-size:.72rem;line-height:1.45;max-width:680px}
+.tutorial-action-v102{min-width:120px;min-height:40px;padding:9px 14px!important;border-radius:10px!important;flex:none}
+@media(max-width:720px){
+  .tutorial-backdrop-v102{padding:10px;align-items:flex-start}
+  .tutorial-card-v102{max-height:calc(100dvh - 20px);padding:18px 14px 16px;border-radius:18px}
+  .tutorial-grid-v102{grid-template-columns:1fr;gap:9px;margin-top:14px}
+  .tutorial-title-wrap-v102{gap:10px}
+  .tutorial-close-v102{width:30px;height:30px}
+  .tutorial-title-wrap-v102 h2{font-size:1.45rem}
+  .tutorial-title-wrap-v102 p{font-size:.76rem}
+  .tutorial-step-v102{grid-template-columns:30px minmax(0,1fr);padding:13px 12px;gap:9px}
+  .tutorial-step-index-v102{width:26px;height:26px;font-size:.48rem}
+  .tutorial-step-copy-v102 h3{font-size:.83rem}
+  .tutorial-step-copy-v102 p{font-size:.72rem}
+  .tutorial-footer-v102{flex-direction:column;align-items:stretch}
+  .tutorial-action-v102{width:100%}
+}

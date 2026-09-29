@@ -280,7 +280,7 @@
 button, .nav-pill, .home-cta-primary-v26, .home-cta-secondary-v26, .primary-btn, .secondary-btn, .reset-btn{transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease}
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{outline:2px solid rgba(111,232,255,.9);outline-offset:2px}
 
-.global-bar-v27{height:70px;padding:10px 18px;background:linear-gradient(180deg,rgba(4,13,22,.96),rgba(5,15,25,.84));border-bottom:1px solid rgba(122,219,243,.13);box-shadow:0 8px 30px rgba(0,0,0,.18)}
+.global-bar-v27{height:70px;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 18px;background:linear-gradient(180deg,rgba(4,13,22,.96),rgba(5,15,25,.84));border-bottom:1px solid rgba(122,219,243,.13);box-shadow:0 8px 30px rgba(0,0,0,.18)}
 .top-actions .icon-action-v27{min-height:36px;padding:8px 10px;border-radius:6px;border:1px solid rgba(125,216,236,.15);background:#0b1a27;color:#dff9ff;box-shadow:inset 0 1px rgba(255,255,255,.05)}
 .top-actions .icon-action-v27:hover{transform:translateY(-1px);border-color:rgba(137,229,255,.35);background:#0f2333}
 .top-actions .icon-action-v27 span{font-size:.68rem;font-weight:900;letter-spacing:.04em}
@@ -453,7 +453,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 /* Battle pieces use the supplied exact raster frames. */
 
 /* Profile/evaluation surface */
-.profile-panel-v28{background:linear-gradient(180deg,#06151a,#051016 68%,#040b0f);border-color:rgba(212,192,104,.18);border-radius:6px;box-shadow:0 35px 90px rgba(0,0,0,.58),inset 0 1px rgba(255,255,255,.04)}.profile-avatar-xl-v28{background:url("/assets/ui/reference/avatar-medallion-clean.png") center/contain no-repeat;border:0;width:90px;height:90px;box-shadow:none;color:transparent}.profile-card-v28{border-color:rgba(119,201,207,.12);background:linear-gradient(180deg,rgba(7,22,27,.88),rgba(4,13,17,.82));border-radius:5px}.profile-card-title-v28 svg{color:#dcc871}.profile-hero-v28{border-color:rgba(214,191,104,.18);background:linear-gradient(90deg,rgba(43,101,102,.13),rgba(115,90,37,.10));border-radius:5px}.primary-btn-v28{background:linear-gradient(180deg,#a47c2e,#604713);border-color:rgba(230,205,111,.45)}
+.profile-panel-v28{background:linear-gradient(180deg,#06151a,#051016 68%,#040b0f);border-color:rgba(212,192,104,.18);border-radius:6px;box-shadow:0 35px 90px rgba(0,0,0,.58),inset 0 1px rgba(255,255,255,.04)}.profile-avatar-xl-v28{border:0;width:90px;height:90px;box-shadow:none;color:transparent}.profile-card-v28{border-color:rgba(119,201,207,.12);background:linear-gradient(180deg,rgba(7,22,27,.88),rgba(4,13,17,.82));border-radius:5px}.profile-card-title-v28 svg{color:#dcc871}.profile-hero-v28{border-color:rgba(214,191,104,.18);background:linear-gradient(90deg,rgba(43,101,102,.13),rgba(115,90,37,.10));border-radius:5px}.primary-btn-v28{background:linear-gradient(180deg,#a47c2e,#604713);border-color:rgba(230,205,111,.45)}
 
 /* Multiplayer/dashboard polish */
 
@@ -620,3 +620,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
    BATTLE SHARED PRIMITIVES
    These classes are component building blocks; battle-v43.css owns geometry.
    ========================================================================== */
+
+
+/* V100 — brand stays inside the global bar frame. */
+.global-brand-v89{min-width:0;max-width:min(240px,32vw);display:flex;align-items:center;gap:10px;overflow:hidden}
+.global-brand-v89 .solvox-brand-v89{flex:0 1 auto;min-width:0;max-width:170px}
+.global-brand-v89 > span{min-width:0;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.global-brand-v89 > span b,.global-brand-v89 > span small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:700px){.global-brand-v89{max-width:98px}.global-brand-v89 > span{display:none}.global-brand-v89 .solvox-brand-v89{width:86px;max-width:86px}}
+@media(max-width:420px){.global-brand-v89{max-width:88px}.global-brand-v89 .solvox-brand-v89{width:76px;max-width:76px}}

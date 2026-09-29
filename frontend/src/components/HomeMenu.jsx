@@ -3,16 +3,18 @@ import SolvoxBrandLogo from './SolvoxBrandLogo';
 
 const NAV_ITEMS = [
   { id: 'play', labelKey: 'homeMain' },
+  { id: 'tutorial', labelKey: 'homeTutorial' },
   { id: 'profile', labelKey: 'homeDashboard' },
   { id: 'settings', labelKey: 'homeSettings' },
   { id: 'feedback', labelKey: 'homeFeedback' },
 ];
 
-export default function HomeMenu({ onMain, onSettings, onFeedback, onProfile, t }) {
+export default function HomeMenu({ onMain, onTutorial, onSettings, onFeedback, onProfile, t }) {
   const [activeNav, setActiveNav] = useState('play');
   const activate = (id) => {
     setActiveNav(id);
     if (id === 'play') return onMain?.();
+    if (id === 'tutorial') return onTutorial?.();
     if (id === 'profile') return onProfile?.();
     if (id === 'settings') return onSettings?.();
     if (id === 'feedback') return onFeedback?.();

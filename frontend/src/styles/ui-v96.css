@@ -1,0 +1,113 @@
+/* V96 — typography, icon scale, modal hierarchy and mobile-safe polish. */
+
+/* Icon discipline: utility artwork stays decorative and never changes button geometry. */
+.solvox-utility-art{display:block;flex:none;max-width:100%;height:auto;object-fit:contain;vertical-align:middle;user-select:none;pointer-events:none}
+.settings-close-art-v96,.profile-close-art-v96,.feedback-close-art-v96{width:18px!important;height:18px!important;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))}
+.settings-close-btn-v96,.feedback-close-btn-v96{display:inline-flex!important;align-items:center;justify-content:center;gap:7px;min-height:42px;line-height:1.15;white-space:nowrap}
+.profile-close-btn-v96{width:34px;height:34px;display:grid!important;place-items:center;padding:4px!important;overflow:hidden;border-radius:10px!important;background:rgba(255,255,255,.025)!important;border:1px solid rgba(170,220,220,.08)!important}
+.profile-close-btn-v96:hover{background:rgba(255,255,255,.055)!important;border-color:rgba(170,220,220,.16)!important}
+
+/* Modal headings: no oversized artwork pushing text out of the frame. */
+.utility-art-modal-head{grid-template-columns:78px minmax(0,1fr)!important;gap:16px!important;min-width:0}
+.utility-art-modal-head img{width:64px!important;height:56px!important;filter:drop-shadow(0 8px 16px rgba(0,0,0,.28))}
+.utility-art-modal-head>div{min-width:0}
+.utility-art-modal-head h2,.utility-art-modal-head .eyebrow{overflow-wrap:anywhere}
+.settings-head-v93{min-width:0}
+.settings-head-v93 h2{font-size:clamp(1.05rem,2vw,1.35rem)!important;line-height:1.15!important}
+
+/* Settings rows: align controls without letting labels escape their column. */
+.settings-row{min-width:0}
+.settings-row>div{min-width:0}
+.settings-row>div b,.settings-row>div p{max-width:100%;overflow-wrap:anywhere}
+.settings-row>div p{line-height:1.5}
+.settings-about-row-v96{align-items:center;gap:14px}
+.settings-about-btn-v96{min-width:146px;max-width:220px;min-height:42px;padding:9px 14px!important;border-radius:10px!important;font-size:.78rem!important;line-height:1.2!important;white-space:normal!important;text-align:center!important;overflow-wrap:anywhere;word-break:normal}
+.settings-about-btn-v96::after{content:'→';margin-left:7px;opacity:.72}
+
+.about-bg-v96{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:#06130d}
+.about-bg-v96 video{width:100%;height:100%;object-fit:cover;filter:saturate(.84) brightness(.66);display:block}
+.about-bg-shade-v96{position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,10,8,.44),rgba(3,12,8,.56) 50%,rgba(2,7,5,.78));pointer-events:none}
+/* About Us page: restrained type scale and cards that never overflow on phones. */
+.about-page-v96{position:relative;min-height:100dvh;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:58px 24px 72px;color:#effff7;background:#06130d;touch-action:pan-y}
+.about-back-v96{position:fixed;left:18px;top:16px;z-index:5;display:inline-flex;align-items:center;gap:7px;padding:6px 10px 6px 6px;border-radius:11px;border:1px solid rgba(192,229,208,.16);background:rgba(3,14,10,.76);color:#e9fff1;backdrop-filter:blur(12px);cursor:pointer;font-family:var(--font-display-solvox,system-ui,sans-serif);font-size:.72rem;line-height:1;letter-spacing:.02em;max-width:calc(100vw - 36px)}
+.about-back-art-v96{width:22px!important;height:22px!important}
+.about-shell-v96{position:relative;z-index:1;width:min(980px,100%);padding:30px 28px 28px;border-radius:26px;background:linear-gradient(180deg,rgba(5,22,14,.78),rgba(3,14,10,.86));border:1px solid rgba(188,230,163,.16);box-shadow:0 30px 78px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.05);backdrop-filter:blur(16px);min-width:0}
+.about-kicker-v96{font-family:var(--font-display-solvox,system-ui,sans-serif);font-size:.64rem;line-height:1;letter-spacing:.16em;color:#cfe78e;text-transform:uppercase;overflow-wrap:anywhere}
+.about-shell-v96 h1{margin:8px 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:clamp(2rem,5vw,3.6rem);line-height:.98;color:#f7ffe9;text-shadow:0 8px 26px rgba(0,0,0,.28);overflow-wrap:anywhere}
+.about-intro-v96{max-width:760px;color:#b8d0bf;font-size:clamp(.86rem,1.8vw,1rem);line-height:1.6;margin:0;overflow-wrap:anywhere}
+.about-divider-v96{height:1px;margin:22px 0 18px;background:linear-gradient(90deg,transparent,rgba(195,225,127,.45),transparent)}
+.about-grid-v96{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;min-width:0}
+.about-card-v96{position:relative;min-width:0;padding:18px 16px 16px 20px;border-radius:16px;background:linear-gradient(180deg,rgba(20,54,34,.62),rgba(4,17,11,.68));border:1px solid rgba(173,220,137,.13);box-shadow:inset 0 1px rgba(255,255,255,.04)}
+.about-card-v96 h2{margin:0 0 7px;padding-right:24px;font-size:clamp(.92rem,1.6vw,1.03rem);line-height:1.28;color:#f2ffe9;overflow-wrap:anywhere}
+.about-card-v96 span{display:block;color:#cfe78e;font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;overflow-wrap:anywhere}
+.about-card-v96 p{margin:10px 0 0;color:#a9c0b0;font-size:.8rem;line-height:1.55;overflow-wrap:anywhere}
+.about-index-v96{position:absolute;right:14px;top:13px;color:rgba(216,243,161,.34);font-family:var(--font-display-solvox,system-ui,sans-serif);font-size:.62rem;line-height:1;letter-spacing:.06em}
+.about-footer-v96{margin:20px 0 0;text-align:center;color:#87a492;font-size:.74rem;line-height:1.45;overflow-wrap:anywhere}
+
+/* Global touch/type safety for all existing controls without changing layout hierarchy. */
+button,input,select,textarea{max-width:100%;min-width:0}
+button{font-synthesis:none;text-wrap:balance}
+button span,.nav-pill,.stage-crown-v43,.chapter-card-copy-v44,.mode-card-v45-copy,.multi-header-v26,.multi-card-v26,.mp-question-v26,.feedback-card-v35,.settings-card,.profile-panel-v28{min-width:0}
+
+@media(max-width:760px){
+  .utility-art-modal-head{grid-template-columns:52px minmax(0,1fr)!important;gap:10px!important}
+  .utility-art-modal-head img{width:52px!important;height:46px!important}
+  .settings-head-v93 h2{font-size:1.05rem!important}
+  .settings-about-row-v96{align-items:stretch!important;flex-direction:column!important;gap:9px!important}
+  .settings-about-btn-v96{width:100%!important;max-width:none!important;min-height:44px!important;font-size:.76rem!important}
+  .settings-close-btn-v96{width:100%!important}
+  .about-page-v96{padding:62px 12px 34px}
+  .about-back-v96{left:10px;top:10px;padding:5px 8px 5px 5px;font-size:.64rem}
+  .about-shell-v96{padding:22px 16px 22px;border-radius:20px}
+  .about-grid-v96{grid-template-columns:1fr}
+  .about-card-v96{padding:16px 15px 15px 18px}
+}
+@media(max-width:420px){
+  .settings-card{padding:14px!important}
+  .settings-head-v93{gap:8px!important}
+  .language-switch-v94 button{grid-template-columns:26px minmax(0,1fr)!important;gap:7px!important}
+  .language-switch-v94 button img{width:26px!important;height:22px!important}
+  .settings-close-art-v96,.profile-close-art-v96,.feedback-close-art-v96{width:16px!important;height:16px!important}
+  .profile-close-btn-v96{width:30px;height:30px}
+  .about-shell-v96 h1{font-size:1.85rem;line-height:1.02}
+  .about-card-v96 h2{font-size:.9rem}
+  .about-card-v96 p{font-size:.76rem}
+}
+
+/* V97 — Zero to One team identity and structure-following logo glow. */
+.about-team-brand-v97{position:relative;width:min(360px,78%);margin:0 auto 16px;display:grid;place-items:center;min-width:0;isolation:isolate}
+.about-team-brand-v97 img{display:block;width:100%;height:auto;object-fit:contain;user-select:none}
+.about-team-brand-img-v97{position:relative;z-index:2;filter:drop-shadow(0 8px 20px rgba(58,217,141,.18))}
+.about-team-brand-glow-v97{position:absolute;inset:0;z-index:1;display:block;opacity:.78;filter:blur(9px) saturate(1.18) drop-shadow(0 0 16px rgba(88,238,173,.55));transform:scale(.985)}
+.about-team-brand-glow-v97 img{width:100%;height:auto}
+@media(max-width:760px){
+  .about-team-brand-v97{width:min(290px,84%);margin-bottom:12px}
+}
+@media(max-width:420px){
+  .about-team-brand-v97{width:min(250px,88%)}
+  .about-team-brand-img-v97{filter:drop-shadow(0 6px 14px rgba(58,217,141,.2))}
+}
+
+
+/* V103 — settings heading and multiplayer back alignment polish. */
+.settings-head-v102{grid-template-columns:82px minmax(0,1fr)!important;gap:16px!important;align-items:center!important;padding-right:4px}
+.settings-head-v102 .settings-head-art-v102{width:62px!important;height:52px!important;object-fit:contain;justify-self:center}
+.settings-head-v102>div{min-width:0;padding-left:2px}
+.settings-head-v102 .eyebrow,.settings-head-v102 h2{max-width:100%;overflow-wrap:anywhere}
+.multi-header-v26 .multi-back-btn-v27{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;min-height:38px!important;padding:6px 9px 6px 7px!important;line-height:1!important;transform:translateY(-2px)!important;vertical-align:middle}
+.multi-header-v26 .multi-back-btn-v27 .solvox-back-art{width:22px!important;height:22px!important;flex:0 0 22px!important;display:block!important}
+.multi-header-v26 .multi-back-btn-v27 .solvox-back-label-v82{display:inline-flex!important;align-items:center!important;height:22px!important;line-height:1!important;font-size:.68rem!important;letter-spacing:.02em!important;white-space:nowrap!important}
+@media(max-width:760px){
+  .settings-head-v102{grid-template-columns:66px minmax(0,1fr)!important;gap:13px!important;padding-right:0}
+  .settings-head-v102 .settings-head-art-v102{width:52px!important;height:44px!important}
+  .multi-header-v26 .multi-back-btn-v27{transform:translateY(-4px)!important;min-height:36px!important;padding:5px 8px 5px 6px!important;gap:6px!important}
+  .multi-header-v26 .multi-back-btn-v27 .solvox-back-art{width:20px!important;height:20px!important;flex-basis:20px!important}
+  .multi-header-v26 .multi-back-btn-v27 .solvox-back-label-v82{height:20px!important;font-size:.62rem!important}
+}
+@media(max-width:420px){
+  .settings-head-v102{grid-template-columns:60px minmax(0,1fr)!important;gap:10px!important}
+  .settings-head-v102 .settings-head-art-v102{width:48px!important;height:40px!important}
+  .multi-header-v26 .multi-back-btn-v27{transform:translateY(-5px)!important;gap:5px!important;padding-inline:6px!important}
+  .multi-header-v26 .multi-back-btn-v27 .solvox-back-art{width:19px!important;height:19px!important;flex-basis:19px!important}
+  .multi-header-v26 .multi-back-btn-v27 .solvox-back-label-v82{height:19px!important;font-size:.58rem!important}
+}

@@ -9,7 +9,7 @@ import { evaluateSolvoxChapter } from '../services/solvoxEvaluation';
 import { LEVELS } from '../data/levels';
 import { PLAYER } from '../data/player';
 import { getBoss } from '../data/bosses';
-import { getBossImpactMs, getBossPreviewSrc } from '../data/bossAssets';
+import { getBossImpactMs, getBossPreviewSrc, getBossSequenceDurationMs } from '../data/bossAssets';
 import PixelIcon from './PixelIcon';
 import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 
@@ -32,6 +32,9 @@ const normalizeAnswer = (value) =>
 export default function Battle({ levelId, lang, t, onComplete, onBack }) {
   const boss = getBoss(levelId);
   const bossAttackImpactMs = getBossImpactMs(boss.spriteId, 'attack', 360);
+  const bossDieDurationMs = getBossSequenceDurationMs(boss.spriteId, 'die');
+  const playerAsset = getPlayerAsset();
+  const playerDieDurationMs = (playerAsset.sequences.die?.frames?.length || 1) * (playerAsset.sequences.die?.step || 175);
   const meta = LEVELS.find((entry) => entry.id === levelId) || LEVELS[0];
 
   /* ----------------------------- Battle state ----------------------------- */
@@ -198,7 +201,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
     };
 
     window.requestAnimationFrame(() => {
-      document.querySelector('.battle-answer-input-v23')?.focus();
+      document.querySelector('.battle-answer-input-v66')?.focus();
     });
   }, [idx]);
 
@@ -317,7 +320,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
         setIdx((value) => value + 1);
         setRound((value) => value + 1);
         setBusy(false);
-      }, 220);
+      }, nextEnemyHp <= 0 ? bossDieDurationMs + 140 : 220);
     }, 380);
   };
 
@@ -381,7 +384,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
           setIdx((value) => value + 1);
           setRound((value) => value + 1);
           setBusy(false);
-        }, nextHp <= 0 ? 1080 : 650);
+        }, nextHp <= 0 ? playerDieDurationMs + 140 : 650);
         return;
       }
 
@@ -389,7 +392,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
         setBusy(false);
         setAnswer('');
         window.requestAnimationFrame(() => {
-          document.querySelector('.battle-answer-input-v23')?.focus();
+          document.querySelector('.battle-answer-input-v66')?.focus();
         });
       }, 480);
     }, bossAttackImpactMs);

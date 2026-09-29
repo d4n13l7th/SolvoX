@@ -44,8 +44,7 @@
 /* Settings: compact, clear, more product-like. */
 .settings-card{background:linear-gradient(180deg,#0b2025,#061318)!important;border-color:rgba(156,218,218,.16)!important;box-shadow:inset 0 1px rgba(255,255,255,.05),0 28px 70px rgba(0,0,0,.45)!important}
 .settings-head-v93{display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid rgba(163,220,219,.07)}
-.settings-head-mark-v93{width:42px;height:42px;border-radius:10px;position:relative;background:radial-gradient(circle at 50% 46%,#9ddc6d 0 18%,transparent 19%),linear-gradient(145deg,#1c4d36,#0c241b);border:1px solid rgba(183,213,109,.30);box-shadow:inset 0 1px rgba(255,255,255,.06),0 0 24px rgba(119,202,92,.10)}
-.settings-head-mark-v93::before{content:"";position:absolute;inset:10px;border:2px solid rgba(207,221,128,.58);transform:rotate(45deg);border-radius:4px}.settings-head-v93 h2{margin:2px 0 0!important}.settings-row{border-color:rgba(163,220,219,.08)!important}.language-switch-v42 button.active{background:linear-gradient(180deg,#1b4e3a,#102d24)!important;border-color:rgba(159,215,108,.42)!important;color:#e9f7d2!important}.toggle-btn.on{background:linear-gradient(180deg,#174e3a,#103124)!important;border-color:rgba(100,210,144,.34)!important}.danger-btn{background:linear-gradient(180deg,#4a2028,#2b1318)!important;border-color:rgba(255,118,140,.26)!important}
+.settings-head-v93 h2{margin:2px 0 0!important}.settings-row{border-color:rgba(163,220,219,.08)!important}.language-switch-v42 button.active{background:linear-gradient(180deg,#1b4e3a,#102d24)!important;border-color:rgba(159,215,108,.42)!important;color:#e9f7d2!important}.toggle-btn.on{background:linear-gradient(180deg,#174e3a,#103124)!important;border-color:rgba(100,210,144,.34)!important}.danger-btn{background:linear-gradient(180deg,#4a2028,#2b1318)!important;border-color:rgba(255,118,140,.26)!important}
 
 /* Multiplayer — same cinematic atmosphere as Home, but keep cards legible. */
 .multi-header-v26{background:linear-gradient(180deg,rgba(5,19,23,.72),rgba(4,13,17,.58))!important;border-color:rgba(160,225,220,.16)!important;box-shadow:inset 0 1px rgba(255,255,255,.05),0 16px 45px rgba(0,0,0,.24)!important;backdrop-filter:blur(14px)}
@@ -77,7 +76,7 @@
   .multi-card-v26{padding:16px!important}.dashboard-metrics-v26{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .dashboard-hero-row-v26{grid-template-columns:1fr!important}.dashboard-best-v26{margin-top:2px}
   .profile-panel-head-v28.utility-profile-head{padding:0 0 10px!important}.dashboard-head-copy-v93 h2{font-size:1.15rem!important}
-  .settings-card{padding:16px!important}.settings-row{padding:14px 0!important}.settings-head-mark-v93{width:38px;height:38px}
+  .settings-card{padding:16px!important}.settings-row{padding:14px 0!important}
   .mp-battle-v26{padding:6px!important}.mp-question-v26{padding:16px!important}.mp-question-v26 h2{font-size:20px!important}.mp-question-v26 p{font-size:12px!important}
   .battle-question-panel-v43.theme-level-5 .question-text-v66{font-size:clamp(17px,5.0vw,22px)!important}
 }
@@ -85,3 +84,25 @@
   .multi-card-v26{padding:13px!important}.dashboard-metrics-v26{gap:7px!important}.dashboard-metrics-v26 b{font-size:1rem!important}
   .settings-card{padding:14px!important}.settings-row p{font-size:.74rem!important;line-height:1.45}
 }
+
+
+/* V94 settings + developer team */
+.settings-card-v94{position:relative;overflow:auto}
+
+
+
+/* V100 — Chapter 2/3 environment palette: panel surfaces echo the arena. */
+.battle-question-panel-v43.theme-level-2 .question-header-v66{
+  background:linear-gradient(180deg,rgba(34,89,137,.22),rgba(34,50,88,.12));
+}
+.battle-question-panel-v43.theme-level-2 .question-content-v66{
+  background:radial-gradient(circle at 78% 12%,rgba(105,162,240,.11),transparent 34%),radial-gradient(circle at 18% 78%,rgba(131,99,228,.10),transparent 38%),linear-gradient(180deg,rgba(10,31,52,.28),rgba(5,12,21,.16));
+}
+.battle-question-panel-v43.theme-level-2 .question-text-v66{text-shadow:0 2px 18px rgba(70,136,202,.18)}
+.battle-question-panel-v43.theme-level-3 .question-header-v66{
+  background:linear-gradient(180deg,rgba(143,25,18,.24),rgba(69,15,12,.13));
+}
+.battle-question-panel-v43.theme-level-3 .question-content-v66{
+  background:radial-gradient(circle at 82% 12%,rgba(255,123,44,.12),transparent 34%),radial-gradient(circle at 12% 76%,rgba(187,33,22,.12),transparent 40%),linear-gradient(180deg,rgba(45,13,11,.28),rgba(10,6,7,.18));
+}
+.battle-question-panel-v43.theme-level-3 .question-text-v66{text-shadow:0 2px 18px rgba(227,69,32,.20)}

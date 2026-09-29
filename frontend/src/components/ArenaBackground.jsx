@@ -12,6 +12,7 @@ export default function ArenaBackground({ levelId = 1 }) {
 
   const style = {
     '--bg-object-position': bg.objectPosition || 'center center',
+    '--bg-mobile-object-position': bg.mobileObjectPosition || bg.objectPosition || 'center bottom',
     '--bg-brightness': bg.brightness ?? 1,
     '--bg-saturation': bg.saturation ?? 1,
     '--bg-scale': bg.scale ?? 1.02,
@@ -22,7 +23,7 @@ export default function ArenaBackground({ levelId = 1 }) {
   };
 
   return (
-    <div className="arena-background" aria-hidden="true">
+    <div className="arena-background" data-level={levelId} data-bg-fit={bg.fit || 'cover'} aria-hidden="true">
       {bg.type === 'video' ? (
         <video
           ref={ref}

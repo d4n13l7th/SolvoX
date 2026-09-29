@@ -3,8 +3,8 @@ import PixelIcon from './PixelIcon';
 import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 
 const MODE_ART = {
-  single: '/assets/ui/modes/single-player-hero.png',
-  multi: '/assets/ui/modes/multiplayer-hero.png',
+  single: '/assets/ui/modes/single-mode-v94.webp',
+  multi: '/assets/ui/modes/multi-mode-v94.webp',
 };
 
 function ModeCard({type,label,eyebrow,description,action,onActivate,t}){

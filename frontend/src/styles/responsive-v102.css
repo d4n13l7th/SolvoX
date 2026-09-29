@@ -1,0 +1,693 @@
+/* V100 — responsive desktop + portrait-mobile source of truth. */
+/* V99 — adaptive desktop + portrait-mobile layout layer, using V91 as the geometry reference.
+   This file changes geometry only. Gameplay logic, panel hierarchy, and assets
+   remain owned by their current components/stylesheets. */
+
+html, body, #root { min-height: 100%; }
+html, body { overflow-x: hidden; }
+body { min-width: 320px; }
+.app-shell { min-height: 100dvh; width: 100%; overflow-x: hidden; }
+
+/* V91 — mobile document-scroll contract.
+   Legacy V42 fixed the document to a viewport and nested scrolling became unreliable
+   on touch browsers. Mobile now scrolls the document itself; page-specific containers
+   remain normal-flow surfaces instead of competing scroll roots. */
+@media (max-width: 700px) {
+  html, body, #root {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto !important;
+    touch-action: pan-y;
+  }
+  body {
+    min-width: 320px !important;
+  }
+  .app-shell {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+  }
+  .mode-select-v45,
+  .chapter-select-v44,
+  .multi-page-v26,
+  .battle-reference-v43 {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+    touch-action: pan-y;
+  }
+  .mode-select-backdrop,
+  .chapter-select-bg-v44,
+  .battle-world-v43 > .arena-background {
+    pointer-events: none !important;
+  }
+}
+
+/* Shared modal safety on narrow screens. */
+@media (max-width: 700px) {
+  .modal-backdrop,
+  .profile-overlay-v28 { padding: 10px !important; align-items: flex-start !important; }
+  .settings-card,
+  .feedback-card,
+  .eval-card,
+  .profile-panel-v28 {
+    width: 100% !important;
+    max-width: none !important;
+    max-height: calc(100dvh - 20px) !important;
+    margin: 0 !important;
+  }
+
+  .global-bar-v27 {
+    min-height: 58px !important;
+    padding-inline: 10px !important;
+  }
+  .global-brand-v89 img { width: 74px !important; max-height: 42px !important; }
+  .global-brand-v89 span { display: none !important; }
+  .top-actions { gap: 4px !important; }
+  .icon-action-v27 { width: 42px !important; height: 42px !important; }
+
+  /* Home remains the V77 menu composition, but gains safe touch spacing. */
+  .home-menu-v83-nav { padding: 22px 18px 28px !important; }
+  .home-menu-v83-item { min-height: 50px !important; padding-left: 25px !important; font-size: clamp(24px, 7vw, 30px) !important; }
+
+  /* Mode select: one card at a time, portrait-first. */
+  .mode-select-v45 {
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .mode-select-shell-v45 {
+    min-height: 100dvh !important;
+    height: auto !important;
+    justify-content: flex-start !important;
+    padding: 88px 0 28px !important;
+  }
+  .mode-select-grid-v45 { gap: 12px !important; }
+  .mode-card-v45 {
+    min-height: 270px !important;
+    padding: 18px !important;
+  }
+  .mode-card-v45-copy { width: 58% !important; min-height: 230px !important; }
+  .mode-card-v45-copy h2 { font-size: clamp(23px, 7vw, 28px) !important; }
+  .mode-card-v45-copy p { font-size: 11px !important; }
+
+  /* Chapter select: keep artwork legible and make the grid scroll naturally. */
+  .chapter-select-v44 {
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .chapter-select-top-v44 { position: relative !important; }
+  .chapter-select-grid-v44 {
+    height: auto !important;
+    min-height: 0 !important;
+    padding-bottom: 30px !important;
+  }
+  .chapter-card-v44 { min-height: 390px !important; }
+
+  /* Single-player battle: portrait-first, compact arena, natural page scroll. */
+  .battle-reference-v43 {
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .battle-world-v43 {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+  }
+  .battle-ui-v43 {
+    min-height: 100dvh !important;
+    height: auto !important;
+    grid-template-rows: auto minmax(210px, 27dvh) auto !important;
+    gap: 7px !important;
+    padding: 7px !important;
+    overflow: visible !important;
+  }
+  .battle-world-v43 > .arena-background {
+    inset: 0 0 auto 0 !important;
+    height: 410px !important;
+  }
+  .battle-world-v43 > .arena-background .arena-background-media { object-position: center bottom !important; }
+
+  .battle-top-rail-v43 {
+    height: auto !important;
+    grid-template-columns: 36px minmax(0, 1fr) minmax(0, 1fr) !important;
+    grid-template-areas:
+      'back stage stage'
+      'player player boss' !important;
+    align-items: stretch !important;
+    gap: 5px !important;
+  }
+  .battle-top-rail-v43 > .battle-home-back-v43 {
+    grid-area: back; width: 34px !important; height: 34px !important;
+    align-self: center !important; justify-self: center !important;
+  }
+  .battle-top-rail-v43 > .hp-player-v62 { grid-area: player; }
+  .battle-top-rail-v43 > .stage-crown-v43 { grid-area: stage; min-width: 0 !important; height: 44px !important; }
+  .battle-top-rail-v43 > .hp-boss-v62 { grid-area: boss; }
+  .hp-card-v62 { height: 48px !important; padding: 5px 7px !important; }
+  .hp-avatar-v62 { width: 24px !important; height: 24px !important; }
+  .hp-copy-v62 small { font-size: 6px !important; }
+  .hp-copy-v62 b { font-size: 9px !important; }
+  .hp-percent-v62 { font-size: 9px !important; }
+  .hp-footer-v62 { display: none !important; }
+  .stage-crown-v43 span { font-size: 6px !important; }
+  .stage-crown-v43 b { font-size: 11px !important; }
+
+  .battle-reference-arena-v43 {
+    grid-row: 2 !important;
+    min-height: 210px !important;
+    height: 27dvh !important;
+    max-height: 250px !important;
+    border-radius: 12px !important;
+  }
+  .battle-reference-arena-v43 .combat-stage-v43 {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    min-height: 100% !important;
+    padding: 0 3vw !important;
+    align-items: end !important;
+  }
+  .battle-reference-arena-v43 .fighter-slot-v62 { height: 100% !important; min-height: 0 !important; }
+  .battle-reference-arena-v43 .player-lane-shift { margin-left: 4px !important; }
+  .battle-reference-arena-v43 .combat-stage-v43[data-level="3"] .fighter-boss-v43 { margin-bottom: 8px !important; }
+
+  /* Question dock: one scrollable page, fixed controls inside each section. */
+  .battle-question-panel-v43 {
+    grid-row: 3 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto auto !important;
+    overflow: visible !important;
+  }
+  .battle-question-panel-v43 .battle-question-main-v66 {
+    grid-column: 1 !important; grid-row: 1 !important;
+    min-height: 280px !important; height: auto !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--panel-border-soft, rgba(110,213,201,.12)) !important;
+  }
+  .battle-question-panel-v43 .hint-rail-v37 {
+    grid-column: 1 !important; grid-row: 2 !important;
+    min-height: 150px !important; height: auto !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--panel-border-soft, rgba(110,213,201,.12)) !important;
+  }
+  .battle-question-panel-v43 .battle-keypad-side-v35 {
+    grid-column: 1 !important; grid-row: 3 !important;
+    min-height: 0 !important; height: auto !important;
+  }
+  .battle-mistake-banner-v41 { position: relative !important; top: auto !important; left: auto !important; right: auto !important; margin: 0 !important; width: 100% !important; }
+  .battle-mistake-tag-v41 { grid-column: 2; justify-self: start; }
+
+  /* Mobile multiplayer: vertical cards and full-width battle controls. */
+  .multi-page-v26 { min-height: 100dvh !important; height: auto !important; padding: 72px 10px 24px !important; overflow: visible !important; }
+  .multi-header-v26 { position: relative !important; top: auto !important; }
+  .multi-grid-v26 { grid-template-columns: 1fr !important; width: 100% !important; margin: 14px auto !important; }
+  .players-v26 { grid-template-columns: 1fr !important; }
+  .mp-arena-v34 { grid-template-columns: 1fr !important; gap: 10px !important; }
+  .mp-clash-v34 { order: 2 !important; }
+  .mp-fighter-v34.left, .mp-fighter-v34.right { justify-self: stretch !important; }
+  .mp-question-v26 label { grid-template-columns: 1fr !important; }
+  .mp-question-v26 label button { width: 100% !important; }
+
+  /* Evaluation / profile / settings / feedback. */
+  .eval-hero-v26 { grid-template-columns: 1fr !important; text-align: center !important; }
+  .eval-hero-v26 .medal { grid-row: auto !important; justify-self: center !important; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .eval-grid { grid-template-columns: 1fr !important; }
+  .eval-actions-v26 { justify-content: stretch !important; }
+  .eval-actions-v26 > * { flex: 1 1 100% !important; }
+  .profile-panel-head-v28.utility-profile-head { grid-template-columns: 76px minmax(0, 1fr) auto !important; gap: 10px !important; }
+  .profile-hero-v28 { grid-template-columns: 1fr !important; }
+  .profile-grid-v28 { grid-template-columns: 1fr !important; }
+  .profile-bottom-grid-v28 { grid-template-columns: 1fr !important; }
+  .feedback-category-v35 { grid-template-columns: 1fr 1fr !important; }
+  .settings-row { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+  .language-switch-v42 { width: 100% !important; min-width: 0 !important; }
+}
+
+@media (max-width: 480px) {
+  .battle-ui-v43 { padding: 5px !important; gap: 6px !important; }
+  .battle-reference-arena-v43 { min-height: 195px !important; height: 25dvh !important; max-height: 220px !important; }
+  .battle-reference-arena-v43 .combat-stage-v43 { padding-inline: 2vw !important; }
+  .battle-question-panel-v43 .battle-question-main-v66 { min-height: 265px !important; }
+  .battle-question-panel-v43 .question-text-v66 { font-size: clamp(18px, 6.2vw, 23px) !important; }
+  .battle-question-panel-v43 .keypad-key-v64 { min-height: 40px !important; }
+}
+
+@media (max-width: 360px) {
+  .battle-reference-arena-v43 { min-height: 180px !important; height: 23dvh !important; max-height: 200px !important; }
+  .battle-top-rail-v43 { gap: 4px !important; }
+  .hp-card-v62 { height: 44px !important; }
+  .battle-question-panel-v43 .battle-question-main-v66 { min-height: 250px !important; }
+  .battle-question-panel-v43 .hint-rail-v37 { min-height: 140px !important; }
+}
+
+
+@media (orientation: portrait) and (min-width: 701px) and (max-width: 1000px) {
+  .battle-reference-v43 {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+  }
+  .battle-world-v43 { height: auto !important; overflow: visible !important; }
+  .battle-ui-v43 { height: auto !important; min-height: 100dvh !important; grid-template-rows: auto 340px auto !important; overflow: visible !important; }
+  .battle-question-panel-v43 { height: auto !important; }
+  .battle-question-panel-v43 { grid-template-columns: 1.15fr .72fr 1fr !important; }
+}
+
+/* V82 — Multiplayer header follows the scroll container instead of sticking to the viewport. */
+.multi-header-v26 {
+  width: min(1180px, 100%);
+  margin-inline: auto;
+}
+@media (max-width: 760px) {
+  .multi-header-v26 {
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+}
+@media (max-width: 520px) {
+  .multi-header-v26 {
+    padding: 12px;
+    border-radius: 10px;
+  }
+  .multi-back-btn-v27,
+  .mode-select-back-v45,
+  .chapter-select-back-v44 {
+    min-height: 44px;
+  }
+}
+
+
+/* V91 — mobile fighter sizing + touch-first question surface.
+   Desktop geometry remains unchanged; portrait scales the fighters a little
+   larger than V88 while keeping both bodies fully inside the arena. */
+@media (max-width: 700px) {
+  .battle-reference-arena-v43 .combat-stage-v43 {
+    padding-inline: clamp(8px, 4vw, 18px) !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  }
+  .battle-reference-arena-v43 .fighter-player-v43 .sprite-wrap {
+    width: clamp(84px, 27vw, 118px) !important;
+    min-height: 0 !important;
+  }
+  .battle-reference-arena-v43 .fighter-boss-v43 .asset-boss-sprite-v40 {
+    width: clamp(94px, 31vw, 132px) !important;
+    min-width: 0 !important;
+  }
+  .battle-reference-arena-v43 .fighter-slot-v62 {
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+  .battle-reference-arena-v43 .fighter-player-v43,
+  .battle-reference-arena-v43 .fighter-boss-v43 {
+    max-width: 100%;
+  }
+  .battle-reference-arena-v43 .combat-stage-v43[data-level="3"] .fighter-boss-v43 {
+    margin-bottom: clamp(10px, 2vh, 18px) !important;
+  }
+
+  .battle-question-panel-v43 .battle-question-main-v66 {
+    min-height: 238px !important;
+  }
+  .battle-question-panel-v43 .question-header-v66 {
+    min-height: 40px !important;
+    padding-block: 6px !important;
+  }
+  .battle-question-panel-v43 .question-content-v66 {
+    padding-block: 10px !important;
+  }
+  .battle-question-panel-v43 .question-kicker-v66 {
+    font-size: 8px !important;
+    line-height: 1.15 !important;
+  }
+  .battle-question-panel-v43 .question-context-v66,
+  .battle-question-panel-v43 .question-concept-v66 {
+    font-size: 8px !important;
+    line-height: 1.25 !important;
+  }
+  .battle-question-panel-v43 .question-text-v66 {
+    font-size: clamp(17px, 5.7vw, 22px) !important;
+    line-height: 1.12 !important;
+    margin-top: 5px !important;
+    margin-bottom: 6px !important;
+  }
+  .battle-question-panel-v43 .question-answer-v66 {
+    padding: 5px 10px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .battle-reference-arena-v43 .fighter-player-v43 .sprite-wrap {
+    width: clamp(78px, 29vw, 108px) !important;
+  }
+  .battle-reference-arena-v43 .fighter-boss-v43 .asset-boss-sprite-v40 {
+    width: clamp(88px, 33vw, 122px) !important;
+  }
+  .battle-question-panel-v43 .battle-question-main-v66 {
+    min-height: 225px !important;
+  }
+  .battle-question-panel-v43 .question-text-v66 {
+    font-size: clamp(16px, 5.5vw, 20px) !important;
+    line-height: 1.10 !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .battle-reference-arena-v43 .fighter-player-v43 .sprite-wrap {
+    width: clamp(72px, 30vw, 96px) !important;
+  }
+  .battle-reference-arena-v43 .fighter-boss-v43 .asset-boss-sprite-v40 {
+    width: clamp(82px, 34vw, 108px) !important;
+  }
+  .battle-question-panel-v43 .battle-question-main-v66 {
+    min-height: 214px !important;
+  }
+}
+
+
+/* V91 — bottom breathing room so portrait swipes have a real continuation area. */
+@media (max-width: 700px) {
+  .mode-select-shell-v45 { padding-bottom: 42px !important; }
+  .chapter-select-grid-v44 { padding-bottom: 56px !important; }
+  .multi-page-v26 { padding-bottom: 56px !important; }
+  .battle-reference-v43 { padding-bottom: 20px !important; }
+}
+
+
+/* --------------------------------------------------------------------------
+   V99 — current-project integration layer
+   V91 geometry is preserved as the mobile reference. These rules add only the
+   components/assets introduced after V91, plus a responsive video background
+   contract so 4:1 arena media adapts to the mobile battle frame.
+   -------------------------------------------------------------------------- */
+
+/* Keep current mode art beside the copy on portrait screens. */
+@media (max-width: 900px) {
+  .mode-card-v45-art {
+    top: 50% !important;
+    right: 1% !important;
+    bottom: auto !important;
+    width: 39% !important;
+    transform: translateY(-50%) !important;
+  }
+  .mode-card-v45.multi .mode-card-v45-art {
+    right: .5% !important;
+    width: 41% !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .mode-card-v45 {
+    min-height: 250px !important;
+    padding: 16px !important;
+  }
+  .mode-card-v45-copy {
+    width: 57% !important;
+    min-height: 218px !important;
+  }
+  .mode-card-v45-art {
+    width: 40% !important;
+    right: -1% !important;
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+  }
+  .mode-card-v45.multi .mode-card-v45-art {
+    width: 42% !important;
+    right: -2% !important;
+  }
+  .mode-card-v45-art img { width: 100% !important; }
+}
+
+@media (max-width: 420px) {
+  .mode-card-v45 {
+    min-height: 222px !important;
+    padding: 14px !important;
+  }
+  .mode-card-v45-copy {
+    width: 58% !important;
+    min-height: 198px !important;
+  }
+  .mode-card-v45-copy h2 { font-size: clamp(18px, 6vw, 23px) !important; }
+  .mode-card-v45-copy p { font-size: 9.5px !important; }
+  .mode-card-v45-art { width: 39% !important; }
+  .mode-card-v45.multi .mode-card-v45-art { width: 41% !important; }
+}
+
+/* Chapter cards remain compact enough for phones while the document scrolls naturally. */
+@media (max-width: 700px) {
+  .chapter-card-v44 { min-height: 270px !important; }
+  .chapter-card-art-v44 { height: 56% !important; }
+}
+@media (max-width: 420px) {
+  .chapter-card-v44 { min-height: 244px !important; }
+  .chapter-card-art-v44 { height: 58% !important; }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive arena background
+   - the arena itself remains the same logical area;
+   - the video/image is fitted to that area on phones rather than retaining
+     desktop overscan (103% + scale), which previously made 4:1 videos feel
+     too zoomed/cropped on narrow screens.
+   -------------------------------------------------------------------------- */
+@media (max-width: 700px) {
+  .battle-world-v43 > .arena-background {
+    inset: 0 0 auto 0 !important;
+    height: clamp(300px, calc(108px + 30dvh), 390px) !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    border-radius: 0 !important;
+  }
+  .battle-world-v43 > .arena-background .arena-background-media {
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: var(--bg-mobile-object-position, center bottom) !important;
+    transform: none !important;
+  }
+  .battle-world-v43 > .arena-background .arena-vignette { opacity: .54 !important; }
+}
+
+@media (max-width: 480px) {
+  .battle-world-v43 > .arena-background {
+    height: clamp(284px, calc(102px + 29dvh), 350px) !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .battle-world-v43 > .arena-background {
+    height: clamp(270px, calc(98px + 28dvh), 325px) !important;
+  }
+}
+
+/* Current modal/About-Us safety from V96/V97, without replacing the V91 flow model. */
+@media (max-width: 760px) {
+  .modal-backdrop,
+  .profile-overlay-v28 {
+    align-items: flex-start !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+  }
+  .settings-card,
+  .feedback-card,
+  .eval-card,
+  .profile-panel-v28,
+  .about-developers-card {
+    width: min(100%, calc(100vw - 20px)) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 20px) !important;
+    overflow: auto !important;
+    margin: 10px auto !important;
+  }
+  .about-page-v96 { min-height: 100dvh !important; overflow: visible !important; }
+  .about-shell-v96 { width: min(100%, calc(100vw - 20px)) !important; }
+}
+
+/* Current settings + touch safety. */
+@media (max-width: 760px) {
+  .global-brand-v89 img { width: 62px !important; max-height: 34px !important; }
+  .icon-action-v27 { min-width: 40px !important; min-height: 40px !important; }
+  .settings-about-btn-v96 { width: 100% !important; max-width: none !important; min-height: 44px !important; }
+  .settings-close-btn-v96 { width: 100% !important; }
+  button, input, textarea, select { max-width: 100%; min-width: 0; }
+  .stage-crown-v43 b,
+  .battle-question-panel-v43 .question-text-v66,
+  .about-shell-v96 h1,
+  .about-card-v96 h2,
+  .multi-header-v26 h1 { overflow-wrap: anywhere; }
+}
+
+/* Keep decorative media behind touch surfaces on narrow devices. */
+@media (max-width: 760px) {
+  .mode-select-backdrop,
+  .chapter-select-bg-v44,
+  .battle-world-v43 > .arena-background,
+  .multi-home-bg-v93,
+  .about-bg-v96 { pointer-events: none !important; }
+}
+
+
+/* ==========================================================================
+   V100 — final dynamic polish
+   - Mobile mistake banner remains above the arena and is never reflowed into
+     the grid, preventing the V99 mobile stacking collision.
+   - Chapter 3 uses an exact 4:1 media crop so the wide arena reads naturally.
+   - Chapter cards, global brand, language buttons and multiplayer back control
+     follow the visible frame on narrow screens without adding new scroll roots.
+   ========================================================================== */
+@media (max-width: 700px) {
+  /* Feedback warning: overlay, not grid child. */
+  .battle-mistake-banner-v41 {
+    position: absolute !important;
+    top: clamp(72px, 10.5vh, 92px) !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    max-width: none !important;
+    min-height: 52px !important;
+    grid-template-columns: 28px minmax(0,1fr) !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    z-index: 90 !important;
+    margin: 0 !important;
+    pointer-events: none !important;
+    box-shadow: 0 16px 32px rgba(0,0,0,.38), inset 0 1px rgba(255,255,255,.05) !important;
+  }
+  .battle-mistake-icon-v41 { width: 28px !important; height: 28px !important; }
+  .battle-mistake-heading-v41 b { font-size: 10px !important; }
+  .battle-mistake-heading-v41 span { font-size: 7px !important; }
+  .battle-mistake-copy-v41 p { font-size: 9px !important; line-height: 1.35 !important; }
+  .battle-mistake-tag-v41 { display: none !important; }
+
+  /* Chapter art: scale the artwork down instead of shrinking the readable text. */
+  .chapter-card-v44 { min-height: 238px !important; padding: 0 13px 13px !important; }
+  .chapter-card-art-v44 { left: 14%; right: 14%; top: 5%; height: 50% !important; filter: drop-shadow(0 11px 18px rgba(0,0,0,.36)) !important; }
+  .chapter-card-art-v44 img { object-fit: contain !important; object-position: center center !important; }
+  .chapter-card-copy-v44 { min-height: 96px !important; }
+  .chapter-card-copy-v44 strong { font-size: clamp(16px, 5vw, 22px) !important; max-width: 15ch !important; }
+  .chapter-card-copy-v44 em { font-size: 8px !important; margin-top: 5px !important; }
+  .chapter-card-progress-v44 { margin-top: 9px !important; }
+  .chapter-card-meter-v44 { margin-top: 5px !important; }
+
+  /* Multiplayer back control: sit slightly higher and tighter. */
+  .multi-header-v26 .multi-back-btn-v27 {
+    transform: translateY(-4px) !important;
+    padding: 6px 8px !important;
+    min-height: 40px !important;
+  }
+  .multi-header-v26 .multi-back-btn-v27 .solvox-back-art { width: 23px !important; height: 23px !important; }
+  .multi-header-v26 .solvox-back-label-v82 { font-size: .62rem !important; line-height: 1 !important; }
+
+  /* Global brand: fit precisely inside the 58px mobile bar. */
+  .global-bar-v27 {
+    min-height: 58px !important;
+    height: 58px !important;
+    padding: 8px 9px !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+  }
+  .global-brand-v89,
+  .global-brand-v89.is-compact { width: 84px !important; max-width: 84px !important; height: 38px !important; display: flex !important; align-items: center !important; overflow: hidden !important; }
+  .global-brand-v89 img { width: 100% !important; height: auto !important; max-height: 36px !important; object-fit: contain !important; }
+}
+
+@media (max-width: 420px) {
+  .global-bar-v27 { height: 54px !important; min-height: 54px !important; }
+  .global-brand-v89,
+  .global-brand-v89.is-compact { width: 76px !important; max-width: 76px !important; height: 34px !important; }
+  .global-brand-v89 img { max-height: 32px !important; }
+  .multi-header-v26 .multi-back-btn-v27 { transform: translateY(-3px) !important; }
+}
+
+/* Exact 4:1 Chapter 3 media: preserve its wide composition on desktop and phone. */
+.battle-world-v43 > .arena-background[data-level="3"] .arena-background-media { object-fit: cover !important; }
+@media (max-width: 700px) {
+  .battle-world-v43 > .arena-background[data-level="3"] { height: clamp(235px, 31vw, 290px) !important; }
+  .battle-world-v43 > .arena-background[data-level="3"] .arena-background-media { object-fit: cover !important; object-position: center center !important; }
+}
+
+/* Icon-only language picker: asset is the visible affordance; text remains
+   available to screen readers/tooltips through aria-label/title in JSX. */
+.language-switch-v42,
+.language-switch-v94 { display: grid !important; grid-template-columns: repeat(2, 54px) !important; gap: 8px !important; min-width: 0 !important; }
+.language-switch-v42 button,
+.language-switch-v94 button {
+  width: 54px !important;
+  height: 52px !important;
+  min-width: 54px !important;
+  min-height: 52px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 4px !important;
+  border-radius: 10px !important;
+  text-align: center !important;
+}
+.language-switch-v42 button img,
+.language-switch-v94 button img { width: 38px !important; height: 30px !important; border-radius: 6px !important; object-fit: contain !important; }
+.language-switch-v42 button span,
+.language-switch-v94 button span { display: none !important; }
+@media (max-width: 560px) {
+  .language-switch-v42,
+  .language-switch-v94 { grid-template-columns: repeat(2, 50px) !important; }
+  .language-switch-v42 button,
+  .language-switch-v94 button { width: 50px !important; min-width: 50px !important; height: 48px !important; min-height: 48px !important; }
+  .language-switch-v42 button img,
+  .language-switch-v94 button img { width: 34px !important; height: 28px !important; }
+}
+
+
+/* V102 — Profile/Feedback/Settings icon discipline, tutorial support, and mobile-safe headers. */
+.feedback-head-v101{display:block!important;grid-template-columns:none!important;gap:0!important;padding-bottom:4px!important}
+.feedback-head-v101 h2{margin:4px 0 0!important}
+.feedback-head-v101 .eyebrow{display:block}
+
+.settings-head-v102{display:grid!important;grid-template-columns:42px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-width:0!important}
+.settings-head-art-v102{width:38px!important;height:38px!important;display:block!important;object-fit:contain!important;flex:none!important;filter:none!important;box-shadow:none!important;border:1px solid rgba(176,220,168,.18);border-radius:10px;padding:3px;background:rgba(10,28,19,.48);overflow:hidden}
+.settings-head-v102 h2{min-width:0!important;overflow-wrap:anywhere!important}
+
+.profile-panel-head-v28.utility-profile-head.dashboard-head-v93{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:start!important;gap:12px!important;width:100%!important;min-width:0!important}
+.profile-panel-head-v28.utility-profile-head.dashboard-head-v93 .dashboard-head-copy-v93{min-width:0!important;width:100%!important}
+.profile-panel-head-v28.utility-profile-head.dashboard-head-v93 .dashboard-head-copy-v93 h2,.profile-panel-head-v28.utility-profile-head.dashboard-head-v93 .dashboard-head-copy-v93 p{max-width:100%!important;overflow-wrap:anywhere!important}
+.profile-avatar-text-v101{font-family:var(--font-display-solvox,system-ui,sans-serif)!important;font-size:1.05rem!important;font-weight:900!important;letter-spacing:.06em!important;color:#d8efbd!important;background:radial-gradient(circle at 35% 28%,rgba(117,223,151,.22),transparent 55%),linear-gradient(180deg,#12322b,#07161a)!important;border:1px solid rgba(164,218,148,.24)!important;box-shadow:inset 0 1px rgba(255,255,255,.05),0 8px 20px rgba(0,0,0,.24)!important}
+.profile-card-title-v28{min-width:0!important}
+.profile-card-title-v28>span:last-child{min-width:0!important;overflow-wrap:anywhere!important}
+.profile-card-mark-v101{display:inline-grid!important;place-items:center!important;min-width:34px!important;height:22px!important;padding:0 6px!important;border-radius:999px!important;border:1px solid rgba(172,221,145,.18)!important;background:rgba(66,139,88,.10)!important;color:#cfe9ae!important;font-family:var(--font-display-solvox,system-ui,sans-serif)!important;font-size:.46rem!important;line-height:1!important;letter-spacing:.08em!important;font-weight:900!important;white-space:nowrap!important}
+.profile-mark-status-v101{display:inline-grid!important;place-items:center!important;width:20px!important;height:20px!important;border-radius:6px!important;border:1px solid rgba(174,222,153,.15)!important;background:rgba(80,144,91,.08)!important;font-family:system-ui,sans-serif!important;font-size:.74rem!important;line-height:1!important}
+
+@media(max-width:760px){
+  .settings-head-v102{grid-template-columns:36px minmax(0,1fr)!important;gap:8px!important}
+  .settings-head-art-v102{width:34px!important;height:34px!important}
+  .profile-panel-head-v28.utility-profile-head.dashboard-head-v93{grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important;padding:0 0 10px!important}
+  .profile-panel-head-v28.utility-profile-head.dashboard-head-v93 .dashboard-head-copy-v93 h2{font-size:1.15rem!important;line-height:1.08!important}
+  .profile-panel-head-v28.utility-profile-head.dashboard-head-v93 .dashboard-head-copy-v93 p{font-size:.70rem!important;line-height:1.42!important}
+  .profile-close-btn-v96{width:30px!important;height:30px!important}
+  .profile-avatar-text-v101{width:64px!important;height:64px!important;font-size:.92rem!important}
+  .profile-card-mark-v101{min-width:30px!important;height:20px!important;font-size:.42rem!important;padding-inline:5px!important}
+}
+@media(max-width:420px){
+  .settings-head-v102{grid-template-columns:34px minmax(0,1fr)!important;gap:7px!important}
+  .settings-head-art-v102{width:32px!important;height:32px!important}
+  .profile-panel-head-v28.utility-profile-head.dashboard-head-v93 .dashboard-head-copy-v93 h2{font-size:1.02rem!important}
+  .profile-panel-head-v28.utility-profile-head.dashboard-head-v93 .dashboard-head-copy-v93 p{font-size:.64rem!important}
+  .profile-avatar-text-v101{width:58px!important;height:58px!important;font-size:.82rem!important}
+}
+
+/* Home tutorial expansion: portrait screens can scroll if the fifth menu item exceeds the viewport. */
+@media (max-width: 640px){
+  .home-menu-v83{min-height:100dvh!important;height:auto!important;overflow-x:hidden!important;overflow-y:auto!important;touch-action:pan-y!important}
+  .home-menu-v83-nav{min-height:auto!important}
+}

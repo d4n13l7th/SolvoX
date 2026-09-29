@@ -84,6 +84,13 @@ export function getBossImpactMs(spriteId, sequence = 'attack', fallback = 320) {
   return getBossAsset(spriteId)?.sequences?.[sequence]?.impactMs ?? fallback;
 }
 
+
+export function getBossSequenceDurationMs(spriteId, sequence = 'idle') {
+  const frames = getBossAsset(spriteId)?.sequences?.[sequence]?.frames || [];
+  const step = getBossAsset(spriteId)?.sequences?.[sequence]?.step || 120;
+  return Math.max(0, frames.length * step);
+}
+
 export function getBossPreviewSrc(spriteId) {
   return getBossFrameSrc(spriteId, 'idle', 0);
 }

@@ -115,7 +115,7 @@ export default function Multiplayer({lang,onBack,t,playerName=''} ){
           <div className="player-slot-label"><span>{t('player2')}</span><b>{t('challenger')}</b></div>
           <h2>🔗 {t('joinArena')}</h2>
           <p className="card-subtitle-v26">{t('joinArenaDesc')}</p>
-          <input value={code} maxLength={8} onChange={e=>setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,''))} placeholder="AJM-XXXX"/>
+          <input value={code} maxLength={8} onChange={e=>setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,''))} placeholder="AJM-OOOO"/>
           <input value={name} onChange={e=>setName(e.target.value)} placeholder={t('name')}/>
           <div className="picker-title-v26"><strong>{t('yourFighter')}</strong><span>{t('characterSelect')}</span></div>
           <CharacterPicker value={char} onChange={setChar} compact t={t}/>
@@ -124,21 +124,58 @@ export default function Multiplayer({lang,onBack,t,playerName=''} ){
       </div>
 
       <div className="dashboard-card-v25 dashboard-card-v26">
-        <div className="dashboard-head-v25 dashboard-head-v26"><div><div className="eyebrow">{t('dashboard')}</div><h2>{t('dashboardHint')}</h2></div><div className="dashboard-spark-v26"><PixelIcon name="crown" size={24}/></div></div>
-        {dashboardLoading&&!dashboard?<div className="dashboard-empty-v25">{t('loading')}</div>:dashboard?.summary?.playerEntries? <>
-          <div className="dashboard-hero-row-v26">
-            <div className="dashboard-identity-v26"><div className="dashboard-avatar-v26">{String(name||'P').slice(0,1).toUpperCase()}</div><div><span>{t('dashboardPlayer')}</span><strong>{name}</strong><small>{badges.length?badges.join(' • '):t('dashboardMomentum')}</small></div></div>
-            <div className="dashboard-best-v26"><span>{t('dashboardTopAccuracy')}</span><b>{bestAccuracy}%</b><small>{totalWins} {t('wins')}</small></div>
+        <div className="dashboard-head-v25 dashboard-head-v26">
+          <div>
+            <div className="eyebrow">{t('dashboard')}</div>
+            <h2>{t('dashboardHint')}</h2>
           </div>
-          <div className="dashboard-metrics-v25 dashboard-metrics-v26">
-            <div><span>{t('matchesPlayed')}</span><b>{myStats?.matches||0}</b></div>
-            <div><span>{t('avgAccuracy')}</span><b>{myStats?.accuracy||0}%</b></div>
-            <div><span>{t('wins')}</span><b>{myStats?.wins||0}</b></div>
-            <div><span>{t('dashboardTotalScore')}</span><b>{myStats?.avgScore||0}</b></div>
-            <div><span>{t('avgHints')}</span><b>{myStats?.avgHints||0}</b></div>
+          <div className="dashboard-spark-v26"><PixelIcon name="crown" size={24}/></div>
+        </div>
+        {dashboardLoading && !dashboard ? (
+          <div className="dashboard-empty-v25">{t('loading')}</div>
+        ) : dashboard?.summary?.playerEntries ? (
+          <>
+            <div className="dashboard-hero-row-v26">
+              <div className="dashboard-identity-v26">
+                <div className="dashboard-avatar-v26">{String(name || 'P').slice(0, 1).toUpperCase()}</div>
+                <div>
+                  <span>{t('dashboardPlayer')}</span>
+                  <strong>{name}</strong>
+                  <small>{badges.length ? badges.join(' • ') : t('dashboardMomentum')}</small>
+                </div>
+              </div>
+              <div className="dashboard-best-v26">
+                <span>{t('dashboardTopAccuracy')}</span>
+                <b>{bestAccuracy}%</b>
+                <small>{totalWins} {t('wins')}</small>
+              </div>
+            </div>
+            <div className="dashboard-metrics-v25 dashboard-metrics-v26">
+              <div><span>{t('matchesPlayed')}</span><b>{myStats?.matches || 0}</b></div>
+              <div><span>{t('avgAccuracy')}</span><b>{myStats?.accuracy || 0}%</b></div>
+              <div><span>{t('wins')}</span><b>{myStats?.wins || 0}</b></div>
+              <div><span>{t('dashboardTotalScore')}</span><b>{myStats?.avgScore || 0}</b></div>
+              <div><span>{t('avgHints')}</span><b>{myStats?.avgHints || 0}</b></div>
+            </div>
+            <div className="dashboard-table-wrap-v25 dashboard-table-wrap-v26">
+              <table>
+                <thead><tr><th>#</th><th>{t('player')}</th><th>{t('matchesPlayed')}</th><th>{t('avgAccuracy')}</th><th>{t('wins')}</th><th>{t('draws')}</th><th>{t('losses')}</th><th>{t('avgHints')}</th></tr></thead>
+                <tbody>{dashboard.players.map((p, i) => (
+                  <tr key={p.name}>
+                    <td><span className={`rank-chip-v26 rank-${i + 1}`}>{i + 1}</span></td>
+                    <td><strong>{p.name}</strong></td><td>{p.matches}</td><td>{p.accuracy}%</td><td>{p.wins}</td><td>{p.draws}</td><td>{p.losses}</td><td>{p.avgHints || 0}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <div className="dashboard-empty-v25 dashboard-empty-v26">
+            <div><PixelIcon name="chart" size={28}/></div>
+            <b>{t('dashboardEmpty')}</b>
+            <span>{t('startMatchForStats')}</span>
           </div>
-          <div className="dashboard-table-wrap-v25 dashboard-table-wrap-v26"><table><thead><tr><th>#</th><th>{t('player')}</th><th>{t('matchesPlayed')}</th><th>{t('avgAccuracy')}</th><th>{t('wins')}</th><th>{t('draws')}</th><th>{t('losses')}</th><th>{t('avgHints')}</th></tr></thead><tbody>{dashboard.players.map((p,i)=><tr key={p.name}><td><span className={`rank-chip-v26 rank-${i+1}`}>{i+1}</span></td><td><strong>{p.name}</strong></td><td>{p.matches}</td><td>{p.accuracy}%</td><td>{p.wins}</td><td>{p.draws}</td><td>{p.losses}</td><td>{p.avgHints||0}</td></tr>)}</tbody></table></div>
-        </> : <div className="dashboard-empty-v25 dashboard-empty-v26"><div><PixelIcon name="chart" size={28}/></div><b>{t('dashboardEmpty')}</b><span>{t('startMatchForStats')}</span></div>}
+        )}
       </div>
     </>}
 

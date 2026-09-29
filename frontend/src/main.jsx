@@ -15,7 +15,9 @@ import './styles/solvox-brand-v89.css';
 import './styles/home-menu-v83.css';
 import './styles/font-v78.css';
 import './styles/ui-v93.css';
-import './styles/responsive-v93.css';
+import './styles/ui-v96.css';
+import './styles/tutorial-v102.css';
+import './styles/responsive-v102.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
