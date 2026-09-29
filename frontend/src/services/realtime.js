@@ -122,18 +122,60 @@ export function io(baseUrl, options = {}) {
     pollClosed = true;
   };
 
+  /**
+   * Frames written while the transport was down. player:ready and answer:submit
+   * are one-shot clicks with no intent to replay, so before this existed a click
+   * landing inside a reconnect window vanished with no trace: the server never
+   * saw it and the player had to click again. Holding the frame until the socket
+   * is back makes a single click enough.
+   */
+  const pending = [];
+  const PENDING_MAX = 32;
+  /** These replay themselves via lastIntent, or are liveness probes. */
+  const NO_QUEUE = new Set(['ping', 'room:create', 'room:join', 'room:leave']);
+  let flushing = false;
+
+  const flushPending = () => {
+    if (flushing || !pending.length) return;
+    flushing = true;
+    try {
+      while (pending.length) {
+        const frame = pending[0];
+        if (!send(frame.event, frame.data)) {
+          pending.unshift(frame);
+          break;
+        }
+        pending.shift();
+      }
+    } finally {
+      flushing = false;
+    }
+  };
+
   /** Outbound event over whichever transport is active. */
   const send = (event, data) => {
+    // The token rides every frame so the Durable Object can identify the sender
+    // from the payload alone, even if its in-memory socket->player binding was
+    // lost while the instance was evicted.
+    const body = { ...(data || {}), token: myToken };
     if (mode === 'poll') {
       fetch(`${base}/api/room/event?room=${encodeURIComponent(code || '')}&token=${encodeURIComponent(myToken || '')}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event, data: data || {} }),
+        body: JSON.stringify({ event, data: body }),
       }).catch(() => {});
       return true;
     }
-    if (!socket || socket.readyState !== WebSocket.OPEN) return false;
-    socket.send(JSON.stringify({ event, data: data || {} }));
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      if (!NO_QUEUE.has(event) && pending.length < PENDING_MAX) {
+        pending.push({ event, data: body });
+        // A queued frame is worthless without a transport, so guarantee one is
+        // on the way instead of waiting for the user's next action.
+        if (lastIntent) scheduleReconnect();
+      }
+      return false;
+    }
+    socket.send(JSON.stringify({ event, data: body }));
     return true;
   };
 
@@ -173,6 +215,7 @@ export function io(baseUrl, options = {}) {
     };
     loop();
     if (lastIntent) send(lastIntent.event, lastIntent.data);
+    flushPending();
   };
 
   const tryPollFallback = () => {
@@ -306,6 +349,7 @@ export function io(baseUrl, options = {}) {
         }
       }, HEARTBEAT_MS);
       if (intent) send(intent.event, intent.data);
+      flushPending();
     };
     socket.onmessage = (event) => handleMessage(event.data);
     socket.onerror = () => {
@@ -355,6 +399,7 @@ export function io(baseUrl, options = {}) {
       }
       if (event === 'room:leave') {
         lastIntent = null;
+        pending.length = 0;
         send(event, data);
         return client;
       }
@@ -370,6 +415,7 @@ export function io(baseUrl, options = {}) {
     disconnect() {
       closedByUser = true;
       lastIntent = null;
+      pending.length = 0;
       stopPoll();
       closeSocket();
       mode = 'ws';

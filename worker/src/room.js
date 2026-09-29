@@ -227,7 +227,7 @@ export class SolvoxRoom {
     if (event === 'player:ready') return this.onReady(ws, data);
     if (event === 'ping') return this.emitTo(ws, 'pong', { on: Date.now() });
     if (event === 'player:update') return this.onPlayerUpdate(ws, data);
-    if (event === 'turn:hint') return this.onHint(ws);
+    if (event === 'turn:hint') return this.onHint(ws, data);
     if (event === 'answer:submit') return this.onAnswer(ws, data);
     if (event === 'rematch') return this.onRematch(ws);
     if (event === 'room:leave') return this.onLeave(ws, true);
@@ -401,18 +401,22 @@ export class SolvoxRoom {
     }
   }
 
-  findPlayer(ws) {
-    const token = ws && ws.__poll
-      ? ws.__token
-      : this.sockets.get(ws);
+  findPlayer(ws, tokenHint) {
+    // The frame's own token wins: it is the sender's declared identity and
+    // survives an instance losing its socket->player map, which used to make
+    // player:ready a silent no-op (onReady returned without touching the room).
+    const hinted = typeof tokenHint === 'string' ? tokenHint.trim() : '';
+    const bound = ws && ws.__poll ? ws.__token : this.sockets.get(ws);
+    const token = hinted || bound;
     if (!token || !this.room) return null;
     return this.room.players.find((p) => p.token === token) || null;
   }
 
-  onReady(ws, { ready = true } = {}) {
+  onReady(ws, data = {}) {
+    const { ready = true } = data;
     const room = this.room;
     if (!room) return;
-    const player = this.findPlayer(ws);
+    const player = this.findPlayer(ws, data.token);
     if (!player) {
       console.log(`[dbg] onReady NULL inst=${this._tag} has=${this.sockets.has(ws) ? 1 : 0} n=${this.sockets.size}`);
       return;
@@ -426,20 +430,21 @@ export class SolvoxRoom {
     return this.broadcast('room:update', room);
   }
 
-  onPlayerUpdate(ws, { name, character } = {}) {
+  onPlayerUpdate(ws, data = {}) {
+    const { name, character } = data;
     const room = this.room;
     if (!room || room.status !== 'waiting') return;
-    const player = this.findPlayer(ws);
+    const player = this.findPlayer(ws, data.token);
     if (!player) return;
     if (name !== undefined) player.name = cleanName(name, player.name).slice(0, MAX_NAME);
     if (character && CHARACTERS[character]) player.character = character;
     this.broadcast('room:update', room);
   }
 
-  onHint(ws) {
+  onHint(ws, data = {}) {
     const room = this.room;
     if (!room || room.status !== 'battle' || room.mode !== 'turn') return;
-    const player = this.findPlayer(ws);
+    const player = this.findPlayer(ws, data.token);
     if (!player || player.token !== room.turnToken) return;
     if ((player.hintsUsed || 0) >= 2) return this.emitTo(ws, 'hint:result', { ok: false, code: 'HINT_LIMIT' });
     const q = room.questions[room.questionIndex];
@@ -457,11 +462,15 @@ export class SolvoxRoom {
     this.broadcast('turn:hint-used', room);
   }
 
-  onAnswer(ws, { answer } = {}) {
+  onAnswer(ws, data = {}) {
+    const { answer } = data;
     const room = this.room;
     if (!room || room.status !== 'battle') return;
-    const player = this.findPlayer(ws);
-    if (!player || !player.connected) return;
+    const player = this.findPlayer(ws, data.token);
+    if (!player || !player.connected) {
+      console.log(`[dbg] onAnswer dropped inst=${this._tag} found=${player ? 1 : 0} connected=${player && player.connected ? 1 : 0} status=${room.status}`);
+      return;
+    }
     const q = room.questions[room.questionIndex];
     if (!q) return;
     const value = String(answer || '').trim();
