@@ -116,7 +116,7 @@ Cek: https://dash.cloudflare.com → Workers → solvox-api → Logs"
             elif [ "$CUR" -gt "$THRESHOLD" ]; then
               echo "Masih down (ke-${CUR}), notifikasi sudah terkirim sebelumnya."
             else
-              echo "Gagal ${CUR}/${THRESHOLD}, tunggu dulu sebelum memb alerting."
+              echo "Gagal ${CUR}/${THRESHOLD}, tunggu dulu sebelum memberi alert."
             fi
           fi
 
