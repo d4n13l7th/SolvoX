@@ -1,18 +1,18 @@
 {
-  "name": "solvox-v62",
-  "version": "4.3.0",
+  "name": "solvox",
+  "version": "103.0.0",
   "private": true,
-  "description": "Solvox V62 — cleaned project structure, single-player reference battle layout, settings language switch, and multiplayer moved behind Main mode selection.",
-  "main": "server.js",
+  "description": "Solvox V103 — math-first RPG. Multiplayer backend runs on Cloudflare Workers + Durable Objects (worker/); backend/ and server.js are the archived Express + Socket.IO implementation.",
   "scripts": {
     "build": "npm run qa && npm --workspace frontend run build",
-    "start": "npm run build && node server.js",
     "dev": "npm --workspace frontend run dev",
-    "qa": "node qa-check.js"
-  },
-  "dependencies": {
-    "express": "^5.1.0",
-    "socket.io": "^4.8.1"
+    "start": "npm run build && npm --workspace frontend run preview",
+    "preview": "npm --workspace frontend run preview",
+    "qa": "node qa-check.js",
+    "worker:dev": "npm --prefix worker run dev",
+    "worker:deploy": "npm --prefix worker run deploy",
+    "worker:tail": "npm --prefix worker run tail",
+    "start:legacy": "node server.js"
   },
   "engines": {
     "node": ">=18"

@@ -15,6 +15,18 @@ export const BACKEND_URL = String(rawConfig).replace(/\/+$/, '');
 export const isSplitDeployment = BACKEND_URL !== '' && typeof window !== 'undefined'
   && BACKEND_URL !== window.location.origin;
 
+// On a Vite dev server there is no proxy, so an empty backendUrl means every
+// API call lands on the Vite origin and fails. Say so once, with the fix, rather
+// than letting it surface later as an unexplained 404.
+if (typeof window !== 'undefined' && BACKEND_URL === '' && window.location.port === '5173') {
+  console.warn(
+    '[solvox] No backendUrl configured, so API calls will hit the Vite dev server and fail.\n'
+    + '  Local Worker:  cd worker && npm install && npm run dev\n'
+    + '  Then:          VITE_BACKEND_URL=http://127.0.0.1:8787 npm run dev\n'
+    + '  See public/config.js for the dev guard that keeps dev off production.',
+  );
+}
+
 // Build a URL for a same-origin API path, routed to the backend when split.
 export function apiUrl(path) {
   if (!path.startsWith('/')) return path;

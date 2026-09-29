@@ -70,9 +70,12 @@ function make(name, code, token, ans) {
       const room = this.room;
       if (!room || room.status !== 'battle' || !room.question) return;
       if (this.answered.has(room.questionIndex)) return;
-      this.answered.add(room.questionIndex);
+      // Resolve the answer BEFORE claiming the question. Marking it answered
+      // first and then bailing out would silently skip the submit, stall the
+      // duel, and make the run depend on 45s turn timeouts.
       const right = this.ans.get(room.question.id);
       if (right === undefined) return;
+      this.answered.add(room.questionIndex);
       setTimeout(() => {
         if (this.ws && this.ws.readyState === 1) {
           this.ws.send(JSON.stringify({ event: 'answer:submit', data: { answer: String(right) } }));

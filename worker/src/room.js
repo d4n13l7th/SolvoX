@@ -137,7 +137,6 @@ export class SolvoxRoom {
     const event = frame && frame.event;
     const data = (frame && frame.data) || {};
     if (!event) return;
-    console.log(`[dbg] msg ${event} inst=${this._tag} has=${this.sockets.has(ws) ? 1 : 0} n=${this.sockets.size} code=${this.code}`);
     return this.dispatchFrame(event, data, ws);
   }
 
@@ -152,7 +151,6 @@ export class SolvoxRoom {
     const body = await request.json().catch(() => ({}));
     const event = body && body.event;
     const data = (body && body.data) || {};
-    console.log(`[dbg] http ${event} inst=${this._tag} code=${this.code}`);
     if (event) await this.dispatchFrame(event, { ...data, token }, this.pollerFor(token));
     return new Response(JSON.stringify({ ok: true }), {
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
@@ -242,7 +240,7 @@ export class SolvoxRoom {
     if (event === 'answer:submit') return this.onAnswer(ws, data);
     if (event === 'rematch') return this.onRematch(ws);
     if (event === 'room:leave') return this.onLeave(ws, true);
-    console.log(`[dbg] ws event tak dikenal: ${event}`);
+    console.warn(`[room] unknown event: ${event}`);
     return null;
   }
 
@@ -260,7 +258,6 @@ export class SolvoxRoom {
   async alarm() {
     await this.ensureLoaded();
     const room = this.room;
-    console.log(`[dbg] alarm status=${room ? room.status : 'NULL-ROOM'} mode=${room ? room.mode : '?'} code=${room ? room.code : '?'}`);
     if (!room || room.status !== 'battle') return;
     if (room.mode === 'turn') return this.advanceTurn(room, true);
     return this.advanceScoreRound(room, true);
@@ -361,7 +358,6 @@ export class SolvoxRoom {
     };
     this.sockets.set(ws, playerToken);
     this.saveRoom();
-    console.log(`[dbg] create ${name} inst=${this._tag} n=${this.sockets.size} code=${code}`);
     this.emitTo(ws, 'room:created', this.publicRoom(this.room));
   }
 
@@ -429,12 +425,10 @@ export class SolvoxRoom {
     if (!room) return;
     const player = this.findPlayer(ws, data.token);
     if (!player) {
-      console.log(`[dbg] onReady NULL inst=${this._tag} has=${this.sockets.has(ws) ? 1 : 0} n=${this.sockets.size}`);
       return;
     }
     player.ready = !!ready;
     const allReady = room.players.length === 2 && room.players.every((x) => x.ready && x.connected);
-    console.log(`[dbg] onReady ${player.name} ready=${!!ready} allReady=${allReady} players=${room.players.map((x) => `${x.name}:r${x.ready ? 1 : 0}c${x.connected ? 1 : 0}`).join(' ')}`);
     if (allReady) {
       return this.startBattle(room);
     }
@@ -479,14 +473,13 @@ export class SolvoxRoom {
     if (!room || room.status !== 'battle') return;
     const player = this.findPlayer(ws, data.token);
     if (!player || !player.connected) {
-      console.log(`[dbg] onAnswer dropped inst=${this._tag} found=${player ? 1 : 0} connected=${player && player.connected ? 1 : 0} status=${room.status}`);
+      console.warn(`[room] answer dropped status=${room.status} found=${!!player} connected=${!!(player && player.connected)}`);
       return;
     }
     const q = room.questions[room.questionIndex];
     if (!q) return;
     const value = String(answer || '').trim();
     if (!value) return;
-    console.log(`[dbg] onAnswer ${player.name} ${value} mode=${room.mode} already=${room.turnAnswers[player.token]?.submitted ? 1 : 0}`);
 
     if (room.mode === 'turn') {
       if (player.token !== room.turnToken) return this.emitTo(ws, 'answer:result', { correct: false, code: 'NOT_YOUR_TURN' });

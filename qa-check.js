@@ -13,6 +13,7 @@ const home = read('frontend/src/components/HomeMenu.jsx');
 const modes = read('frontend/src/components/ModeSelect.jsx');
 const chapters = read('frontend/src/components/ChapterSelect.jsx');
 const settings = read('frontend/src/components/Settings.jsx');
+const utilityArt = read('frontend/src/components/SolvoxUtilityArt.jsx');
 const profile = read('frontend/src/components/ProfilePanel.jsx');
 const battle = read('frontend/src/components/Battle.jsx');
 const battlePanel = read('frontend/src/components/BattleQuestionPanel.jsx');
@@ -33,7 +34,7 @@ const chapterCss = read('frontend/src/styles/chapter-select-v44.css');
 const battleCss = read('frontend/src/styles/battle-v43.css');
 const levels = read('frontend/src/data/levels.js');
 const backgrounds = read('frontend/src/config/backgrounds.js');
-const responsive93 = read('frontend/src/styles/responsive-v93.css');
+const responsive102 = read('frontend/src/styles/responsive-v102.css');
 const englishQuestions = JSON.parse(fs.readFileSync(path.join(root, 'backend/solvoxQuestions.en.json'), 'utf8'));
 const main = read('frontend/src/main.jsx');
 const pkg = require('./package.json');
@@ -59,8 +60,10 @@ must(!home.includes("id: 'multi'") && !home.includes('nav-multiplayer-icon.png')
 must(!home.includes('onChangeLang') && !home.includes("lang==='id'?'EN':'ID'"), 'Home language switch should be moved to Settings');
 must(!home.includes('home-v31-chapter-row') && !home.includes('home-v31-next-banner'), 'Removed Home chapter/overflow panel is still referenced');
 must(!home.includes('SpriteCharacter') && !home.includes('home-v31-character'), 'Home character should be removed from Home');
-must(home.includes('home-menu-v83') && home.includes("id: 'play'") && home.includes("labelKey: 'homeMain'") && home.includes("labelKey: 'homeDashboard'") && home.includes("labelKey: 'homeSettings'") && home.includes("labelKey: 'homeFeedback'"), 'V83 Home menu is missing one or more core text navigation items');
+must(home.includes('home-menu-v83') && home.includes("id: 'play'") && home.includes("id: 'tutorial'") && home.includes("labelKey: 'homeMain'") && home.includes("labelKey: 'homeTutorial'") && home.includes("labelKey: 'homeDashboard'") && home.includes("labelKey: 'homeSettings'") && home.includes("labelKey: 'homeFeedback'"), 'V103 Home menu is missing one or more core text navigation items');
 must(!home.includes('SolvoxUtilityArt') && !home.includes('home-v31') && !home.includes('homeHeroTitle') && !home.includes('continueAdventure') && !home.includes('viewProfile'), 'Legacy Home icon/hero implementation remains in HomeMenu');
+must(home.includes('onTutorial') && home.includes("id: 'tutorial'"), 'Home tutorial entry point is missing');
+must(exists('frontend/src/components/Tutorial.jsx') && read('frontend/src/components/Tutorial.jsx').includes('tutorial-title-v102') && read('frontend/src/components/Tutorial.jsx').includes('tutorialGotIt'), 'Tutorial component is missing or incomplete');
 
 /* -------------------------------------------------------------------------- */
 /* Main mode selection / learning surfaces                                   */
@@ -140,19 +143,19 @@ for (const legacy of [
 must(!ui42.includes('.home-v31-next-banner'), 'Removed Home overflow banner style remains in ui-v42.css');
 must(!ui42.includes('html,body,#root{width:100%;height:100%;overflow:hidden}'), 'Legacy fixed viewport overflow rule remains in ui-v42.css');
 must(!ui42.includes('.app-shell{height:100dvh;min-height:100dvh;overflow:hidden}'), 'Legacy fixed app-shell overflow rule remains in ui-v42.css');
-must(responsive93.includes('html, body, #root') && responsive93.includes('overflow-y: auto !important') && responsive93.includes('touch-action: pan-y'), 'Mobile document scroll contract is missing');
-must(main.includes("import './styles/home-menu-v83.css';"), 'V83 Home stylesheet is not wired into main');
-must(main.includes("import './styles/responsive-v93.css';") && responsive93.includes('portrait') && responsive93.includes('.battle-reference-v43') && responsive93.includes('V93'), 'V93 responsive portrait layer is not wired correctly');
-must(responsive93.includes('.mode-select-v45') && responsive93.includes('overflow: visible !important') && responsive93.includes('height: auto !important') && responsive93.includes('document-scroll contract'), 'Mobile mode selector must use natural vertical scrolling');
-must(responsive93.includes('.chapter-select-v44') && responsive93.includes('overflow: visible !important') && responsive93.includes('min-height: 0 !important'), 'Mobile chapter selector must use natural vertical scrolling');
-must(responsive93.includes('.battle-reference-arena-v43') && responsive93.includes('touch-action: pan-y'), 'V93 responsive battle/mobile layer is incomplete');
+must(/html,\s*body,\s*#root/.test(responsive102) && responsive102.includes('overflow-y: auto !important') && responsive102.includes('touch-action: pan-y'), 'Mobile document scroll contract is missing');
+must(main.includes("import './styles/home-menu-v83.css';") && main.includes("import './styles/tutorial-v102.css';"), 'V103 Home/tutorial styles are not wired into main');
+must(main.includes("import './styles/responsive-v102.css';") && exists('frontend/src/styles/tutorial-v102.css') && !exists('frontend/src/styles/responsive-v101.css') && responsive102.includes('.battle-reference-v43') && responsive102.includes('mobile document-scroll contract'), 'V103 responsive portrait layer is not wired correctly');
+must(responsive102.includes('.mode-select-v45') && responsive102.includes('overflow: visible !important') && responsive102.includes('height: auto !important'), 'Mobile mode selector must use natural vertical scrolling');
+must(responsive102.includes('.chapter-select-v44') && responsive102.includes('overflow: visible !important') && responsive102.includes('min-height: 0 !important'), 'Mobile chapter selector must use natural vertical scrolling');
+must(responsive102.includes('.battle-reference-arena-v43') && responsive102.includes('touch-action: pan-y') && responsive102.includes('.settings-head-v102') && responsive102.includes('filter:none!important'), 'V103 responsive battle/mobile/settings layer is incomplete');
 must(!exists('frontend/src/components/OrientationNotice.jsx') && !main.includes('OrientationNotice'), 'Legacy orientation blocker remains after portrait-responsive update');
 must(Array.isArray(englishQuestions) && englishQuestions.length === 50 && englishQuestions.every(q => q.text && q.feedback && Array.isArray(q.hints) && q.hints.length === 3), 'English question pack must contain 50 complete questions');
 must(read('frontend/src/data/questions.js').includes('getSolvoxQuestions(levelId, count, _lang)'), 'Single-player question loader is not language-aware');
 must(read('backend/question-generator.js').includes('packEn') && read('backend/question-generator.js').includes("lang === 'en' ? packEn : packId"), 'Multiplayer question generator is not language-aware');
 must(read('frontend/src/services/solvoxEvaluation.js').includes('CHAPTER_RULES_EN') && read('frontend/src/services/solvoxEvaluation.js').includes("result.lang === 'en'"), 'English chapter evaluation rules are missing');
 must(!css.includes('.home-v31') && !ui42.includes('.home-v31'), 'Legacy V31 Home CSS remains after the V77 rewrite');
-must(!read('frontend/src/styles/font-v78.css').includes('home-menu-v77') && !responsive93.includes('home-menu-v77'), 'Retired V77 Home selectors remain in shared styles');
+must(!read('frontend/src/styles/font-v78.css').includes('home-menu-v77') && !responsive102.includes('home-menu-v77'), 'Retired V77 Home selectors remain in shared styles');
 must(exists('frontend/src/components/SolvoxBrandLogo.jsx') && exists('frontend/src/styles/solvox-brand-v89.css') && main.includes("import './styles/solvox-brand-v89.css';") && read('frontend/src/components/SolvoxBrandLogo.jsx').includes('solvox-logo-v89.png'), 'Solvox V89 image logo is missing or not wired');
     must(!exists('frontend/public/assets/ui/brand/solvox-wordmark-v83.svg') && !exists('frontend/src/components/SolvoxHtmlLogo.jsx') && !exists('frontend/src/styles/solvox-logo-v83.css'), 'Retired V83 logo implementation remains');
 must(!exists('frontend/public/assets/ui/brand/solvox-logo.png'), 'Retired image-based Solvox logo remains');
@@ -161,13 +164,17 @@ must(main.includes("import './styles/chapter-select-v44.css';") && chapters.incl
 must(levels.includes("art:'/assets/ui/chapters/chapter-1.png'") && levels.includes("art:'/assets/ui/chapters/chapter-5.png'"), 'Chapter artwork metadata missing');
 for (let id = 1; id <= 5; id += 1) must(exists(`frontend/public/assets/ui/chapters/chapter-${id}.png`), `Chapter ${id} artwork asset missing`);
 must(
-  backgrounds.includes("3: { type:'image'") &&
-    backgrounds.includes("/assets/backgrounds/level3/chapter3-battle-4x1.png") &&
-    backgrounds.includes("fit:'fill'") &&
+  backgrounds.includes("3: { type:'video'") &&
+    backgrounds.includes("/assets/backgrounds/level3/chapter3-arena-4x1.mp4") &&
+    backgrounds.includes("chapter3-video-poster-4x1.jpg") &&
     backgrounds.includes("scale:1.0"),
-  'Chapter 3 wide battle background is not wired',
+  'Chapter 3 supplied video background is not wired',
 );
-must(exists('frontend/public/assets/backgrounds/level3/chapter3-battle-4x1.png'), 'Chapter 3 4:1 background asset missing');
+must(exists('frontend/public/assets/backgrounds/level3/chapter3-arena-4x1.mp4'), 'Chapter 3 video background asset is missing');
+must(exists('frontend/public/assets/backgrounds/level3/chapter3-video-poster-4x1.jpg'), 'Chapter 3 video poster is missing');
+must(!exists('frontend/public/assets/backgrounds/level3/chapter3-battle-4x1.png'), 'Retired Chapter 3 image background remains');
+must(!exists('frontend/public/assets/backgrounds/level3/chapter3-arena.mp4'), 'Retired Chapter 3 video remains');
+must(!exists('frontend/public/assets/backgrounds/level3/chapter3-video-poster.jpg'), 'Retired Chapter 3 poster remains');
 must(!exists('frontend/public/assets/backgrounds/level3/background.mp4'), 'Retired Chapter 3 video asset remains');
 must(!exists('frontend/public/assets/backgrounds/level3/background.png'), 'Retired Chapter 3 poster remains');
 must(!chapters.includes('chapter-emblem-') && !chapterCss.includes('chapter-emblem-v43') && !ui42.includes('chapter-emblem-v43'), 'Retired chapter emblem implementation remains');
@@ -188,7 +195,7 @@ must(!exists('frontend/public/assets/characters/wanderer'), 'Legacy Wanderer pla
 must(!exists('frontend/public/assets/ui/reference/player-avatar-portrait.png'), 'Legacy player portrait remains');
 must(!exists('frontend/public/assets/characters/wanderer_BACKUP_V24.2'), 'Unused backup sprite folder should be removed');
 must(!exists('frontend/public/assets/ui/reference/pause.png'), 'Unused pause raster should be removed');
-must(pkg.version === '4.3.0', 'Root package version changed unexpectedly');
+must(pkg.version === '103.0.0', 'Root package version changed unexpectedly (bumped to 103.0.0 for the V103 release; update this pin in the same commit).');
 must(exists('frontend/src/styles/battle-v43.css'), 'Dedicated Battle stylesheet missing');
 must(keypad.includes("'²'") && keypad.includes("'fraction'") && keypad.includes("'a'") && keypad.includes("'z'"), 'Math keypad revision missing');
 must(multi.includes('turn:hint') && multi.includes('viewSolution') && multi.includes('tieBreakHintRule'), 'Multiplayer hint support missing');
@@ -283,15 +290,27 @@ checkBalancedDelimiters(spriteCharacter, 'frontend/src/components/SpriteCharacte
 must(!combatStage.includes('vs-badge-v43') && !combatStage.includes('combat-center-v43'), 'Decorative VS arena marker still exists');
 must(spriteCharacter.includes('visualScale') && spriteCharacter.includes('parentElement?.getBoundingClientRect().width'), 'Player canvas is not responsive to fighter wrapper width');
 must(bossMonster.includes('visualScale') && bossMonster.includes('canvas.parentElement?.getBoundingClientRect().width'), 'Boss canvas is not responsive to fighter wrapper width');
-must(responsive93.includes('.battle-reference-arena-v43') && responsive93.includes('clamp(210px,29dvh,270px)') && responsive93.includes('max-width:520px'), 'V93 mobile battle sizing rules are missing');
-must(!responsive93.includes('.vs-badge-v43'), 'Responsive stylesheet still references removed VS badge');
+must(responsive102.includes('.battle-reference-arena-v43') && responsive102.includes('height: 27dvh') && responsive102.includes('@media (max-width: 420px)'), 'V99 mobile battle sizing rules are missing');
+must(!responsive102.includes('.vs-badge-v43'), 'Responsive stylesheet still references removed VS badge');
 
 must(main.includes("import './styles/ui-v93.css';") && exists('frontend/src/styles/ui-v93.css'), 'V93 visual refinement stylesheet is not wired');
-must(exists('frontend/src/styles/responsive-v93.css') && !exists('frontend/src/styles/responsive-v92.css'), 'Responsive source cleanup is incomplete');
+  must(main.includes("import './styles/ui-v96.css';") && exists('frontend/src/styles/ui-v96.css'), 'V96 polish stylesheet is not wired');
+must(exists('frontend/src/styles/responsive-v102.css') && !exists('frontend/src/styles/responsive-v101.css') && !exists('frontend/src/styles/responsive-v94.css') && !exists('frontend/src/styles/responsive-v93.css'), 'Responsive source cleanup is incomplete');
 must(multi.includes('home-background-v83.mp4') && multi.includes('multi-home-bg-v93'), 'Multiplayer Home background video is not wired');
-must(!profile.includes('SolvoxUtilityArt') && !settings.includes('SolvoxUtilityArt'), 'Dashboard/settings utility artwork still overlaps modal headers');
-must(settings.includes('settings-head-mark-v93'), 'Settings V93 header is missing');
+must(profile.includes('SolvoxUtilityArt name="close"'), 'Profile close control is not using the dedicated close artwork');
+must(settings.includes('settings-about-row-v96') && settings.includes('settings-close-btn-v96') && !settings.includes('success-v27'), 'Settings V96 about/close cleanup is incomplete');
 must(battlePanel.includes('is-story-chapter-v74'), 'Story chapter class is missing');
+must(exists('frontend/src/components/AboutDevelopers.jsx') && main.includes("import './styles/ui-v96.css';"), 'About Us page/style is not wired');
+must(app.includes("screen==='about'&&<AboutDevelopers") && app.includes('onAboutUs'), 'About Us navigation is not wired through App');
+must(utilityArt.includes("back: '/assets/ui/utility/icons/back-v82.webp'") && utilityArt.includes("close: '/assets/ui/utility/icons/close-v96.png'"), 'Back/close icon routing is incorrect');
+must(exists('frontend/public/assets/ui/utility/icons/back-v82.webp') && exists('frontend/public/assets/ui/utility/icons/close-v96.png') && !exists('frontend/public/assets/ui/utility/icons/back-v94.png') && !exists('frontend/public/assets/ui/utility/icons/close-v94.png'), 'Back/close assets are not cleaned correctly');
+must(!settings.includes('developer-team-v94') && !settings.includes('success-v27'), 'Legacy developer/success block remains in Settings');
+must(i18n.includes("homeMain:'Main'") && i18n.includes("homeMain:'Play'"), 'Home Main/Play bilingual labels are not configured');
+  must(settings.includes('openAboutUs') && app.includes('onAboutUs'), 'About Us action is not wired');
+  must(!settings.includes('success-v27'), 'Legacy Settings success markup remains');
+  must(!settings.includes('developer-team-v94'), 'Legacy developer team block remains in Settings');
+  must(utilityArt.includes('close-v96.png'), 'Close artwork does not use the compact V96 asset');
+
 
 const bossAssets = read('frontend/src/data/bossAssets.js');
 const bossData = read('frontend/src/data/bosses.js');
@@ -374,15 +393,100 @@ must(!read('frontend/src/styles/battle-v43.css').includes('.asset-boss-seq-attac
 must(read('frontend/src/styles/battle-v43.css').includes('.hp-card-v62') && read('frontend/src/styles/battle-v43.css').includes('.fighter-slot-v62'), 'V62 HUD/anchor styling is missing');
 
 must(!multi.includes('multi-toolbar-v25') && !multi.includes('multi-toolbar-v26'), 'Retired multiplayer toolbar markup remains');
-for (const file of ['frontend/src/styles/app.css','frontend/src/styles/ui-v32.css','frontend/src/styles/ui-v34.css','frontend/src/styles/responsive-v93.css']) {
+for (const file of ['frontend/src/styles/app.css','frontend/src/styles/ui-v32.css','frontend/src/styles/ui-v34.css','frontend/src/styles/responsive-v102.css']) {
   must(!read(file).includes('multi-toolbar-v25') && !read(file).includes('multi-toolbar-v26'), `Retired multiplayer toolbar CSS remains in ${file}`);
 }
+must(!read('frontend/src/components/Settings.jsx').includes('<span>{t(\'languageIndonesia\')}</span>') && !read('frontend/src/components/Settings.jsx').includes('<span>{t(\'languageEnglish\')}</span>'), 'Language selector labels should be icon-only');
 must(!exists('frontend/public/assets/ui/brand/solvox-logo-v84.svg') && !exists('frontend/src/styles/solvox-brand-v84.css') && !exists('frontend/src/styles/brand-v83.css'), 'Retired V83/V84 brand assets/styles remain');
 must(exists('frontend/public/assets/ui/brand/solvox-logo-v89.png'), 'V89 logo asset is missing');
 
+
+// V98 Chapter 3 background + mobile conflict guards.
+must(backgrounds.includes("level3/chapter3-arena-4x1.mp4"), 'Chapter 3 4:1 video background is not configured');
+must(!backgrounds.includes('chapter3-battle-4x1.png'), 'Legacy Chapter 3 image background is still configured');
+must(exists('frontend/public/assets/backgrounds/level3/chapter3-arena-4x1.mp4'), 'Chapter 3 video asset is missing');
+must(exists('frontend/public/assets/backgrounds/level3/chapter3-video-poster-4x1.jpg'), 'Chapter 3 video poster is missing');
+must(!exists('frontend/public/assets/backgrounds/level3/chapter3-battle-4x1.png'), 'Legacy Chapter 3 background asset remains');
+must(!main.includes("responsive-v96.css") && !exists('frontend/src/styles/responsive-v96.css'), 'Legacy V96 responsive source remains active');
+must(responsive102.includes('overflow: visible !important') && responsive102.includes('touch-action: pan-y') && responsive102.includes('fighter-player-v43 .sprite-wrap'), 'V101 mobile conflict fixes are incomplete');
+must(responsive102.includes('bg-mobile-object-position') && responsive102.includes('object-fit: cover !important') && responsive102.includes('transform: none !important'), 'Responsive arena background contract is missing');
+must(!main.includes('responsive-v98.css') && !exists('frontend/src/styles/responsive-v98.css'), 'Legacy V98 responsive source remains active');
+must(battle.includes('battle-answer-input-v66') && !battle.includes('battle-answer-input-v23'), 'Battle focus selector still points at retired V23 input');
+
 console.log('V61 QA STATIC + REGRESSION PASS');
 console.log('V62 QA MOTION + MULTIPLAYER PASS');
-console.log('Home: cinematic overlay, original assets, clean sidebar, brighter background');
+
+must(settings.includes('settings-v101.webp') && settings.includes('settings-head-art-v102'), 'Settings must use the supplied V101 settings icon with the V103 header layout');
+must(!feedback.includes('SolvoxUtilityArt name=\"feedback\"'), 'Feedback modal must not render the decorative feedback utility artwork');
+must(!profile.includes('PixelIcon name=\"pixelNinja\"') && !profile.includes('pixel-icon-raster'), 'Profile must not render the retired pixel/raster profile artwork');
+must(exists('frontend/public/assets/ui/utility/icons/settings-v101.webp'), 'V101 settings icon asset is missing');
+must(!exists('frontend/public/assets/ui/reference/avatar-medallion-clean.png'), 'Retired profile avatar asset still exists');
+console.log('V103: settings icon polish, Home tutorial guide, V91 mobile reference geometry, chapter-aware question themes, visible mobile feedback, icon-only language selector');
 console.log('Battle: one dedicated V43 stylesheet, full-width HUD, continuous question/hint/keypad dock, real attack-distance calculation');
 console.log('Cleanup: legacy V23/V24 layout roots removed from app/ui-v42, dead Battle helper/prop removed');
 console.log('Content: bilingual i18n, profile API, multiplayer hint tracking, Traveler player pack, Wolf + Wraith + Equation Drake WebP boss packs');
+
+const v94StaleRefs=[['frontend/src/components/ModeSelect.jsx',['single-player-hero.png','multiplayer-hero.png']],['frontend/src/components/Multiplayer.jsx',['AJM-XXXX']],['frontend/src/services/i18n.js',['AJM-XXXX']]];
+for(const [rel,badRefs] of v94StaleRefs){
+  const text=read(rel);
+  for(const bad of badRefs){ must(!text.includes(bad), `V94 stale reference: ${rel} -> ${bad}`); }
+}
+for(const asset of ['single-mode-v94.webp','multi-mode-v94.webp']) must(exists(`frontend/public/assets/ui/modes/${asset}`), `V94 missing mode asset: ${asset}`);
+for(const asset of ['flag-id-v94.png','flag-en-v94.png','back-v82.webp','close-v96.png']) must(exists(`frontend/public/assets/ui/utility/icons/${asset}`), `V96 missing utility asset: ${asset}`);
+must(exists('frontend/public/assets/ui/modes/single-mode-v94.webp') && exists('frontend/public/assets/ui/modes/multi-mode-v94.webp'), 'V94 mode artwork is missing');
+must(!exists('frontend/public/assets/ui/modes/single-player-hero.png') && !exists('frontend/public/assets/ui/modes/multiplayer-hero.png'), 'Old mode artwork assets remain');
+must(!exists('frontend/public/assets/ui/utility/icons/back.webp'), 'Old back icon asset remains');
+must(battle.includes('bossDieDurationMs + 140') && battle.includes('playerDieDurationMs + 140'), 'Evaluation timing is not synchronized with die animations');
+must(settings.includes('flag-id-v94.png') && settings.includes('flag-en-v94.png') && settings.includes('settings-about-row-v96'), 'V96 Settings flags/about routing are missing');
+
+/* -------------------------------------------------------------------------- */
+/* Production backend + integration contract                                */
+/* -------------------------------------------------------------------------- */
+/* Everything above validates the frontend. These checks cover the Cloudflare
+ * Worker that actually runs in production, plus the transport contract that a
+ * new version folder must not break. Without these, copying a version folder
+ * over the repo can silently pass QA and 404 in production. */
+
+const workerRoom = read('worker/src/room.js');
+const workerIndex = read('worker/src/index.js');
+const workerGame = read('worker/src/game.js');
+const realtime = read('frontend/src/services/realtime.js');
+const runtimeConfig = read('frontend/public/config.js');
+const frontendPkg = require('./frontend/package.json');
+const componentFiles = fs
+  .readdirSync(path.join(root, 'frontend/src/components'))
+  .filter((f) => f.endsWith('.jsx'))
+  .map((f) => read(`frontend/src/components/${f}`));
+
+// The Worker is the only backend in production; backend/ is an archive.
+must(!workerRoom.includes('express') && !workerIndex.includes('require('), 'Worker must stay dependency-free, not import the legacy Express server');
+must(workerIndex.includes("'/health'") && workerIndex.includes('health-probe') && workerIndex.includes('idFromName'), 'Worker health probe is missing: /health must actually reach a Durable Object');
+must(workerIndex.includes('SOLVOX_ROOM') || exists('worker/wrangler.toml'), 'Durable Object binding is missing');
+
+// A dropped player must be recoverable inside the grace window.
+must(/ROOM_GRACE_MS\s*=\s*\d+/.test(workerGame), 'ROOM_GRACE_MS is not defined');
+must(workerRoom.includes('player:disconnected') && workerRoom.includes('room:reconnected'), 'Reconnect/grace events are missing');
+must(workerRoom.includes('storage.setAlarm') && workerRoom.includes('async alarm') && workerRoom.includes('storage.deleteAlarm'), 'Turn alarm is missing: setAlarm + alarm handler + deleteAlarm are all required');
+
+// Transport contract: one shim, no library, no bare same-origin /api calls.
+must(!componentFiles.some((c) => /from ['"]socket\.io-client['"]/.test(c)), 'A component imports socket.io-client directly; use services/realtime.js instead');
+must(!realtime.includes("from 'socket.io-client'"), 'services/realtime.js must not depend on socket.io-client');
+must(!frontendPkg.dependencies || !frontendPkg.dependencies['socket.io-client'], 'socket.io-client is still a frontend dependency but is unused');
+must(realtime.includes('export') && realtime.includes('connect'), 'services/realtime.js no longer exposes the realtime client');
+
+// A bare fetch('/api/...') hits the Vercel origin and 404s silently, because the
+// backend lives on a different host. Every API call must go through apiUrl().
+const bareApiCalls = componentFiles
+  .map((f) => `frontend/src/components/${f}`)
+  .filter((_, i) => /fetch\(\s*['"`]\/api\//.test(componentFiles[i]));
+must(bareApiCalls.length === 0, `Bare fetch('/api/...') bypasses the backend host in: ${bareApiCalls.join(', ')}`);
+must(exists('frontend/src/config.js') && read('frontend/src/config.js').includes('export function apiUrl'), 'apiUrl() helper is missing from src/config.js');
+
+// Runtime config must target the Worker and must not point a dev server at it.
+must(runtimeConfig.includes('solvox-worker.workers.dev'), 'public/config.js does not target the Cloudflare Worker');
+must(runtimeConfig.includes('isLocalDev') && runtimeConfig.includes("'5173'"), 'public/config.js lost the local-dev guard; a Vite dev server would hit production');
+
+// Nothing in a new version folder may overwrite the production transport.
+must(exists('worker') && exists('frontend/src/services/realtime.js') && exists('frontend/src/config.js'), 'A production transport file is missing from the repo');
+
+console.log('Worker + integration contract PASS');

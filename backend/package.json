@@ -1,0 +1,17 @@
+{
+  "name": "solvox-legacy-backend",
+  "version": "0.0.0",
+  "private": true,
+  "description": "ARSIP. Express + Socket.IO backend yang digantikan Cloudflare Workers + Durable Objects (lihat worker/). Bukan yang dipakai produksi. Dijalankan hanya bila perlu membandingkan perilaku lama.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

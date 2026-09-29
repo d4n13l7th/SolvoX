@@ -1,7 +1,7 @@
 {
-  "name": "solvox-frontend-v62",
+  "name": "solvox-frontend",
   "private": true,
-  "version": "2.3.0",
+  "version": "103.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -10,11 +10,11 @@
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "socket.io-client": "^4.8.1"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "vite": "^5.4.10",
     "@vitejs/plugin-react": "^4.3.3"
-  }
+  },
+  "description": "Solvox V103 frontend (React + Vite). Talks to the Cloudflare Worker backend via src/config.js apiUrl() + services/realtime.js."
 }
