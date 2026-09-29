@@ -58,10 +58,18 @@ function client(name, answers, roomCode, token) {
   const state = { code: roomCode, token, room: null, answered: new Set(), finished: null, results: [] };
   let stopped = false;
 
+  const strictErr = () => {
+    failures += 1;
+    console.error('  FAIL  transport mengembalikan status != 2xx (infra seperti withCors rusak)');
+  };
+
   const post = (event, data = {}) => fetch(
     `${HTTP}/api/room/event?room=${encodeURIComponent(state.code || '')}&token=${encodeURIComponent(state.token || '')}`,
     { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event, data: { ...data, token: state.token } }) },
-  );
+  ).then((r) => {
+    if (!r.ok) strictErr();
+    return r;
+  });
 
   const tryAnswer = () => {
     const room = state.room;
@@ -103,7 +111,7 @@ function client(name, answers, roomCode, token) {
           `${HTTP}/api/room/poll?room=${encodeURIComponent(state.code || '')}&token=${encodeURIComponent(state.token || '')}`,
         );
         if (!r.ok) {
-          await sleep(300);
+          strictErr();
           continue;
         }
         const batch = await r.json();

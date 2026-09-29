@@ -19,16 +19,21 @@ const CORS_HEADERS = {
 };
 
 function withCors(request, response) {
-  // Durable Object stubs hand back responses with immutable headers; clone so
-  // we can attach CORS without a "Can't modify immutable headers" TypeError.
-  const resp = new Response(response.body, response);
+  // Durable Object stubs hand back responses with immutable headers and the
+  // Response constructor can alias them; copy into a fresh Headers object so
+  // attaching CORS never trips "Can't modify immutable headers".
+  const headers = new Headers(response.headers);
   const origin = request.headers.get('Origin');
   if (origin) {
-    resp.headers.set('Access-Control-Allow-Origin', origin);
-    resp.headers.set('Vary', 'Origin');
+    headers.set('Access-Control-Allow-Origin', origin);
+    headers.set('Vary', 'Origin');
   }
-  for (const [key, value] of Object.entries(CORS_HEADERS)) resp.headers.set(key, value);
-  return resp;
+  for (const [key, value] of Object.entries(CORS_HEADERS)) headers.set(key, value);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 
 function json(request, data, status = 200) {
