@@ -96,6 +96,17 @@ export class SolvoxRoom {
       const url = new URL(request.url);
       if (request.method === 'POST' && url.pathname === '/event') return this.httpEvent(request);
       if (request.method === 'GET' && url.pathname === '/poll') return this.httpPoll(url);
+      if (request.method === 'GET' && url.pathname === '/health') {
+        return new Response(JSON.stringify({
+          ok: true,
+          do: 'alive',
+          storage: 'read-ok',
+          room: this.room ? this.code : null,
+          players: this.room ? this.room.players.length : 0,
+          sockets: this.sockets.size,
+          pollers: this.pollers.size,
+        }), { status: 200, headers: { 'Content-Type': 'application/json; charset=utf-8' } });
+      }
       return new Response('expected websocket upgrade', { status: 426 });
     }
     const pair = new WebSocketPair();

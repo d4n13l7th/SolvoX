@@ -99,15 +99,29 @@ export default {
 
     // ── read-only endpoints ─────────────────────────────────────────────────
     if (path === '/health') {
-      return json(request, {
-        ok: true,
-        transport: 'websocket',
-        roomPattern: 'AJM-XXXX',
-        turnDuration: TURN_MS,
-        questionsPerChapter: TOTAL_QUESTIONS,
-        questionEngine: 'local',
-        storage: 'ephemeral',
-      });
+      const started = Date.now();
+      try {
+        // Probe a dedicated object id, never a real AJM-* room, so monitoring
+        // can never join, disturb or evict somebody's live match.
+        const stub = env.SOLVOX_ROOM.get(env.SOLVOX_ROOM.idFromName('health-probe'));
+        const res = await stub.fetch('https://do/health', {
+          headers: { 'X-Solvox-Room': 'health-probe' },
+        });
+        const probe = await res.json();
+        return json(request, {
+          ok: true,
+          durableObject: probe,
+          latencyMs: Date.now() - started,
+          transport: 'websocket',
+          roomPattern: 'AJM-XXXX',
+          turnDuration: TURN_MS,
+          questionsPerChapter: TOTAL_QUESTIONS,
+          questionEngine: 'local',
+          storage: 'durable-object-sqlite',
+        });
+      } catch (e) {
+        return json(request, { ok: false, error: String((e && e.message) || e) }, 503);
+      }
     }
     if (path === '/api/characters') return json(request, Object.values(CHARACTERS));
     if (path === '/api/levels') return json(request, listLevels());

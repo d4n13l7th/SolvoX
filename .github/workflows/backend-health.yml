@@ -1,0 +1,153 @@
+name: Backend Health
+
+# Backend Solvox dipantau setiap 5 menit. Kalau gagal 2x berturut-turut (10 menit),
+# kamu dapat notifikasi ke Telegram. Kalau pulih, dapat notifikasi juga.
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+env:
+  HEALTH_URL: https://solvox-api.solvox-worker.workers.dev/health
+  THRESHOLD: '2'
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restore status sebelumnya
+        id: restore
+        uses: actions/cache/restore@v4
+        with:
+          path: .solvox-failcount
+          key: solvox-health-${{ github.run_id }}
+          restore-keys: solvox-health-
+
+      - name: Probe API + Durable Object
+        id: probe
+        run: |
+          set +e
+          body=$(curl -sS -m 20 "$HEALTH_URL" 2>&1)
+          rc=$?
+          if [ "$rc" -ne 0 ]; then
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "reason=curl gagal (exit $rc)" >> "$GITHUB_OUTPUT"
+            echo "body=$body" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! printf '%s' "$body" | grep -q '"ok":true'; then
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "reason=Worker tidak mengembalikan ok:true" >> "$GITHUB_OUTPUT"
+            echo "body=$body" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! printf '%s' "$body" | grep -q '"do":"alive"'; then
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "reason=Durable Object tidak merespons" >> "$GITHUB_OUTPUT"
+            echo "body=$body" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          latency=$(printf '%s' "$body" | sed -n 's/.*"latencyMs":\([0-9]*\).*/\1/p')
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+          echo "reason=sehat" >> "$GITHUB_OUTPUT"
+          echo "latency=${latency:-?}" >> "$GITHUB_OUTPUT"
+          echo "body=$body" >> "$GITHUB_OUTPUT"
+
+      - name: Hitung kegagalan berturut-turut
+        id: state
+        run: |
+          prev=0
+          if [ -f .solvox-failcount ]; then prev=$(tr -dc '0-9' < .solvox-failcount); fi
+          prev=${prev:-0}
+          if [ "${{ steps.probe.outputs.ok }}" = "true" ]; then
+            cur=0
+          else
+            cur=$((prev + 1))
+          fi
+          printf '%s' "$cur" > .solvox-failcount
+          echo "prev=$prev" >> "$GITHUB_OUTPUT"
+          echo "cur=$cur" >> "$GITHUB_OUTPUT"
+          echo "changed=$([ "$cur" != "$prev" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Kirim notifikasi Telegram
+        if: always()
+        env:
+          OK: ${{ steps.probe.outputs.ok }}
+          CUR: ${{ steps.state.outputs.cur }}
+          PREV: ${{ steps.state.outputs.prev }}
+          CHANGED: ${{ steps.state.outputs.changed }}
+          REASON: ${{ steps.probe.outputs.reason }}
+          LATENCY: ${{ steps.probe.outputs.latency }}
+          THRESHOLD: ${{ env.THRESHOLD }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "Telegram tidak dikonfigurasi, hanya log GitHub."
+            exit 0
+          fi
+          send() {
+            curl -sS -m 15 -X POST \
+              "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -d "chat_id=${TELEGRAM_CHAT_ID}" \
+              --data-urlencode "text=$1" > /dev/null 2>&1 || echo "gagal kirim Telegram"
+          }
+          if [ "$OK" = "true" ]; then
+            if [ "$PREV" -ge "$THRESHOLD" ]; then
+              send "✅ <b>Solvox backend PULIH</b>
+
+Backend sudah normal lagi.
+Yang sebelumnya: ${PREV} pemeriksaan gagal berturut-turut.
+Respons: ${LATENCY}ms"
+            else
+              echo "Sehat, tidak perlu notifikasi."
+            fi
+          else
+            if [ "$CUR" -eq "$THRESHOLD" ]; then
+              send "🚨 <b>Solvox backend DOWN</b>
+
+${THRESHOLD} pemeriksaan gagal berturut-turut.
+Sudah tidak sehat selama ~$((CUR * 5)) menit.
+Alasan: ${REASON}
+
+Cek: https://dash.cloudflare.com → Workers → solvox-api → Logs"
+            elif [ "$CUR" -gt "$THRESHOLD" ]; then
+              echo "Masih down (ke-${CUR}), notifikasi sudah terkirim sebelumnya."
+            else
+              echo "Gagal ${CUR}/${THRESHOLD}, tunggu dulu sebelum memb alerting."
+            fi
+          fi
+
+      - name: Ringkasan
+        if: always()
+        env:
+          OK: ${{ steps.probe.outputs.ok }}
+          CUR: ${{ steps.state.outputs.cur }}
+          REASON: ${{ steps.probe.outputs.reason }}
+        run: |
+          {
+            echo "### Backend Solvox"
+            echo ""
+            if [ "$OK" = "true" ]; then
+              echo "Status: **SEHAT**"
+            else
+              echo "Status: **DOWN** (${CUR} gagal berturut-turut)"
+              echo ""
+              echo "Alasan: ${REASON}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Simpan status
+        if: always() && steps.state.outputs.changed == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .solvox-failcount
+          key: solvox-health-${{ github.run_id }}
+
+      - name: Gagalkan job kalau tidak sehat
+        if: steps.probe.outputs.ok != 'true'
+        run: |
+          echo "::error::Backend Solvox tidak sehat: ${{ steps.probe.outputs.reason }}"
+          exit 1
