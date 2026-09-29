@@ -7,7 +7,7 @@
 import packId from './data/solvoxQuestions.json';
 import packEn from './data/solvoxQuestions.en.json';
 
-export const ROOM_GRACE_MS = 30000;
+export const ROOM_GRACE_MS = 40000;
 export const TURN_MS = 45000;
 export const TOTAL_QUESTIONS = 10;
 export const DAMAGE_PER_CORRECT = 20;

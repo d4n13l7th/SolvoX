@@ -48,6 +48,7 @@ export class SolvoxRoom {
     this.sockets = new Map(); // WebSocket -> playerToken
     this.graceTimers = new Map(); // playerToken -> timeout
     this._loaded = false;
+    this._tag = Math.random().toString(36).slice(2, 7);
   }
 
   /**
@@ -121,9 +122,11 @@ export class SolvoxRoom {
     const event = frame && frame.event;
     const data = (frame && frame.data) || {};
     if (!event) return;
+    console.log(`[dbg] msg ${event} inst=${this._tag} has=${this.sockets.has(ws) ? 1 : 0} n=${this.sockets.size} code=${this.code}`);
     if (event === 'room:create') return this.onCreate(ws, data);
     if (event === 'room:join') return this.onJoin(ws, data);
     if (event === 'player:ready') return this.onReady(ws, data);
+    if (event === 'ping') return this.emitTo(ws, 'pong', { on: Date.now() });
     if (event === 'player:update') return this.onPlayerUpdate(ws, data);
     if (event === 'turn:hint') return this.onHint(ws);
     if (event === 'answer:submit') return this.onAnswer(ws, data);
@@ -246,6 +249,7 @@ export class SolvoxRoom {
     };
     this.sockets.set(ws, playerToken);
     this.saveRoom();
+    console.log(`[dbg] create ${name} inst=${this._tag} n=${this.sockets.size} code=${code}`);
     this.emitTo(ws, 'room:created', this.publicRoom(this.room));
   }
 
@@ -306,7 +310,10 @@ export class SolvoxRoom {
     const room = this.room;
     if (!room) return;
     const player = this.findPlayer(ws);
-    if (!player) return;
+    if (!player) {
+      console.log(`[dbg] onReady NULL inst=${this._tag} has=${this.sockets.has(ws) ? 1 : 0} n=${this.sockets.size}`);
+      return;
+    }
     player.ready = !!ready;
     const allReady = room.players.length === 2 && room.players.every((x) => x.ready && x.connected);
     console.log(`[dbg] onReady ${player.name} ready=${!!ready} allReady=${allReady} players=${room.players.map((x) => `${x.name}:r${x.ready ? 1 : 0}c${x.connected ? 1 : 0}`).join(' ')}`);

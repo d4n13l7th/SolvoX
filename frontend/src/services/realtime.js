@@ -18,13 +18,17 @@
  *    transparently. The player never sees a code change.
  *
  * Reconnect is automatic and re-sends the last room:create / room:join, which
- * is what makes the 30 second reconnect grace period in room.js useful: the
- * per-tab mpToken (sessionStorage) identifies the returning player.
+ * is what makes the reconnect grace period in room.js useful: the per-tab
+ * mpToken (sessionStorage) identifies the returning player. Because an evicted
+ * Durable Object drops its WebSockets silently (no onclose on the stuck side),
+ * the shim also treats a dead server (no pong for PONG_TIMEOUT_MS) as a
+ * disconnect and redials itself.
  */
 
 const CODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const HEARTBEAT_MS = 25000;
 const RECONNECT_MS = 1500;
+const PONG_TIMEOUT_MS = 15000;
 
 function makeRoomCode() {
   let suffix = '';
@@ -54,6 +58,8 @@ export function io(baseUrl, options = {}) {
   /** The player identity we asked the server to use; its id comes back in room payloads. */
   let myToken = '';
   let myId = null;
+  /** Last time the server answered any frame; staleness drives reconnect. */
+  let lastKnownAlive = 0;
 
   // Identity is per-tab (sessionStorage): two tabs in the same browser must be
   // able to host and join each other, which a shared localStorage token would
@@ -105,6 +111,7 @@ export function io(baseUrl, options = {}) {
 
   const closeSocket = () => {
     stopTimers();
+    lastKnownAlive = 0;
     if (socket) {
       socket.onclose = null;
       socket.onerror = null;
@@ -129,6 +136,7 @@ export function io(baseUrl, options = {}) {
   };
 
   const handleMessage = (raw) => {
+    lastKnownAlive = Date.now();
     let frame;
     try {
       frame = JSON.parse(raw);
@@ -167,20 +175,33 @@ export function io(baseUrl, options = {}) {
     closeSocket();
     closedByUser = false;
     code = targetCode;
+    // The token rides the dial URL so the Durable Object can bind the socket to
+    // the player at upgrade time; surviving an instance re-creation depends on
+    // this, never on in-memory state from an earlier connection.
+    const dialUrl = `${base}/ws?room=${encodeURIComponent(targetCode)}&token=${encodeURIComponent(myToken || '')}`;
     try {
-      socket = new WebSocket(`${base}/ws?room=${encodeURIComponent(targetCode)}`);
+      socket = new WebSocket(dialUrl);
     } catch {
       scheduleReconnect();
       return;
     }
 
     socket.onopen = () => {
+      lastKnownAlive = Date.now();
       heartbeatTimer = setInterval(() => {
-        // Keeps the connection warm through idle periods; the server ignores it.
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
+        // A half-open socket never fires onclose: the server-side object can be
+        // evicted and drop the TCP silently, so sending into it heals nothing.
+        // If the server has answered no frame for a while, assume it is dead and
+        // reconnect in the player's name. The DO answers our ping with pong,
+        // which counts as liveness.
+        if (Date.now() - lastKnownAlive > PONG_TIMEOUT_MS) {
+          closeSocket();
+          scheduleReconnect();
+          return;
+        }
         try {
-          if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({ event: 'ping', data: {} }));
-          }
+          socket.send(JSON.stringify({ event: 'ping', data: {} }));
         } catch {
           /* closed mid-write */
         }
