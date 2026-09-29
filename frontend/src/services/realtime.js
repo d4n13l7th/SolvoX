@@ -26,7 +26,12 @@
  */
 
 const CODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-const HEARTBEAT_MS = 25000;
+// The liveness interval must be SHORTER than PONG_TIMEOUT_MS: a quiet waiting
+// room emits no broadcasts, so judging liveness by silence alone would flag
+// every healthy room as dead. With 10s < 15s the staleness check only trips
+// when the server genuinely stopped answering (including a silently evicted
+// Durable Object), giving ~20s worst-case death detection.
+const HEARTBEAT_MS = 10000;
 const RECONNECT_MS = 1500;
 const PONG_TIMEOUT_MS = 15000;
 /** Give the WebSocket dial this long to open before falling back to HTTP. */
@@ -243,6 +248,14 @@ export function io(baseUrl, options = {}) {
 
   const dial = (targetCode, intent) => {
     if (!base) return;
+    // De-dupe: redialing the same code while the current socket is still alive
+    // is never useful (it only tears down a healthy binding), so replay the
+    // frame on the existing socket instead of rebuilding it. This keeps rapid
+    // re-emits/self-reconnects from creating a dial churn.
+    if (socket && socket.readyState === WebSocket.OPEN && code === targetCode) {
+      if (intent) send(intent.event, intent.data);
+      return;
+    }
     stopPoll();
     closeSocket();
     closedByUser = false;
@@ -273,6 +286,14 @@ export function io(baseUrl, options = {}) {
       lastKnownAlive = Date.now();
       heartbeatTimer = setInterval(() => {
         if (!socket || socket.readyState !== WebSocket.OPEN) return;
+        // Probe first, then judge: the ping lets the server prove it is alive
+        // (it answers with pong), so a silent-but-healthy room is never
+        // mistaken for a dead one.
+        try {
+          socket.send(JSON.stringify({ event: 'ping', data: {} }));
+        } catch {
+          /* closed mid-write */
+        }
         // A half-open socket never fires onclose: the server-side object can be
         // evicted and drop the TCP silently, so sending into it heals nothing.
         // If the server has answered no frame for a while, assume it is dead and
@@ -282,11 +303,6 @@ export function io(baseUrl, options = {}) {
           closeSocket();
           scheduleReconnect();
           return;
-        }
-        try {
-          socket.send(JSON.stringify({ event: 'ping', data: {} }));
-        } catch {
-          /* closed mid-write */
         }
       }, HEARTBEAT_MS);
       if (intent) send(intent.event, intent.data);
