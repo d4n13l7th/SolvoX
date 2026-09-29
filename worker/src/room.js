@@ -129,6 +129,7 @@ export class SolvoxRoom {
     if (event === 'answer:submit') return this.onAnswer(ws, data);
     if (event === 'rematch') return this.onRematch(ws);
     if (event === 'room:leave') return this.onLeave(ws, true);
+    console.log(`[dbg] ws event tak dikenal: ${event}`);
   }
 
   async webSocketClose(ws) {
@@ -145,6 +146,7 @@ export class SolvoxRoom {
   async alarm() {
     await this.ensureLoaded();
     const room = this.room;
+    console.log(`[dbg] alarm status=${room ? room.status : 'NULL-ROOM'} mode=${room ? room.mode : '?'} code=${room ? room.code : '?'}`);
     if (!room || room.status !== 'battle') return;
     if (room.mode === 'turn') return this.advanceTurn(room, true);
     return this.advanceScoreRound(room, true);
@@ -189,6 +191,17 @@ export class SolvoxRoom {
     // Durable Object from the WebSocket URL alone. If a different, still active
     // room already owns it, hand back a fresh code and ask the client to move.
     if (this.room && this.room.players.length) {
+      // The host replays room:create on every reconnect. If the token already
+      // owns a seat in THIS room, that is a reconnect, not a collision: rebind
+      // the seat so the host stays in the same room as the second player.
+      // Only hand out a fresh code for a genuinely foreign room.
+      const who = cleanToken(token);
+      const existing = who ? this.room.players.find((p) => p.token === who) : null;
+      if (existing) {
+        this.rebind(ws, existing);
+        this.broadcast('room:update');
+        return this.emitTo(ws, 'room:reconnected', this.publicRoom(this.room));
+      }
       this.emitTo(ws, 'room:recode', { code: makeCode(code) });
       return;
     }
@@ -277,6 +290,10 @@ export class SolvoxRoom {
     const timer = this.graceTimers.get(player.token);
     if (timer) clearTimeout(timer);
     this.graceTimers.delete(player.token);
+    const room = this.room;
+    if (room && room.status === 'waiting' && room.players.length === 2 && room.players.every((x) => x.ready && x.connected)) {
+      this.startBattle(room);
+    }
   }
 
   findPlayer(ws) {
@@ -291,7 +308,9 @@ export class SolvoxRoom {
     const player = this.findPlayer(ws);
     if (!player) return;
     player.ready = !!ready;
-    if (room.players.length === 2 && room.players.every((x) => x.ready && x.connected)) {
+    const allReady = room.players.length === 2 && room.players.every((x) => x.ready && x.connected);
+    console.log(`[dbg] onReady ${player.name} ready=${!!ready} allReady=${allReady} players=${room.players.map((x) => `${x.name}:r${x.ready ? 1 : 0}c${x.connected ? 1 : 0}`).join(' ')}`);
+    if (allReady) {
       return this.startBattle(room);
     }
     return this.broadcast('room:update', room);
@@ -337,6 +356,7 @@ export class SolvoxRoom {
     if (!q) return;
     const value = String(answer || '').trim();
     if (!value) return;
+    console.log(`[dbg] onAnswer ${player.name} ${value} mode=${room.mode} already=${room.turnAnswers[player.token]?.submitted ? 1 : 0}`);
 
     if (room.mode === 'turn') {
       if (player.token !== room.turnToken) return this.emitTo(ws, 'answer:result', { correct: false, code: 'NOT_YOUR_TURN' });
@@ -450,9 +470,9 @@ export class SolvoxRoom {
     }
 
     // Unexpected drop: hold the seat for the reconnect grace period so the
-    // mpToken in localStorage can bring the player back mid-duel.
+    // mpToken can bring the player back mid-duel. `ready` is kept so a brief
+    // hiccup does not silently un-ready a player who already pressed Siap.
     player.connected = false;
-    player.ready = false;
     room.statusKey = 'DISCONNECTED';
     this.broadcast('player:disconnected', room);
     this.clearGrace(player.token);

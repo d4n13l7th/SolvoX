@@ -6,8 +6,9 @@
  *
  *   node worker/test/reconnect.js
  */
-const BASE = 'ws://127.0.0.1:8787';
-const HTTP = 'http://127.0.0.1:8787';
+const _u = new URL(process.argv[2] || 'http://127.0.0.1:8787');
+const BASE = _u.protocol.replace('http', 'ws') + '//' + _u.host;
+const HTTP = _u.origin;
 
 const log = (...a) => console.log(...a);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

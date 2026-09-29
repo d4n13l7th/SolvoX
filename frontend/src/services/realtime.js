@@ -19,7 +19,7 @@
  *
  * Reconnect is automatic and re-sends the last room:create / room:join, which
  * is what makes the 30 second reconnect grace period in room.js useful: the
- * mpToken in localStorage identifies the returning player.
+ * per-tab mpToken (sessionStorage) identifies the returning player.
  */
 
 const CODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -55,17 +55,19 @@ export function io(baseUrl, options = {}) {
   let myToken = '';
   let myId = null;
 
+  // Identity is per-tab (sessionStorage): two tabs in the same browser must be
+  // able to host and join each other, which a shared localStorage token would
+  // silently collapse into a single player. The token still survives reloads of
+  // the same tab, which is all the 30s reconnect grace needs.
   const ensureToken = (given) => {
-    const stored = typeof localStorage !== 'undefined'
-      ? localStorage.getItem('solvox.mpToken')
-      : null;
-    if (given && given.trim()) {
-      myToken = given.trim();
-      if (!stored) setStoredToken(myToken);
-      return myToken;
-    }
+    const store = typeof sessionStorage !== 'undefined' ? sessionStorage : (typeof localStorage !== 'undefined' ? localStorage : null);
+    const stored = store ? store.getItem('solvox.mpToken') : null;
     if (stored && stored.trim()) {
       myToken = stored.trim();
+      return myToken;
+    }
+    if (given && given.trim() && !store) {
+      myToken = given.trim();
       return myToken;
     }
     let t = '';
@@ -77,7 +79,7 @@ export function io(baseUrl, options = {}) {
 
   const setStoredToken = (token) => {
     try {
-      localStorage.setItem('solvox.mpToken', token);
+      (typeof sessionStorage !== 'undefined' ? sessionStorage : localStorage).setItem('solvox.mpToken', token);
     } catch {
       /* private mode */
     }
