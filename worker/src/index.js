@@ -19,13 +19,16 @@ const CORS_HEADERS = {
 };
 
 function withCors(request, response) {
+  // Durable Object stubs hand back responses with immutable headers; clone so
+  // we can attach CORS without a "Can't modify immutable headers" TypeError.
+  const resp = new Response(response.body, response);
   const origin = request.headers.get('Origin');
   if (origin) {
-    response.headers.set('Access-Control-Allow-Origin', origin);
-    response.headers.set('Vary', 'Origin');
+    resp.headers.set('Access-Control-Allow-Origin', origin);
+    resp.headers.set('Vary', 'Origin');
   }
-  for (const [key, value] of Object.entries(CORS_HEADERS)) response.headers.set(key, value);
-  return response;
+  for (const [key, value] of Object.entries(CORS_HEADERS)) resp.headers.set(key, value);
+  return resp;
 }
 
 function json(request, data, status = 200) {
@@ -60,6 +63,33 @@ export default {
       }
       const stub = env.SOLVOX_ROOM.get(env.SOLVOX_ROOM.idFromName(code));
       return stub.fetch(roomRequest(request, code));
+    }
+
+    // ── realtime fallback: same room Durable Object over plain HTTP ─────────
+    // Networks that drop WebSocket upgrades (campus firewalls, some ISPs) still
+    // allow fetch() calls, so the client can play on a long-poll transport. Both
+    // routes resolve the object by the same idFromName(code), so HTTP players
+    // land on exactly the same instance as WebSocket players in the room.
+    if (path === '/api/room/event' && request.method === 'POST') {
+      const code = (url.searchParams.get('room') || '').trim().toUpperCase();
+      if (!/^AJM-[A-Z0-9]{4}$/.test(code)) return json(request, { ok: false, message: 'bad room code' }, 400);
+      const stub = env.SOLVOX_ROOM.get(env.SOLVOX_ROOM.idFromName(code));
+      const body = await request.text();
+      const fwd = new Request(
+        `https://room.local/event?token=${encodeURIComponent(url.searchParams.get('token') || '')}`,
+        { method: 'POST', headers: { 'X-Solvox-Room': code, 'Content-Type': 'application/json' }, body },
+      );
+      return withCors(request, await stub.fetch(fwd));
+    }
+    if (path === '/api/room/poll' && request.method === 'GET') {
+      const code = (url.searchParams.get('room') || '').trim().toUpperCase();
+      if (!/^AJM-[A-Z0-9]{4}$/.test(code)) return json(request, { ok: false, message: 'bad room code' }, 400);
+      const stub = env.SOLVOX_ROOM.get(env.SOLVOX_ROOM.idFromName(code));
+      const fwd = new Request(
+        `https://room.local/poll?token=${encodeURIComponent(url.searchParams.get('token') || '')}`,
+        { method: 'GET', headers: { 'X-Solvox-Room': code } },
+      );
+      return withCors(request, await stub.fetch(fwd));
     }
 
     // ── read-only endpoints ─────────────────────────────────────────────────

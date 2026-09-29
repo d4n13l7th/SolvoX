@@ -29,6 +29,9 @@ const CODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const HEARTBEAT_MS = 25000;
 const RECONNECT_MS = 1500;
 const PONG_TIMEOUT_MS = 15000;
+/** Give the WebSocket dial this long to open before falling back to HTTP. */
+const WS_FALLBACK_MS = 5000;
+const POLL_RETRY_MS = 1200;
 
 function makeRoomCode() {
   let suffix = '';
@@ -58,8 +61,13 @@ export function io(baseUrl, options = {}) {
   /** The player identity we asked the server to use; its id comes back in room payloads. */
   let myToken = '';
   let myId = null;
-  /** Last time the server answered any frame; staleness drives reconnect. */
+  /** Time since the server answered any frame; staleness drives reconnect. */
   let lastKnownAlive = 0;
+  /** 'ws' over a WebSocket; 'poll' over HTTP long-poll when WS is blocked. */
+  let mode = 'ws';
+  let fallbackActive = false;
+  let pollClosed = true;
+  let dialTimer = null;
 
   // Identity is per-tab (sessionStorage): two tabs in the same browser must be
   // able to host and join each other, which a shared localStorage token would
@@ -99,14 +107,77 @@ export function io(baseUrl, options = {}) {
   const stopTimers = () => {
     if (heartbeatTimer) clearInterval(heartbeatTimer);
     if (reconnectTimer) clearTimeout(reconnectTimer);
+    if (dialTimer) clearTimeout(dialTimer);
     heartbeatTimer = null;
     reconnectTimer = null;
+    dialTimer = null;
   };
 
+  const stopPoll = () => {
+    pollClosed = true;
+  };
+
+  /** Outbound event over whichever transport is active. */
   const send = (event, data) => {
+    if (mode === 'poll') {
+      fetch(`${base}/api/room/event?room=${encodeURIComponent(code || '')}&token=${encodeURIComponent(myToken || '')}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event, data: data || {} }),
+      }).catch(() => {});
+      return true;
+    }
     if (!socket || socket.readyState !== WebSocket.OPEN) return false;
     socket.send(JSON.stringify({ event, data: data || {} }));
     return true;
+  };
+
+  /**
+   * HTTP long-poll fallback: pull broadcasts off /api/room/poll and push
+   * player events through /api/room/event. Both hit the same Durable Object
+   * as a WebSocket would, so a room can mix a WS player and an HTTP player.
+   */
+  const startPoll = (targetCode) => {
+    pollClosed = false;
+    lastKnownAlive = Date.now();
+    code = targetCode;
+    const loop = async () => {
+      if (pollClosed || closedByUser || mode !== 'poll' || !base) return;
+      try {
+        const resp = await fetch(`${base}/api/room/poll?room=${encodeURIComponent(code)}&token=${encodeURIComponent(myToken || '')}`);
+        if (!resp.ok) {
+          await new Promise((r) => setTimeout(r, POLL_RETRY_MS));
+          loop();
+          return;
+        }
+        const batch = await resp.json();
+        for (const frame of batch || []) {
+          if (pollClosed || mode !== 'poll') return;
+          lastKnownAlive = Date.now();
+          try {
+            handleMessage(JSON.stringify(frame));
+          } catch {
+            /* one bad frame must not kill the loop */
+          }
+        }
+        loop();
+      } catch {
+        await new Promise((r) => setTimeout(r, POLL_RETRY_MS));
+        loop();
+      }
+    };
+    loop();
+    if (lastIntent) send(lastIntent.event, lastIntent.data);
+  };
+
+  const tryPollFallback = () => {
+    if (fallbackActive || closedByUser || !code || mode === 'poll') return;
+    fallbackActive = true;
+    mode = 'poll';
+    stopPoll();
+    closeSocket();
+    lastKnownAlive = Date.now();
+    startPoll(code);
   };
 
   const closeSocket = () => {
@@ -172,9 +243,13 @@ export function io(baseUrl, options = {}) {
 
   const dial = (targetCode, intent) => {
     if (!base) return;
+    stopPoll();
     closeSocket();
     closedByUser = false;
+    mode = 'ws';
+    fallbackActive = false;
     code = targetCode;
+    let opened = false;
     // The token rides the dial URL so the Durable Object can bind the socket to
     // the player at upgrade time; surviving an instance re-creation depends on
     // this, never on in-memory state from an earlier connection.
@@ -182,11 +257,19 @@ export function io(baseUrl, options = {}) {
     try {
       socket = new WebSocket(dialUrl);
     } catch {
-      scheduleReconnect();
+      tryPollFallback();
       return;
     }
+    // Some networks swallow the upgrade: the socket hangs in CONNECTING with no
+    // error or close. A timebox forces the switch to the HTTP transport.
+    dialTimer = setTimeout(() => {
+      if (!opened) tryPollFallback();
+    }, WS_FALLBACK_MS);
 
     socket.onopen = () => {
+      opened = true;
+      if (dialTimer) clearTimeout(dialTimer);
+      dialTimer = null;
       lastKnownAlive = Date.now();
       heartbeatTimer = setInterval(() => {
         if (!socket || socket.readyState !== WebSocket.OPEN) return;
@@ -209,11 +292,14 @@ export function io(baseUrl, options = {}) {
       if (intent) send(intent.event, intent.data);
     };
     socket.onmessage = (event) => handleMessage(event.data);
-    socket.onerror = () => { /* onclose does the recovery */ };
+    socket.onerror = () => {
+      if (!opened) tryPollFallback();
+    };
     socket.onclose = () => {
       socket = null;
       stopTimers();
-      scheduleReconnect();
+      if (!opened) return tryPollFallback();
+      if (!closedByUser) scheduleReconnect();
     };
   };
 
@@ -244,7 +330,10 @@ export function io(baseUrl, options = {}) {
         const payload = { ...(data || {}), code: target, token: ensureToken((data && data.token) || '') };
         const intent = { event, data: payload, code: target };
         lastIntent = intent;
-        if (!socket || code !== target) dial(target, intent);
+        if (mode === 'poll') {
+          if (code !== target) startPoll(target);
+          send(event, payload);
+        } else if (!socket || code !== target) dial(target, intent);
         else send(event, payload);
         return client;
       }
@@ -265,10 +354,14 @@ export function io(baseUrl, options = {}) {
     disconnect() {
       closedByUser = true;
       lastIntent = null;
+      stopPoll();
       closeSocket();
+      mode = 'ws';
+      fallbackActive = false;
       return client;
     },
     get connected() {
+      if (mode === 'poll') return !pollClosed;
       return !!socket && socket.readyState === WebSocket.OPEN;
     },
     /** Id of the local player inside a room, learned from room payloads. */

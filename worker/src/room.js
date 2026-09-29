@@ -47,6 +47,7 @@ export class SolvoxRoom {
     this.room = null;
     this.sockets = new Map(); // WebSocket -> playerToken
     this.graceTimers = new Map(); // playerToken -> timeout
+    this.pollers = new Map(); // playerToken -> { queue, wake, waiting }
     this._loaded = false;
     this._tag = Math.random().toString(36).slice(2, 7);
   }
@@ -88,12 +89,15 @@ export class SolvoxRoom {
   // ── plumbing ──────────────────────────────────────────────────────────────
 
   async fetch(request) {
-    if (request.headers.get('Upgrade') !== 'websocket') {
-      return new Response('expected websocket upgrade', { status: 426 });
-    }
     await this.ensureLoaded();
     // The Worker tells us which room code this object is responsible for.
     this.code = (request.headers.get('X-Solvox-Room') || '').trim().toUpperCase();
+    if (request.headers.get('Upgrade') !== 'websocket') {
+      const url = new URL(request.url);
+      if (request.method === 'POST' && url.pathname === '/event') return this.httpEvent(request);
+      if (request.method === 'GET' && url.pathname === '/poll') return this.httpPoll(url);
+      return new Response('expected websocket upgrade', { status: 426 });
+    }
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
     this.state.acceptWebSocket(server);
@@ -123,6 +127,101 @@ export class SolvoxRoom {
     const data = (frame && frame.data) || {};
     if (!event) return;
     console.log(`[dbg] msg ${event} inst=${this._tag} has=${this.sockets.has(ws) ? 1 : 0} n=${this.sockets.size} code=${this.code}`);
+    return this.dispatchFrame(event, data, ws);
+  }
+
+  /**
+   * Long-poll fallback for networks that drop WebSocket upgrades (campus
+   * firewalls etc). The client POSTs events to /event and pulls queued
+   * broadcasts off /poll. A player is identified by token alone, so a poller
+   * never depends on a live socket having been accepted on this instance.
+   */
+  async httpEvent(request) {
+    const token = cleanToken(new URL(request.url).searchParams.get('token'));
+    const body = await request.json().catch(() => ({}));
+    const event = body && body.event;
+    const data = (body && body.data) || {};
+    console.log(`[dbg] http ${event} inst=${this._tag} code=${this.code}`);
+    if (event) await this.dispatchFrame(event, { ...data, token }, this.pollerFor(token));
+    return new Response(JSON.stringify({ ok: true }), {
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    });
+  }
+
+  async httpPoll(url) {
+    const token = cleanToken(url.searchParams.get('token'));
+    const poller = this.pollerState(token);
+    if (!poller.queue.length && !poller.waiting) {
+      poller.waiting = true;
+      const queue = await new Promise((resolve) => {
+        const timer = setTimeout(() => {
+          poller.wake = null;
+          resolve(null);
+        }, 24000);
+        poller.wake = () => {
+          clearTimeout(timer);
+          poller.waiting = false;
+          resolve(poller.queue.splice(0, poller.queue.length));
+        };
+      });
+      poller.waiting = false;
+      if (!queue) return new Response('[]', {
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      });
+      return new Response(JSON.stringify(queue), {
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      });
+    }
+    return new Response(JSON.stringify(poller.queue.splice(0, poller.queue.length)), {
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    });
+  }
+
+  /** The fake WebSocket handed to the normal handlers so they can emit back. */
+  pollerFor(token) {
+    return this.pollerState(token).ws;
+  }
+
+  pollerState(token) {
+    if (!token) token = makeToken();
+    let poller = this.pollers.get(token);
+    if (!poller) {
+      poller = { queue: [], wake: null, waiting: false, ws: null };
+      this.pollers.set(token, poller);
+      poller.ws = {
+        __token: token,
+        __poll: true,
+        send: (raw) => {
+          let frame;
+          try {
+            frame = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          } catch {
+            return;
+          }
+          poller.queue.push(frame);
+          if (poller.wake) {
+            const wake = poller.wake;
+            poller.wake = null;
+            wake();
+          }
+        },
+      };
+    }
+    return poller;
+  }
+
+  pushToPollers(event, data) {
+    for (const poller of this.pollers.values()) {
+      poller.queue.push({ event, data });
+      if (poller.wake) {
+        const wake = poller.wake;
+        poller.wake = null;
+        wake();
+      }
+    }
+  }
+
+  dispatchFrame(event, data, ws) {
     if (event === 'room:create') return this.onCreate(ws, data);
     if (event === 'room:join') return this.onJoin(ws, data);
     if (event === 'player:ready') return this.onReady(ws, data);
@@ -133,6 +232,7 @@ export class SolvoxRoom {
     if (event === 'rematch') return this.onRematch(ws);
     if (event === 'room:leave') return this.onLeave(ws, true);
     console.log(`[dbg] ws event tak dikenal: ${event}`);
+    return null;
   }
 
   async webSocketClose(ws) {
@@ -175,6 +275,7 @@ export class SolvoxRoom {
     for (const ws of this.state.getWebSockets()) {
       this.send(ws, event, payload);
     }
+    this.pushToPollers(event, payload);
     this.saveRoom();
   }
 
@@ -301,7 +402,9 @@ export class SolvoxRoom {
   }
 
   findPlayer(ws) {
-    const token = this.sockets.get(ws);
+    const token = ws && ws.__poll
+      ? ws.__token
+      : this.sockets.get(ws);
     if (!token || !this.room) return null;
     return this.room.players.find((p) => p.token === token) || null;
   }
