@@ -12,6 +12,12 @@ import { getBoss } from '../data/bosses';
 import { getBossImpactMs, getBossPreviewSrc, getBossSequenceDurationMs } from '../data/bossAssets';
 import PixelIcon from './PixelIcon';
 import { SolvoxUtilityArt } from './SolvoxUtilityArt';
+import { playSound } from '../services/sound';
+import { enhanceFeedback } from '../services/aiFeedback';
+
+// Hints cost more HP the longer a run drags on, so a struggling player is never
+// punished into a dead end by repeatedly buying help.
+const HINT_COSTS = [5, 10, 15];
 
 /**
  * Normalise algebra answers so keyboard symbols and typed Unicode variants
@@ -207,10 +213,12 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
 
   /* ------------------------------- Hint ----------------------------------- */
   const useHint = () => {
-    if (busy || currentHints >= 3 || hp <= 5) return;
+    const hintCost = HINT_COSTS[currentHints] ?? HINT_COSTS[HINT_COSTS.length - 1];
+    if (busy || currentHints >= 3 || hp <= hintCost) return;
 
     setCurrentHints((value) => value + 1);
-    setHp((value) => Math.max(1, value - 5));
+    setHp((value) => Math.max(1, value - hintCost));
+    playSound('hint');
 
     // Hints live only in the dedicated hint rail; they never expand the
     // question area or push the answer controls downward.
@@ -236,8 +244,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
 
     setAttempts(attemptNow);
     const learningFeedback = String(q.feedback || q.explanation || '').trim();
-
-    setFeedback({
+    const baseFeedback = {
       type: isCorrect ? 'correct' : 'wrong',
       title: isCorrect ? t('correct') : t('wrong'),
       message: isCorrect ? t('attackReady') : (learningFeedback || t('tryAgain')),
@@ -248,12 +255,33 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
         : attemptNow < 2
           ? t('feedbackRetryPrompt')
           : t('recommendReview'),
-    });
+    };
+    setFeedback(baseFeedback);
+    playSound(isCorrect ? 'correct' : 'wrong');
 
     if (isCorrect) {
       handleCorrectAnswer({ elapsed, attemptNow, history, tracker });
       return;
     }
+
+    // The Worker has no /api/ai-feedback route, so this resolves straight back
+    // to `baseFeedback` today. It exists so a future route needs no Battle change.
+    enhanceFeedback({
+      question: q.text,
+      context: q.context,
+      concept: q.concept,
+      errorTag: q.errorTag,
+      explanation: q.explanation,
+      localFeedback: learningFeedback,
+      answer: correctAnswer,
+      userAnswer: answer,
+      attempt: attemptNow,
+      wrongAttempts: tracker.wrongAttempts,
+      chapter: levelId,
+      lang,
+    }, baseFeedback).then((nextFeedback) => {
+      if (nextFeedback !== baseFeedback) setFeedback(nextFeedback);
+    });
 
     handleWrongAnswer({ elapsed, attemptNow, history, tracker });
   };
@@ -264,6 +292,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
     setCorrect(correctNow);
     setBusy(true);
     combatRef.current?.playerAttack();
+    playSound('playerAttack');
 
     later(() => {
       const nextEnemyHp = Math.max(0, enemyHp - 28);
@@ -299,6 +328,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
         if (nextEnemyHp <= 0) combatRef.current?.bossDie();
 
         if (nextEnemyHp <= 0 || last) {
+          playSound(won ? 'victory' : 'defeat');
           finish({
             accuracy: questions.length
               ? Math.round((correctNow / questions.length) * 100)
@@ -330,6 +360,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
     setHp(nextHp);
     setBusy(true);
     combatRef.current?.bossAttack();
+    playSound(Number(levelId) === 1 ? 'chapter1BossAttack' : 'attack');
 
     later(() => {
       showImpact('player', 8, 'boss');
@@ -363,6 +394,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
 
         later(() => {
           if (nextHp <= 0 || last) {
+            playSound(nextHp <= 0 ? 'defeat' : 'menu');
             finish({
               accuracy: questions.length
                 ? Math.round((correct / questions.length) * 100)
@@ -416,7 +448,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
       <div className="battle-world-v43">
         <ArenaBackground levelId={levelId} />
 
-        <div className="battle-ui-v43">
+        <div className={`battle-ui-v43${feedback?.type === 'wrong' ? ' has-feedback-v106' : ''}`}>
           {/* Top HUD */}
           <div className="battle-top-rail-v43">
             <button
@@ -532,6 +564,8 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
             submit={submit}
             hintsUsed={currentHints}
             hintsLeft={Math.max(0, 3 - currentHints)}
+            hintCost={HINT_COSTS[currentHints] ?? HINT_COSTS[HINT_COSTS.length - 1]}
+            currentHp={hp}
             useHint={useHint}
             keypadVisible={keypadVisible}
             onToggleKeypad={() => setKeypadVisible((value) => !value)}

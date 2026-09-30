@@ -92,6 +92,43 @@ const CHAPTER_RULES_EN = {
   },
 };
 
+const CATEGORY_TITLES = {
+  id: {
+    master: 'Master',
+    signSwitch: 'Perubahan Tanda',
+    inverseOperation: 'Operasi Invers',
+    signRules: 'Aturan Tanda',
+    order: 'Urutan Operasi',
+    distributive: 'Sifat Distributif',
+    minusParentheses: 'Tanda Minus pada Kurung',
+    fraction: 'Kebingungan Pecahan',
+    grouping: 'Mengelompokkan Suku Sejenis',
+    special: 'Kesalahan Rumus Khusus',
+    context: 'Beban Informasi Soal Cerita',
+    modeling: 'Pemodelan Matematika',
+    pacing: 'Tempo Pengerjaan',
+    hintDependence: 'Ketergantungan Hint',
+    remedial: 'Perlu Penguatan',
+  },
+  en: {
+    master: 'Master',
+    signSwitch: 'Sign Switch',
+    inverseOperation: 'Inverse Operation',
+    signRules: 'Sign Rules',
+    order: 'Order of Operations',
+    distributive: 'Distributive Property',
+    minusParentheses: 'Minus Parentheses',
+    fraction: 'Fraction Confusion',
+    grouping: 'Grouping Like Terms',
+    special: 'Special Formula',
+    context: 'Story Context Overload',
+    modeling: 'Mathematical Modeling',
+    pacing: 'Pacing',
+    hintDependence: 'Hint Dependence',
+    remedial: 'Needs Reinforcement',
+  }
+};
+
 const idsOf = (logs, predicate) => logs.filter(predicate).map((log) => Number(log.questionId ?? log.idx + 1));
 const hits = (ids, set) => ids.some((id) => set.includes(id));
 
@@ -99,7 +136,7 @@ export function evaluateSolvoxChapter(result = {}) {
   const chapterId = Number(result.chapterId);
   const lang = result.lang === 'en' ? 'en' : 'id';
   const rules = (lang === 'en' ? CHAPTER_RULES_EN : CHAPTER_RULES)[chapterId];
-  if (!rules) return { category: 'unknown', title: '', message: '', source: 'EVALUASI SOAL SOLVOX.docx' };
+  if (!rules) return { category: 'unknown', title: '', message: '', source: 'Solvox learning rules' };
 
   const logs = Array.isArray(result.questionLogs) ? result.questionLogs : [];
   const total = Math.max(1, Number(result.totalQuestions) || 10);
@@ -117,57 +154,57 @@ export function evaluateSolvoxChapter(result = {}) {
       (chapterId === 3 && accuracy === 100 && !hits(wrongIds, ORDER_OF_OPERATIONS.concat(DISTRIBUTIVE))) ||
       (chapterId === 4 && accuracy === 100) ||
       (chapterId === 5 && accuracy === 100)) {
-    return { category: 'master', title: 'Master', message: rules.master, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'master', title: CATEGORY_TITLES[lang].master, message: rules.master, source: 'Solvox learning rules' };
   }
 
   if (chapterId === 1 && hits(wrongIds, SIGN_SWITCH)) {
-    return { category: 'sign-switch', title: 'Misconception: Sign Switch', message: rules.signSwitch, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'sign-switch', title: CATEGORY_TITLES[lang].signSwitch, message: rules.signSwitch, source: 'Solvox learning rules' };
   }
   if (chapterId === 2 && hits(wrongIds, INVERSE_OPERATION)) {
-    return { category: 'inverse-operation', title: 'Misconception: Inverse Operation', message: rules.inverse, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'inverse-operation', title: CATEGORY_TITLES[lang].inverseOperation, message: rules.inverse, source: 'Solvox learning rules' };
   }
   if (chapterId === 2 && hits(wrongIds, SIGN_RULES)) {
-    return { category: 'sign-rules', title: 'Sign Rules Error', message: rules.signs, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'sign-rules', title: CATEGORY_TITLES[lang].signRules, message: rules.signs, source: 'Solvox learning rules' };
   }
   if (chapterId === 3 && hits(wrongIds, ORDER_OF_OPERATIONS)) {
-    return { category: 'order-of-operations', title: 'Misconception: Order of Operations', message: rules.order, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'order-of-operations', title: CATEGORY_TITLES[lang].order, message: rules.order, source: 'Solvox learning rules' };
   }
   if (chapterId === 3 && hits(wrongIds, DISTRIBUTIVE)) {
-    return { category: 'distributive-property', title: 'Distributive Property Error', message: rules.distributive, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'distributive-property', title: CATEGORY_TITLES[lang].distributive, message: rules.distributive, source: 'Solvox learning rules' };
   }
   if (chapterId === 4 && hits(wrongIds, MINUS_PARENTHESES)) {
-    return { category: 'minus-parentheses', title: 'Minus-Parentheses Mistake', message: rules.minusParentheses, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'minus-parentheses', title: CATEGORY_TITLES[lang].minusParentheses, message: rules.minusParentheses, source: 'Solvox learning rules' };
   }
   if (chapterId === 4 && hits(wrongIds, FRACTION_CONFUSION)) {
-    return { category: 'fraction-confusion', title: 'Fraction Confusion', message: rules.fractions, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'fraction-confusion', title: CATEGORY_TITLES[lang].fraction, message: rules.fractions, source: 'Solvox learning rules' };
   }
   if (chapterId === 4 && hits(wrongIds, GROUPING)) {
-    return { category: 'grouping-like-terms', title: 'Grouping Like Terms', message: rules.grouping, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'grouping-like-terms', title: CATEGORY_TITLES[lang].grouping, message: rules.grouping, source: 'Solvox learning rules' };
   }
   if (chapterId === 5 && hits(wrongIds, SPECIAL_FORMULA)) {
-    return { category: 'special-formula', title: 'Special Formula Error', message: rules.special, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'special-formula', title: CATEGORY_TITLES[lang].special, message: rules.special, source: 'Solvox learning rules' };
   }
   if (chapterId === 5 && hits(wrongIds, CONTEXT_OVERLOAD)) {
-    return { category: 'context-overload', title: 'Context Overload', message: rules.context, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'context-overload', title: CATEGORY_TITLES[lang].context, message: rules.context, source: 'Solvox learning rules' };
   }
   if (chapterId === 5 && accuracy < 80) {
-    return { category: 'mathematical-modeling', title: 'Mathematical Modeling', message: rules.modeling, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'mathematical-modeling', title: CATEGORY_TITLES[lang].modeling, message: rules.modeling, source: 'Solvox learning rules' };
   }
   if (chapterId === 3 && accuracy >= 70 && avgTime >= 45 && hintsUsed > 0) {
-    return { category: 'pacing', title: 'Pacing Issue', message: rules.pacing, source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'pacing', title: CATEGORY_TITLES[lang].pacing, message: rules.pacing, source: 'Solvox learning rules' };
   }
   if (accuracyHigh && hintHeavyRatio >= 0.5) {
-    return { category: 'hint-dependence', title: 'Over-reliance on Scaffolding', message: rules.hintDependence || (lang === 'en' ? 'Use hints only when needed so your first step becomes more independent.' : 'Gunakan Hint secukupnya agar langkah pertama semakin mandiri.'), source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'hint-dependence', title: CATEGORY_TITLES[lang].hintDependence, message: rules.hintDependence || (lang === 'en' ? 'Use hints only when needed so your first step becomes more independent.' : 'Gunakan Hint secukupnya agar langkah pertama semakin mandiri.'), source: 'Solvox learning rules' };
   }
   if (accuracy < 60 && logs.some((item) => Number(item.hintsUsed) >= 3 || Number(item.hintsUsed) >= 2)) {
-    return { category: 'remedial', title: 'Need Remedial', message: rules.remedial || (lang === 'en' ? 'Review this chapter and pay attention to the sign changes in the hints.' : 'Ulangi bab ini dan perhatikan perubahan tanda pada kartu petunjuk.'), source: 'EVALUASI SOAL SOLVOX.docx' };
+    return { category: 'remedial', title: CATEGORY_TITLES[lang].remedial, message: rules.remedial || (lang === 'en' ? 'Review this chapter and pay attention to the sign changes in the hints.' : 'Ulangi bab ini dan perhatikan perubahan tanda pada kartu petunjuk.'), source: 'Solvox learning rules' };
   }
 
   return {
     category: result.won ? 'progress' : 'review',
-    title: result.won ? 'Keep Building' : 'Need Review',
+    title: result.won ? (lang === 'en' ? 'Keep Improving' : 'Terus Berkembang') : (lang === 'en' ? 'Review Needed' : 'Perlu Ditinjau'),
     message: result.won ? (lang === 'en' ? 'Use the error patterns you found to strengthen your next steps.' : 'Gunakan pola kesalahan yang muncul untuk memperkuat langkah berikutnya.') : (lang === 'en' ? 'Review the questions you missed and use the per-question feedback before playing again.' : 'Review kembali soal yang salah dan manfaatkan feedback per-soal sebelum bertanding lagi.'),
-    source: 'EVALUASI SOAL SOLVOX.docx'
+    source: 'Solvox learning rules'
   };
 }
 

@@ -1,13 +1,45 @@
-import React,{useEffect,useMemo} from 'react';
+import React,{useEffect,useMemo,useState} from 'react';
 import {classifyMastery,summarizePerformance} from '../services/evaluation';
 import { evaluateSolvoxChapter } from '../services/solvoxEvaluation';
 import PixelIcon from './PixelIcon';
 import {apiUrl} from '../config';
 
+function buildStrengths(summary, t) {
+  const strengths = [];
+  if (summary.accuracy >= 85) strengths.push(t('evalStrengthAccuracy'));
+  if (summary.firstAttemptRate >= 70) strengths.push(t('evalStrengthFirstTry'));
+  if (summary.avgTimePerAnsweredQuestion > 0 && summary.avgTimePerAnsweredQuestion <= 30) strengths.push(t('evalStrengthPace'));
+  if (summary.hintsUsed === 0) strengths.push(t('evalStrengthIndependence'));
+  if (summary.completionRate >= 90) strengths.push(t('evalStrengthCompletion'));
+  if (!strengths.length) strengths.push(t('evalStrengthPersistence'));
+  return strengths.slice(0, 3);
+}
+
+function buildAdvice(summary, t) {
+  const advice = summary.weakConcepts.map(item => `${item.concept} — ${item.accuracy}%`);
+  if (!advice.length) advice.push(summary.mastery >= 85 ? t('evalAdviceChallenge') : t('evalAdviceReview'));
+  if (summary.hintsUsed >= 2) advice.push(t('evalAdviceHints'));
+  if (summary.retryQuestions >= 2) advice.push(t('evalAdviceRetries'));
+  return advice.slice(0, 2);
+}
+
+// The adaptive next step. This was part of the V35 learning map; the V105
+// restructure dropped it, which silently removed the one line that told the
+// player what to actually DO next. Kept as its own row so the guidance stays
+// visible next to the advice bullets.
+function buildNextAction(summary, t) {
+  if (summary.weakConcepts.length) return t('evaluationActionReview');
+  return summary.mastery >= 85 ? t('evaluationActionChallenge') : t('evaluationActionPractice');
+}
+
 export default function Evaluation({result,onClose,onRematch,onNext,nextLevel,t,lang}){
   const summary=useMemo(()=>summarizePerformance(result),[result]);
   const solvoxEvaluation=useMemo(()=>result.chapterEvaluation || evaluateSolvoxChapter({...result, ...summary}),[result,summary]);
   const cls=classifyMastery(summary.mastery).key;
+  const [expanded,setExpanded]=useState(null);
+  const strengths=useMemo(()=>buildStrengths(summary,t),[summary,t]);
+  const advice=useMemo(()=>buildAdvice(summary,t),[summary,t]);
+  const nextAction=useMemo(()=>buildNextAction(summary,t),[summary,t]);
   useEffect(()=>{
     fetch(apiUrl('/api/evaluation'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       chapterId:result.chapterId,
@@ -23,70 +55,87 @@ export default function Evaluation({result,onClose,onRematch,onNext,nextLevel,t,
   const statusText=result.won?t('levelClear'):t('levelNotCleared');
   const outcomeNote=result.won?t('evaluationWinNote'):t('evaluationLoseNote');
   return <div className="modal-backdrop modal-backdrop-v26">
-    <div className={`eval-card eval-card-detailed eval-card-v26 ${result.won?'win':'loss'}`}>
-      <div className="eval-hero-v26">
-        <div className="medal medal-v27"><PixelIcon name={result.won?'trophy':'skull'} size={48}/></div>
-        <div className="eyebrow">{t('evaluation')}</div>
-        <h2>{statusText}</h2>
-        <p>{outcomeNote}</p>
-      </div>
-
-      <div className="mastery-score-row"><div className="big-score">{summary.mastery}</div><div><strong>{labels[cls]}</strong><small>{t('masteryFromActualRun')}</small></div></div>
-
-      <div className="metrics metrics-six">
-        <span>{t('accuracy')}<b>{summary.accuracy}%</b></span>
-        <span>{t('firstAttempt')}<b>{summary.firstAttemptRate}%</b></span>
-        <span>{t('time')}<b>{summary.totalTime}s</b></span>
-        <span>{t('attempt')}<b>{summary.totalAttempts}</b></span>
-        <span>{t('hints')}<b>{summary.hintsUsed}</b></span>
-        <span>{t('hpRemaining')}<b>{summary.hpRemaining}/{summary.maxHp}</b></span>
-      </div>
-
-      <div className="eval-observations eval-observations-v26">
-        <div><span>{t('answered')}</span><b>{summary.answeredQuestions}/{summary.totalQuestions}</b></div>
-        <div><span>{t('wrongQuestions')}</span><b>{summary.wrongQuestions}</b></div>
-        <div><span>{t('retries')}</span><b>{summary.retryQuestions}</b></div>
-        <div><span>{t('damageTaken')}</span><b>{summary.damageTaken} HP</b></div>
-        <div><span>{t('avgQuestionTime')}</span><b>{summary.avgTimePerAnsweredQuestion}s</b></div>
-        <div><span>{t('completion')}</span><b>{summary.completionRate}%</b></div>
-      </div>
-
-      <div className="eval-recommendation-v34 solvox-evaluation-card">
-        <div className="eval-recommendation-icon"><PixelIcon name="spark" size={20}/></div>
-        <div>
-          <span>{solvoxEvaluation.title}</span>
-          <strong>{solvoxEvaluation.message}</strong>
-          <small>{solvoxEvaluation.source}</small>
+    <div className={`eval-card eval-card-detailed eval-card-v26 eval-card-v105 ${result.won?'win':'loss'}`}>
+      <header className="eval-summary-v105">
+        <div className="eval-summary-copy-v105">
+          <div className="eyebrow">{t('evaluation')}</div>
+          <h2>{statusText}</h2>
+          <p>{outcomeNote}</p>
         </div>
-      </div>
-
-      <div className="eval-recommendation-v34">
-        <div className="eval-recommendation-icon"><PixelIcon name={summary.mastery>=70?'spark':'hint'} size={20}/></div>
-        <div>
-          <span>{t('studyRecommendation')}</span>
-          <strong>{summary.weakConcepts.length ? summary.weakConcepts.map(x=>x.concept).join(' • ') : (summary.mastery>=85 ? t('recommendChallenge') : t('recommendReview'))}</strong>
-          <small>{summary.hintsUsed>0 ? t('recommendHintIndependence') : t('recommendKeepGoing')}</small>
+        <div className="eval-score-v105">
+          <div className="eval-score-number-v105">{summary.mastery}</div>
+          <span>{labels[cls]}</span>
+          <div className="eval-accuracy-bar-v105" aria-label={`${summary.accuracy}% ${t('accuracy')}`}><i style={{width:`${summary.accuracy}%`}}/></div>
+          <small>{summary.accuracy}% {t('accuracy')}</small>
         </div>
-      </div>
+      </header>
 
-      <div className="eval-learning-map-v35">
-        <div><span>{t('evaluationEvidence')}</span><strong>{summary.accuracy}% {t('accuracy')} • {summary.firstAttemptRate}% {t('firstAttempt')} • {summary.hintsUsed} {t('hints')}</strong></div>
-        <div><span>{t('evaluationAction')}</span><strong>{summary.weakConcepts.length ? t('evaluationActionReview') : (summary.mastery>=85 ? t('evaluationActionChallenge') : t('evaluationActionPractice'))}</strong></div>
-        <div><span>{t('evaluationProcess')}</span><strong>{summary.retryQuestions} {t('retries')} • {summary.avgTimePerAnsweredQuestion}s / {t('avgQuestionTime')}</strong></div>
-      </div>
+      <section className="eval-summary-block-v105">
+        <div className="eval-section-title-v105"><PixelIcon name="spark" size={16}/><h3>{t('evalStrengthsTitle')}</h3></div>
+        <div className="eval-bullets-v105">{strengths.map((text,index)=><p key={`s-${index}`}>• {text}</p>)}</div>
+      </section>
 
-      <div className="eval-grid">
-        <div><h3>{t('mostMistakes')}</h3>{summary.errorList.length?summary.errorList.map(([key,count])=><p key={key}>• {key} — <b>{count}</b></p>):<p>{t('noMistakes')}</p>}</div>
-        <div><h3>{t('possibleForgotten')}</h3>{summary.weakConcepts.length?summary.weakConcepts.map(x=><p key={x.concept}>• {x.concept} — <b>{x.accuracy}%</b>{x.retries?` • ${x.retries} retry`:''}</p>):<p>{t('noForgotten')}</p>}</div>
-      </div>
+      <section className="eval-summary-block-v105">
+        <div className="eval-section-title-v105"><PixelIcon name="hint" size={16}/><h3>{t('evalAdviceTitle')}</h3></div>
+        <div className="eval-next-action-v105">
+          <span>{t('evaluationAction')}</span>
+          <strong>{nextAction}</strong>
+        </div>
+        <div className="eval-bullets-v105">{advice.map((text,index)=><p key={`a-${index}`}>• {text}</p>)}</div>
+      </section>
 
-      <div className="question-review">
-        <div className="question-review-header-v26"><h3>{t('chapterReport')}</h3><span>{({ 'boss-defeated':t('reasonBossDefeated'), 'chapter-complete':t('reasonChapterComplete'), 'question-failed':t('reasonQuestionFailed'), 'player-defeated':t('reasonPlayerDefeated') }[result.completionReason]) || t('chapterComplete')}</span></div>
-        {result.questionLogs?.length ? result.questionLogs.map((x,i)=><div className={`review-row ${x.correct?'ok':'bad'}`} key={`${x.idx}-${i}`}>
-          <div><b>{i+1}. {x.concept}</b><small>{x.timeSec}s • {t('attempt')}: {x.attempts} • {t('wrongAttempts')}: {x.wrongAttempts||0} • {t('hints')}: {x.hintsUsed||0}</small><small>{x.answerHistory?.length?`${t('answerHistory')}: ${x.answerHistory.join(' → ')}`:''}</small><small>{t('expected')}: <strong>{x.correctAnswer}</strong></small></div>
-          <span className={x.correct?'review-ok-v27':'review-bad-v27'}><PixelIcon name={x.correct?'check':'close'} size={15}/></span>
-        </div>) : <div className="empty-review-v26">{t('noQuestionLogs')}</div>}
-      </div>
+      <section className="eval-metrics-v105" aria-label={t('evaluationEvidence')}>
+        {[
+          [t('accuracy'),`${summary.accuracy}%`],
+          [t('firstAttempt'),`${summary.firstAttemptRate}%`],
+          [t('time'),`${summary.totalTime}s`],
+          [t('avgQuestionTime'),`${summary.avgTimePerAnsweredQuestion}s`],
+          [t('attempt'),summary.totalAttempts],
+          [t('retries'),summary.retryQuestions],
+          [t('hints'),summary.hintsUsed],
+          [t('hpRemaining'),`${summary.hpRemaining}/${summary.maxHp}`],
+        ].map(([label,value])=><div key={label} className="eval-metric-v105"><span>{label}</span><b>{value}</b></div>)}
+      </section>
+
+      <section className="eval-recommendation-v105">
+        <div className="eval-recommendation-icon"><PixelIcon name="spark" size={18}/></div>
+        <div><span>{t('studyRecommendation')}</span><strong>{solvoxEvaluation.title}</strong><p>{solvoxEvaluation.message}</p></div>
+      </section>
+
+      <section className="eval-review-v105">
+        <div className="eval-review-head-v105">
+          <div>
+            <div className="eyebrow">{t('chapterReport')}</div>
+            <h3>{t('evalDetailsTitle')}</h3>
+          </div>
+          <span>{summary.answeredQuestions}/{summary.totalQuestions}</span>
+        </div>
+
+        <div className="eval-accordion-v105">
+          {result.questionLogs?.length ? result.questionLogs.map((item,index)=>(
+            <details key={`${item.idx}-${index}`} open={expanded===index} onToggle={event=>setExpanded(event.currentTarget.open?index:null)} className={`eval-detail-v105 ${item.correct?'ok':'bad'}`}>
+              <summary>
+                <span className="eval-detail-status-v105"><PixelIcon name={item.correct?'check':'close'} size={14}/></span>
+                <div>
+                  <b>{t('questionNumber')} {item.questionId ?? index+1} · {item.concept}</b>
+                  <small>{item.timeSec}s • {t('attempt')}: {item.attempts} • {t('hints')}: {item.hintsUsed||0}</small>
+                </div>
+                <span className="eval-detail-chevron-v105">⌄</span>
+              </summary>
+              <div className="eval-detail-body-v105">
+                <div className="eval-question-full-v105"><span>{t('question')}</span><p>{item.text}</p></div>
+                <div className="eval-answer-grid-v105">
+                  <div><span>{t('yourAnswer')}</span><b>{Array.isArray(item.answer)?item.answer.join(', '):item.answer||'—'}</b></div>
+                  <div><span>{t('expected')}</span><b>{Array.isArray(item.correctAnswer)?item.correctAnswer.join(', '):item.correctAnswer}</b></div>
+                </div>
+                {item.feedback&&<div className="eval-feedback-v105"><span>{t('learningFeedback')}</span><p>{item.feedback}</p></div>}
+                {item.explanation&&<div className="eval-explanation-v105"><span>{t('explanation')}</span><p>{item.explanation}</p></div>}
+                {item.answerHistory?.length>1&&<div className="eval-history-v105"><span>{t('answerHistory')}</span><p>{item.answerHistory.join(' → ')}</p></div>}
+              </div>
+            </details>
+          )) : <div className="empty-review-v26">{t('noQuestionLogs')}</div>}
+        </div>
+      </section>
 
       <p className="eval-note">{t('masteryNote')}</p>
       <div className="eval-actions eval-actions-v26">

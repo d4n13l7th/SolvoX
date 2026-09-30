@@ -1,9 +1,11 @@
 import React,{useEffect,useState} from 'react';
 import PixelIcon from './PixelIcon';
 import {SolvoxUtilityArt} from './SolvoxUtilityArt';
+import { isSoundEnabled, setSoundEnabled } from '../services/sound';
 
 export default function Settings({lang,t,onClose,onReset,onChangeLang,onAboutUs}){
   const [motion,setMotion]=useState(()=>localStorage.getItem('solvox.reducedMotion')==='1' || localStorage.getItem('numericore.reducedMotion')==='1' || localStorage.getItem('aljabarmaster.reducedMotion')==='1');
+  const [sound,setSound]=useState(()=>isSoundEnabled());
   useEffect(()=>{document.documentElement.classList.toggle('reduced-motion',motion);localStorage.setItem('solvox.reducedMotion',motion?'1':'0')},[motion]);
   const chooseLanguage=(next)=>{onChangeLang?.(next)};
   return <div className="modal-backdrop">
@@ -23,6 +25,11 @@ export default function Settings({lang,t,onClose,onReset,onChangeLang,onAboutUs}
             <img src="/assets/ui/utility/icons/flag-en-v94.png" alt="" aria-hidden="true" />
           </button>
         </div>
+      </div>
+
+      <div className="settings-row">
+        <div><b>{t('sound')}</b><p>{t('soundHint')}</p></div>
+        <button className={`toggle-btn ${sound?'on':''}`} onClick={()=>setSound(v=>{const next=!v;setSoundEnabled(next);return next;})}>{sound?t('on'):t('off')}</button>
       </div>
 
       <div className="settings-row">

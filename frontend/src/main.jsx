@@ -17,7 +17,9 @@ import './styles/font-v78.css';
 import './styles/ui-v93.css';
 import './styles/ui-v96.css';
 import './styles/tutorial-v102.css';
-import './styles/responsive-v102.css';
+import './styles/ui-v104.css';
+import './styles/evaluation-v105.css';
+import './styles/responsive-v105.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

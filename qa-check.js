@@ -34,7 +34,7 @@ const chapterCss = read('frontend/src/styles/chapter-select-v44.css');
 const battleCss = read('frontend/src/styles/battle-v43.css');
 const levels = read('frontend/src/data/levels.js');
 const backgrounds = read('frontend/src/config/backgrounds.js');
-const responsive102 = read('frontend/src/styles/responsive-v102.css');
+const responsive105 = read('frontend/src/styles/responsive-v105.css');
 const englishQuestions = JSON.parse(fs.readFileSync(path.join(root, 'backend/solvoxQuestions.en.json'), 'utf8'));
 const main = read('frontend/src/main.jsx');
 const pkg = require('./package.json');
@@ -143,19 +143,19 @@ for (const legacy of [
 must(!ui42.includes('.home-v31-next-banner'), 'Removed Home overflow banner style remains in ui-v42.css');
 must(!ui42.includes('html,body,#root{width:100%;height:100%;overflow:hidden}'), 'Legacy fixed viewport overflow rule remains in ui-v42.css');
 must(!ui42.includes('.app-shell{height:100dvh;min-height:100dvh;overflow:hidden}'), 'Legacy fixed app-shell overflow rule remains in ui-v42.css');
-must(/html,\s*body,\s*#root/.test(responsive102) && responsive102.includes('overflow-y: auto !important') && responsive102.includes('touch-action: pan-y'), 'Mobile document scroll contract is missing');
+must(/html,\s*body,\s*#root/.test(responsive105) && responsive105.includes('overflow-y: auto !important') && responsive105.includes('touch-action: pan-y'), 'Mobile document scroll contract is missing');
 must(main.includes("import './styles/home-menu-v83.css';") && main.includes("import './styles/tutorial-v102.css';"), 'V103 Home/tutorial styles are not wired into main');
-must(main.includes("import './styles/responsive-v102.css';") && exists('frontend/src/styles/tutorial-v102.css') && !exists('frontend/src/styles/responsive-v101.css') && responsive102.includes('.battle-reference-v43') && responsive102.includes('mobile document-scroll contract'), 'V103 responsive portrait layer is not wired correctly');
-must(responsive102.includes('.mode-select-v45') && responsive102.includes('overflow: visible !important') && responsive102.includes('height: auto !important'), 'Mobile mode selector must use natural vertical scrolling');
-must(responsive102.includes('.chapter-select-v44') && responsive102.includes('overflow: visible !important') && responsive102.includes('min-height: 0 !important'), 'Mobile chapter selector must use natural vertical scrolling');
-must(responsive102.includes('.battle-reference-arena-v43') && responsive102.includes('touch-action: pan-y') && responsive102.includes('.settings-head-v102') && responsive102.includes('filter:none!important'), 'V103 responsive battle/mobile/settings layer is incomplete');
+must(main.includes("import './styles/responsive-v105.css';") && exists('frontend/src/styles/tutorial-v102.css') && !exists('frontend/src/styles/responsive-v101.css') && responsive105.includes('.battle-reference-v43') && responsive105.includes('mobile document-scroll contract'), 'V103 responsive portrait layer is not wired correctly');
+must(responsive105.includes('.mode-select-v45') && responsive105.includes('overflow: visible !important') && responsive105.includes('height: auto !important'), 'Mobile mode selector must use natural vertical scrolling');
+must(responsive105.includes('.chapter-select-v44') && responsive105.includes('overflow: visible !important') && responsive105.includes('min-height: 0 !important'), 'Mobile chapter selector must use natural vertical scrolling');
+must(responsive105.includes('.battle-reference-arena-v43') && responsive105.includes('touch-action: pan-y') && responsive105.includes('.settings-head-v102') && responsive105.includes('filter:none!important'), 'V103 responsive battle/mobile/settings layer is incomplete');
 must(!exists('frontend/src/components/OrientationNotice.jsx') && !main.includes('OrientationNotice'), 'Legacy orientation blocker remains after portrait-responsive update');
 must(Array.isArray(englishQuestions) && englishQuestions.length === 50 && englishQuestions.every(q => q.text && q.feedback && Array.isArray(q.hints) && q.hints.length === 3), 'English question pack must contain 50 complete questions');
 must(read('frontend/src/data/questions.js').includes('getSolvoxQuestions(levelId, count, _lang)'), 'Single-player question loader is not language-aware');
 must(read('backend/question-generator.js').includes('packEn') && read('backend/question-generator.js').includes("lang === 'en' ? packEn : packId"), 'Multiplayer question generator is not language-aware');
 must(read('frontend/src/services/solvoxEvaluation.js').includes('CHAPTER_RULES_EN') && read('frontend/src/services/solvoxEvaluation.js').includes("result.lang === 'en'"), 'English chapter evaluation rules are missing');
 must(!css.includes('.home-v31') && !ui42.includes('.home-v31'), 'Legacy V31 Home CSS remains after the V77 rewrite');
-must(!read('frontend/src/styles/font-v78.css').includes('home-menu-v77') && !responsive102.includes('home-menu-v77'), 'Retired V77 Home selectors remain in shared styles');
+must(!read('frontend/src/styles/font-v78.css').includes('home-menu-v77') && !responsive105.includes('home-menu-v77'), 'Retired V77 Home selectors remain in shared styles');
 must(exists('frontend/src/components/SolvoxBrandLogo.jsx') && exists('frontend/src/styles/solvox-brand-v89.css') && main.includes("import './styles/solvox-brand-v89.css';") && read('frontend/src/components/SolvoxBrandLogo.jsx').includes('solvox-logo-v89.png'), 'Solvox V89 image logo is missing or not wired');
     must(!exists('frontend/public/assets/ui/brand/solvox-wordmark-v83.svg') && !exists('frontend/src/components/SolvoxHtmlLogo.jsx') && !exists('frontend/src/styles/solvox-logo-v83.css'), 'Retired V83 logo implementation remains');
 must(!exists('frontend/public/assets/ui/brand/solvox-logo.png'), 'Retired image-based Solvox logo remains');
@@ -201,7 +201,11 @@ must(keypad.includes("'²'") && keypad.includes("'fraction'") && keypad.includes
 must(multi.includes('turn:hint') && multi.includes('viewSolution') && multi.includes('tieBreakHintRule'), 'Multiplayer hint support missing');
 must(apiServer.includes("socket.on('turn:hint'") && apiServer.includes('hintsUsed') && apiServer.includes('finishSummary'), 'Multiplayer hint/tie-break tracking missing');
 must(feedback.includes('PixelIcon'), 'Feedback icon import missing');
-must(evaluation.includes('eval-learning-map-v35') && evaluation.includes('evaluationAction'), 'Evaluation learning layer missing');
+must(evaluation.includes('eval-summary-v105') && evaluation.includes('eval-detail-v105') && evaluation.includes('evalStrengthsTitle') && evaluation.includes('eval-accordion-v105'), 'V105 evaluation restructure is missing');
+// Guards the two things the V105 restructure silently dropped from the V35 learning map:
+// the adaptive next-action line and the per-question time / retry stats.
+must(evaluation.includes('buildNextAction') && evaluation.includes('eval-next-action-v105') && evaluation.includes("t('evaluationAction')") && /weakConcepts\.length/.test(evaluation) && /evaluationActionReview/.test(evaluation) && /evaluationActionChallenge/.test(evaluation) && /evaluationActionPractice/.test(evaluation), 'Evaluation adaptive next-action guidance is missing (V35 learning-map regression)');
+must(evaluation.includes('summary.avgTimePerAnsweredQuestion') && evaluation.includes('summary.retryQuestions'), 'Evaluation must still surface per-question time and retry counts');
 must(gameMeta.includes("title: 'Solvox'") && gameMeta.includes("shortTitle: 'Solvox'"), 'Game branding config missing');
 must(read('frontend/index.html').includes('/assets/ui/brand/solvox-logo-v89.png'), 'V89 favicon is not wired');
 
@@ -290,12 +294,12 @@ checkBalancedDelimiters(spriteCharacter, 'frontend/src/components/SpriteCharacte
 must(!combatStage.includes('vs-badge-v43') && !combatStage.includes('combat-center-v43'), 'Decorative VS arena marker still exists');
 must(spriteCharacter.includes('visualScale') && spriteCharacter.includes('parentElement?.getBoundingClientRect().width'), 'Player canvas is not responsive to fighter wrapper width');
 must(bossMonster.includes('visualScale') && bossMonster.includes('canvas.parentElement?.getBoundingClientRect().width'), 'Boss canvas is not responsive to fighter wrapper width');
-must(responsive102.includes('.battle-reference-arena-v43') && responsive102.includes('height: 27dvh') && responsive102.includes('@media (max-width: 420px)'), 'V99 mobile battle sizing rules are missing');
-must(!responsive102.includes('.vs-badge-v43'), 'Responsive stylesheet still references removed VS badge');
+must(responsive105.includes('.battle-reference-arena-v43') && responsive105.includes('height: 27dvh') && responsive105.includes('@media (max-width: 420px)'), 'V99 mobile battle sizing rules are missing');
+must(!responsive105.includes('.vs-badge-v43'), 'Responsive stylesheet still references removed VS badge');
 
 must(main.includes("import './styles/ui-v93.css';") && exists('frontend/src/styles/ui-v93.css'), 'V93 visual refinement stylesheet is not wired');
   must(main.includes("import './styles/ui-v96.css';") && exists('frontend/src/styles/ui-v96.css'), 'V96 polish stylesheet is not wired');
-must(exists('frontend/src/styles/responsive-v102.css') && !exists('frontend/src/styles/responsive-v101.css') && !exists('frontend/src/styles/responsive-v94.css') && !exists('frontend/src/styles/responsive-v93.css'), 'Responsive source cleanup is incomplete');
+must(exists('frontend/src/styles/responsive-v105.css') && !exists('frontend/src/styles/responsive-v102.css') && !exists('frontend/src/styles/responsive-v101.css') && !exists('frontend/src/styles/responsive-v94.css') && !exists('frontend/src/styles/responsive-v93.css'), 'Responsive source cleanup is incomplete');
 must(multi.includes('home-background-v83.mp4') && multi.includes('multi-home-bg-v93'), 'Multiplayer Home background video is not wired');
 must(profile.includes('SolvoxUtilityArt name="close"'), 'Profile close control is not using the dedicated close artwork');
 must(settings.includes('settings-about-row-v96') && settings.includes('settings-close-btn-v96') && !settings.includes('success-v27'), 'Settings V96 about/close cleanup is incomplete');
@@ -373,12 +377,19 @@ for (const legacyPath of [
 const spriteV62 = read('frontend/src/components/SpriteCharacter.jsx');
 const bossV62 = read('frontend/src/components/BossMonster.jsx');
 const multiV62 = read('frontend/src/components/Multiplayer.jsx');
+const multiplayer = multiV62;
+const solvoxEval = read('frontend/src/services/solvoxEvaluation.js');
+const gitignore = read('.gitignore');
 const ui34V62 = read('frontend/src/styles/ui-v34.css');
 must(spriteV62.includes('requestAnimationFrame(tick)') && spriteV62.includes('motionX') && spriteV62.includes('drawImage(image'), 'Traveler smoothing layer is missing');
 must(!spriteV62.includes('setInterval('), 'Traveler animation regressed to interval-based frame stepping');
 must(bossV62.includes('requestAnimationFrame(tick)') && bossV62.includes('asset-boss-canvas-v62') && bossV62.includes('drawImage(image'), 'WebP boss smoothing layer is missing');
 must(!bossV62.includes('setInterval('), 'WebP boss animation regressed to interval-based frame stepping');
-must(multiV62.includes('mp-damage-pop-v62') && multiV62.includes('mp-attack-flash-v62') && multiV62.includes('data-combat-seq'), 'Multiplayer battle motion hooks are missing');
+must(multiV62.includes('mp-arena-v104') && multiV62.includes('SpriteCharacter') && multiV62.includes('BossMonster') && multiV62.includes('data-combat-seq'), 'V104 multiplayer battle arena hooks are missing');
+// The old mp-attack-flash-v62 / mp-damage-pop-v62 spans belonged to the retired V34 pixel
+// markup. V104 replaces them with renderer-driven impacts, so they must NOT come back.
+must(multiV62.includes('playerBattleImpact') && multiV62.includes('bossBattleImpact'), 'V104 arena must drive hit/impact feedback through the sprite renderers');
+must(!multiV62.includes('mp-attack-flash-v62') && !multiV62.includes('mp-damage-pop-v62'), 'Retired V34 combat spans must not reappear in the V104 arena markup');
 must(ui34V62.includes('.multi-page-v26{height:100dvh') && ui34V62.includes('overflow-y:auto') && ui34V62.includes('scroll-behavior:smooth'), 'Multiplayer scroll container is missing');
 must(ui34V62.includes('@keyframes mpAttackV62') && ui34V62.includes('@keyframes mpHitV62') && ui34V62.includes('@keyframes mpDamageV62'), 'Multiplayer combat animation layer is incomplete');
 
@@ -393,7 +404,7 @@ must(!read('frontend/src/styles/battle-v43.css').includes('.asset-boss-seq-attac
 must(read('frontend/src/styles/battle-v43.css').includes('.hp-card-v62') && read('frontend/src/styles/battle-v43.css').includes('.fighter-slot-v62'), 'V62 HUD/anchor styling is missing');
 
 must(!multi.includes('multi-toolbar-v25') && !multi.includes('multi-toolbar-v26'), 'Retired multiplayer toolbar markup remains');
-for (const file of ['frontend/src/styles/app.css','frontend/src/styles/ui-v32.css','frontend/src/styles/ui-v34.css','frontend/src/styles/responsive-v102.css']) {
+for (const file of ['frontend/src/styles/app.css','frontend/src/styles/ui-v32.css','frontend/src/styles/ui-v34.css','frontend/src/styles/responsive-v105.css']) {
   must(!read(file).includes('multi-toolbar-v25') && !read(file).includes('multi-toolbar-v26'), `Retired multiplayer toolbar CSS remains in ${file}`);
 }
 must(!read('frontend/src/components/Settings.jsx').includes('<span>{t(\'languageIndonesia\')}</span>') && !read('frontend/src/components/Settings.jsx').includes('<span>{t(\'languageEnglish\')}</span>'), 'Language selector labels should be icon-only');
@@ -408,8 +419,8 @@ must(exists('frontend/public/assets/backgrounds/level3/chapter3-arena-4x1.mp4'),
 must(exists('frontend/public/assets/backgrounds/level3/chapter3-video-poster-4x1.jpg'), 'Chapter 3 video poster is missing');
 must(!exists('frontend/public/assets/backgrounds/level3/chapter3-battle-4x1.png'), 'Legacy Chapter 3 background asset remains');
 must(!main.includes("responsive-v96.css") && !exists('frontend/src/styles/responsive-v96.css'), 'Legacy V96 responsive source remains active');
-must(responsive102.includes('overflow: visible !important') && responsive102.includes('touch-action: pan-y') && responsive102.includes('fighter-player-v43 .sprite-wrap'), 'V101 mobile conflict fixes are incomplete');
-must(responsive102.includes('bg-mobile-object-position') && responsive102.includes('object-fit: cover !important') && responsive102.includes('transform: none !important'), 'Responsive arena background contract is missing');
+must(responsive105.includes('overflow: visible !important') && responsive105.includes('touch-action: pan-y') && responsive105.includes('fighter-player-v43 .sprite-wrap'), 'V101 mobile conflict fixes are incomplete');
+must(responsive105.includes('bg-mobile-object-position') && responsive105.includes('object-fit: cover !important') && responsive105.includes('transform: none !important'), 'Responsive arena background contract is missing');
 must(!main.includes('responsive-v98.css') && !exists('frontend/src/styles/responsive-v98.css'), 'Legacy V98 responsive source remains active');
 must(battle.includes('battle-answer-input-v66') && !battle.includes('battle-answer-input-v23'), 'Battle focus selector still points at retired V23 input');
 
@@ -489,4 +500,96 @@ must(runtimeConfig.includes('isLocalDev') && runtimeConfig.includes("'5173'"), '
 // Nothing in a new version folder may overwrite the production transport.
 must(exists('worker') && exists('frontend/src/services/realtime.js') && exists('frontend/src/config.js'), 'A production transport file is missing from the repo');
 
+/* -------------------------------------------------------------------------- */
+/* V104/V105/V107 feature contract                                            */
+/* -------------------------------------------------------------------------- */
+const sound = read('frontend/src/services/sound.js');
+const aiFeedback = read('frontend/src/services/aiFeedback.js');
+const uiV104 = read('frontend/src/styles/ui-v104.css');
+const evalCss105 = read('frontend/src/styles/evaluation-v105.css');
+
+// -- V105 sound: a toggle that actually mutes, and an mp3 that actually exists.
+must(sound.includes('export function playSound') && sound.includes('export function isSoundEnabled') && sound.includes('export function setSoundEnabled'), 'sound.js must expose playSound/isSoundEnabled/setSoundEnabled');
+must(sound.includes("STORAGE_KEY = 'solvox.sound.enabled'") && /function enabled\(\)\s*\{\s*return localStorage\.getItem\(STORAGE_KEY\)/.test(sound), 'playSound must gate on the persisted toggle, not just accept a flag');
+must(sound.includes("case 'playerAttack'") && sound.includes("case 'chapter1BossAttack'") && sound.includes("case 'victory'") && sound.includes("case 'defeat'"), 'sound.js is missing one of the wired cue kinds');
+must(exists('frontend/public/assets/audio/player-attack.mp3') && exists('frontend/public/assets/audio/chapter1-boss-attack.mp3'), 'V105 attack audio assets are missing');
+must(sound.includes('/assets/audio/player-attack.mp3') && sound.includes('/assets/audio/chapter1-boss-attack.mp3'), 'sound.js asset paths must match the files on disk');
+must(settings.includes("t('sound')") && settings.includes('setSoundEnabled') && settings.includes('isSoundEnabled'), 'Settings does not wire the sound toggle');
+must(battle.includes("playSound('playerAttack')") && battle.includes('playSound(isCorrect ?'), 'Battle does not fire the V105 sound cues');
+must(multiplayer.includes("playSound(x?.correct?'correct':'wrong')"), 'Multiplayer does not fire answer sound cues');
+
+// -- V105 hint cost: a real escalation, and the button must respect it.
+must(battle.includes('const HINT_COSTS = [5, 10, 15]') && battle.includes('hp <= hintCost') && battle.includes('value - hintCost'), 'Single-player hint cost must escalate 5/10/15 HP and gate on remaining HP');
+must(battlePanel.includes('hintCost') && battlePanel.includes('currentHp') && battlePanel.includes("t('hintCostDynamic', { cost: hintCost })") && battlePanel.includes('−{hintCost} HP'), 'Hint rail must show the real dynamic HP cost');
+must(battlePanel.includes('currentHp <= hintCost'), 'Hint button must stay disabled when the player cannot afford the hint');
+must(i18n.includes('hintCostDynamic:') && /hintCostDynamic:'−\{cost\} HP/.test(i18n), 'hintCostDynamic must exist in both languages with a {cost} placeholder');
+// The old flat "-5 HP" copy is now a lie; it must not survive anywhere.
+must(!i18n.includes("hintCost:'-5 HP."), 'Static hintCost copy ("-5 HP") survived the V105 dynamic-cost change');
+
+// -- V108 AI feedback: progressive enhancement only, and it must use apiUrl().
+must(battle.includes('enhanceFeedback') && battle.includes('q.feedback'), 'Battle must keep the local feedback as the immediate fallback');
+must(aiFeedback.includes("from '../config'") && aiFeedback.includes('apiUrl('), 'aiFeedback.js must route through apiUrl(); a bare /api/ path 404s against the Vercel origin');
+must(!aiFeedback.includes("from './api'") && !aiFeedback.includes('socket.io'), 'aiFeedback.js must not depend on the unported kyoka auth shim');
+// Every failure path must return the fallback, or a missing route would blank the feedback.
+const aiFallbackPaths = (aiFeedback.match(/return fallback;/g) || []).length;
+must(aiFallbackPaths >= 4, `enhanceFeedback must fall back on every failure path (found ${aiFallbackPaths}, need >= 4: no endpoint, non-2xx, empty body, throw)`);
+must(aiFeedback.includes('AbortController') && aiFeedback.includes('4500'), 'enhanceFeedback must be time-bounded so a slow AI call cannot stall the battle');
+// Off by default: the Worker has no /api/ai-feedback route, so defaulting to one
+// burns a request per wrong answer and just logs a 404.
+must(/VITE_SOLVOX_AI_FEEDBACK_ENDPOINT\)\s*\|\|\s*'';/.test(aiFeedback), 'aiFeedback endpoint must resolve to an empty string when unconfigured, so the no-endpoint fallback is reachable');
+must(!aiFeedback.includes("|| '/api/ai-feedback'"), 'aiFeedback must not default to a route the Worker does not serve');
+must(battle.includes("playSound('hint');") && battle.includes('// Hints live only in the dedicated hint rail'), 'Battle hint block lost its rail-only invariant during the V105 port');
+
+// -- V104 arena: canonical sprites, and the dead pixel arena must be fully gone.
+must(multiplayer.includes('SpriteCharacter') && multiplayer.includes('BossMonster') && multiplayer.includes('mp-arena-v104'), 'Multiplayer must use the canonical Single Player Traveler/boss sprites');
+must(multiplayer.includes('playerBattleImpact') && multiplayer.includes('bossBattleImpact') && multiplayer.includes('getArenaLungeDistance'), 'V104 arena must wire the renderer impact callbacks and viewport-aware lunge');
+must(multiplayer.includes("room?.combatEvent?.seq") && multiplayer.includes(".play('attack',{distance})"), 'V104 arena must trigger attacks off the room combatEvent sequence');
+must(multiplayer.includes('.idle()'), 'V104 arena must reset fighters on each new question');
+must(!multiplayer.includes('mp-fighter-v34') && !multiplayer.includes('mp-clash-v34') && !multiplayer.includes('mp-arena-v34'), 'Retired V34 pixel arena markup remains in Multiplayer');
+for (const file of ['frontend/src/styles/ui-v34.css', 'frontend/src/styles/ui-v93.css', 'frontend/src/styles/responsive-v105.css']) {
+  for (const dead of ['mp-arena-v34', 'mp-fighter-v34', 'mp-clash-v34', 'mp-fighter-sprite']) {
+    must(!read(file).includes(dead), `Dead arena selector ${dead} remains in ${file}`);
+  }
+}
+must(!read('frontend/src/styles/ui-v34.css').includes('mpAttackV35') && !read('frontend/src/styles/ui-v34.css').includes('mpSlashV35'), 'V35 arena keyframes remain after the V104 rewrite');
+// The responsive layer still references the live V104 arena; a rename must not orphan it.
+must(responsive105.includes('.mp-battle-v104 .mp-arena-v104') && responsive105.includes('.mp-sprite-frame-v104'), 'V105 mobile rules for the V104 arena are missing');
+must(exists('frontend/src/styles/ui-v104.css') && main.includes("import './styles/ui-v104.css';"), 'V104 arena stylesheet is not wired into main');
+
+// -- V105/V106 mobile battle flow: feedback must be a grid row, not an overlay.
+must(battle.includes('has-feedback-v106') && responsive105.includes('.battle-ui-v43.has-feedback-v106'), 'V106 feedback-row class must be applied in Battle and styled in the responsive layer');
+must(responsive105.includes('.battle-ui-v43:not(.has-feedback-v106)') && responsive105.includes('grid-template-rows: auto 0'), 'Without a mistake the feedback row must collapse to zero height');
+must(responsive105.includes('font-size: 16px !important'), 'Answer input must keep a 16px minimum to stop mobile browser zoom');
+must(responsive105.includes('env(safe-area-inset-bottom)') && responsive105.includes('orientation: landscape'), 'V106 safe-area and landscape battle flow are missing');
+
+// -- V105 evaluation: summary first, per-question detail on demand.
+must(exists('frontend/src/styles/evaluation-v105.css') && main.includes("import './styles/evaluation-v105.css';"), 'V105 evaluation stylesheet is not wired into main');
+must(evaluation.includes('eval-summary-v105') && evaluation.includes('eval-accordion-v105') && evaluation.includes('eval-detail-v105'), 'V105 evaluation layout is missing');
+must(evaluation.includes('buildStrengths') && evaluation.includes('buildAdvice'), 'V105 evaluation must derive strengths/advice from the run');
+must(evaluation.includes('<details') && evaluation.includes('onToggle'), 'Per-question evaluation detail must be an expandable disclosure, not a flat list');
+must(evaluation.includes('eval-card-v105') && evalCss105.includes('.eval-card-v105'), 'Evaluation card must carry the V105 class that the stylesheet targets');
+must(evaluation.includes("apiUrl('/api/evaluation')") && !evaluation.includes("from './api'"), 'Evaluation must keep posting through the repo apiUrl() transport');
+for (const key of ['evalStrengthsTitle', 'evalAdviceTitle', 'evalDetailsTitle', 'question', 'yourAnswer', 'explanation']) {
+  must(new RegExp(`\\b${key}:`).test(i18n), `Missing V105 i18n key: ${key}`);
+}
+
+// -- Labels must be bilingual, and the source filename must not leak into the UI.
+must(solvoxEval.includes('CATEGORY_TITLES') && solvoxEval.includes('CATEGORY_TITLES[lang].master'), 'Evaluation category titles must be language-aware');
+must(!solvoxEval.includes('EVALUASI SOAL SOLVOX.docx'), 'Evaluation UI leaks its source filename');
+must(!evaluation.includes('EVALUASI SOAL SOLVOX.docx'), 'Evaluation component leaks its source filename');
+
+// -- Multiplayer hint cost mirrors the single-player escalation, capped at two.
+must(multiplayer.includes('turnHintCost') && multiplayer.includes('5*((me?.hintsUsed||0)+1)'), 'Multiplayer hint cost must escalate 5/10 HP');
+must(multiplayer.includes('me?.hintsUsed||0)>=2') && multiplayer.includes('me?.hp||0)<=turnHintCost'), 'Multiplayer must cap hints at 2 and refuse when HP is too low');
+must(multiplayer.includes('mp-feedback-banner-v105') && uiV104.includes('.mp-feedback-banner-v105'), 'Multiplayer feedback banner markup and CSS must match');
+
+// -- Anti-rollback: the ported features must not smuggle the old backend back in.
+must(!exists('frontend/src/services/api.js') && !exists('frontend/src/services/auth.js'), 'kyoka auth shim (api.js/auth.js) must not return without a Worker-side account store');
+must(!exists('frontend/src/components/AuthScreen.jsx'), 'AuthScreen must stay out until an account route exists on the Worker');
+must(!multiplayer.includes('playVsBot') && !multiplayer.includes('createBot') && !multiplayer.includes('isBot'), 'Bot mode must stay out until the Worker room logic supports it');
+must(gitignore.includes('data/*.jsonl') && gitignore.includes('!data/.gitkeep'), 'Runtime player data (*.jsonl) must stay git-ignored so analytics never leak into the repo');
+must(pkg.version === '103.0.0', 'Root package version changed unexpectedly (bumped to 103.0.0 for the V103 release; update this pin in the same commit).');
+
+
 console.log('Worker + integration contract PASS');
+console.log('V104 arena / V105 sound+hint+evaluation / V106 mobile battle contract PASS');

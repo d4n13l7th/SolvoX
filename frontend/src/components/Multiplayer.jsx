@@ -1,10 +1,13 @@
-import React,{useEffect,useMemo,useState} from 'react';
+import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {io} from '../services/realtime';
 import CharacterPicker,{MULTIPLAYER_CHARACTERS} from './CharacterPicker';
 import PixelIcon from './PixelIcon';
+import SpriteCharacter from './SpriteCharacter';
+import BossMonster from './BossMonster';
 import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 import {GAME_META} from '../config/game';
 import {apiUrl,BACKEND_URL} from '../config';
+import { playSound } from '../services/sound';
 
 function findCharacter(id){return MULTIPLAYER_CHARACTERS.find(x=>x.id===id)||MULTIPLAYER_CHARACTERS[0];}
 
@@ -34,10 +37,10 @@ export default function Multiplayer({lang,onBack,t,playerName=''} ){
   useEffect(()=>{
     socket.connect();
     const events=['room:created','room:update','game:start','game:generating','turn:next','turn:answer','turn:hint-used','round:resolved','round:next','score:answer','game:finished','rematch:ready','player:left','player:disconnected','room:reconnected'];
-    const handler=r=>{setRoom(r);if(r?.status==='finished')setTimeout(loadDashboard,250)};
+    const handler=r=>{setRoom(r);if(r?.status==='finished'){playSound(r?.winner&&r.winner!=='draw'&&r.winner===r?.players?.find(p=>p.id===socket.id)?.token?'victory':'defeat');setTimeout(loadDashboard,250)}};
     events.forEach(e=>socket.on(e,handler));
-    socket.on('answer:result',x=>{setAnswerInfo(x);setAnswer('')});
-    socket.on('hint:result',x=>{if(x?.ok)setHintInfo(x)});
+    socket.on('answer:result',x=>{setAnswerInfo(x);setAnswer('');playSound(x?.correct?'correct':'wrong')});
+    socket.on('hint:result',x=>{if(x?.ok){setHintInfo(x);playSound('hint')}});
     socket.on('room:error',x=>setError(x?.code||'ROOM_ERROR'));
     return()=>socket.disconnect();
   },[socket]);
@@ -65,11 +68,44 @@ export default function Multiplayer({lang,onBack,t,playerName=''} ){
   };
   const winnerName=room?.winner&&room.winner!=='draw'?room.players?.find(p=>p.token===room.winner)?.name:null;
 
+  /* V104 arena: reuse the canonical single-player Traveler/Boss sprites so the
+     multiplayer match reads as the same game instead of a separate mode. */
+  const playerBattleRef=useRef(null);
+  const bossBattleRef=useRef(null);
+  const getArenaLungeDistance=()=>{const width=window.innerWidth||1280;return width<=380?92:width<=520?112:width<=760?145:210};
+  const playerBattleImpact=()=>{bossBattleRef.current?.play('hurt')};
+  const bossBattleImpact=()=>{playerBattleRef.current?.play('hurt')};
+  const battlePlayers=useMemo(()=>{
+    const list=Array.isArray(room?.players)?room.players:[];
+    if(!list.length)return {player:null,opponent:null};
+    const local=list.find(p=>p.id===socket.id)||list.find(p=>p.token===me?.token);
+    const opponent=list.find(p=>p.token!==local?.token);
+    return {player:local||list[0],opponent:opponent||list[0]};
+  },[room?.players,me?.token,socket.id]);
+
+  useEffect(()=>{
+    if(room?.status!=='battle')return;
+    playerBattleRef.current?.idle();
+    bossBattleRef.current?.idle();
+  },[room?.status,room?.questionIndex]);
+
+  useEffect(()=>{
+    const event=room?.combatEvent;
+    if(room?.status!=='battle'||!event||!event.seq)return;
+    const distance=getArenaLungeDistance();
+    if(event.token===me?.token){
+      playerBattleRef.current?.play('attack',{distance});
+    }else{
+      bossBattleRef.current?.play('attack',{distance});
+    }
+  },[room?.status,room?.combatEvent?.seq,me?.token]);
+
   const create=()=>{setError('');setAnswerInfo(null);const tok=localStorage.getItem('solvox.mpToken')||localStorage.getItem('numericore.mpToken')||localStorage.getItem('aljabarmaster.mpToken')||'';socket.emit('room:create',{name,character:char,levelId:level,lang,mode:battleMode,token:tok})};
   const join=()=>{setError('');if(!/^AJM-[A-Z0-9]{4}$/.test(code.trim().toUpperCase())){setError('ROOM_CODE');return}const tok=localStorage.getItem('solvox.mpToken')||localStorage.getItem('numericore.mpToken')||localStorage.getItem('aljabarmaster.mpToken')||'';socket.emit('room:join',{code:code.trim().toUpperCase(),name,character:char,lang,token:tok})};
   const ready=()=>socket.emit('player:ready',{ready:true});
   const submit=()=>{if(!answer.trim())return;if(room?.mode==='turn'&&!current)return;socket.emit('answer:submit',{answer})};
-  const useTurnHint=()=>{if(!room||room.status!=='battle'||room.mode!=='turn'||!current||!room.question?.hints?.length)return;socket.emit('turn:hint')};
+  const turnHintCost=5*((me?.hintsUsed||0)+1);
+  const useTurnHint=()=>{if(!room||room.status!=='battle'||room.mode!=='turn'||!current||!room.question?.hints?.length||Number(me?.hintsUsed||0)>=2)return;if(Number(me?.hp||0)<=turnHintCost){setAnswerInfo({correct:false,explanation:t('hintNotEnoughHp')});return;}socket.emit('turn:hint')};
   const changeMyCharacter=(next)=>{setChar(next);if(room?.status==='waiting')socket.emit('player:update',{character:next,name})};
 
   const myStats=dashboard?.players?.find(p=>String(p.name).trim().toLowerCase()===String(name).trim().toLowerCase());
@@ -189,10 +225,14 @@ export default function Multiplayer({lang,onBack,t,playerName=''} ){
         </div>;
       })}</div>
       <div className="room-status room-status-v26">{statusText()}</div>
+      {answerInfo&&<div className={`mp-feedback-banner-v105 ${answerInfo.correct?'ok':'bad'}`} role="alert" aria-live="polite">
+        <strong>{answerInfo.correct?'✓ '+t('correct'):'✕ '+t('wrong')}</strong>
+        <span>{answerInfo.explanation}</span>
+      </div>}
       {room.status==='waiting'&&<button className="primary-btn primary-btn-v26 wide-action-v26" onClick={ready}><PixelIcon name="check" size={16}/><span>{t('ready')}</span></button>}
       {room.status==='generating'&&<div className="match-loading">✨ {t('generatingMatch')}</div>}
-      {room.status==='battle'&&room.question&&<div className="mp-battle-v23 mp-battle-v26"><div className="mp-arena-v34">{room.players?.map((p,index)=>{const c=findCharacter(p.character);const active=room.mode==='turn'&&room.currentTurnToken===p.token;const attacking=room.combatEvent&&room.combatEvent.token===p.token;const targetHit=room.combatEvent&&room.combatEvent.target===p.token;return <div className={`mp-fighter-v34 ${index===0?'left':'right'} ${active?'is-active':''} ${attacking?'is-attacking':''} ${targetHit?'is-hit':''}`} key={p.token} style={{'--fighter-accent':c.accent,'--attack-distance':index===0?'56px':'-56px'}} data-combat-seq={room.combatEvent?.seq||''}><div className="mp-fighter-name">{p.name}</div><div className="mp-fighter-sprite"><span className="mp-fighter-glow-v62" aria-hidden="true"/><PixelIcon name={c.icon} size={58}/>{attacking&&<span className="mp-attack-flash-v62" aria-hidden="true"/>}{targetHit&&<span className="mp-damage-pop-v62" aria-hidden="true">-{room.combatEvent?.damage||0}</span>}</div><div className="mp-hp-mini"><i style={{width:`${p.hp}%`}}/></div><small>{p.hp} HP</small></div>})}<div className="mp-clash-v34"><span>VS</span><i/></div></div><div className="turn-strip turn-strip-v26"><span>{t('round')} {room.round}/10</span><b>{room.mode==='turn'?(current?t('turnYour'):t('turnOpponent')):seconds+'s'}</b><span>{seconds}s</span></div><div key={`question-${room.questionIndex}-${room.round}`} className="mp-question mp-question-v26"><div className="mp-question-badge-v26">{room.mode==='turn'?(current?t('yourTurn'):t('opponent')):t('scoreDuelBadge')}</div><p>{room.question.context}</p><h2>{room.question.text}</h2><label><input value={answer} disabled={room.mode==='turn'&&!current} onChange={e=>setAnswer(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} placeholder={t('answerPlaceholder')}/><button onClick={submit} disabled={!answer.trim()||(room.mode==='turn'&&!current)}><PixelIcon name="sword" size={15}/><span>{t('answer')}</span></button></label><div className="mp-question-tools-v34">{room.mode==='turn'&&<button className="mp-hint-btn-v34" onClick={useTurnHint} disabled={!current||seconds<=0||!room.question?.hints?.length||Number(me?.hintsUsed||0)>=2}><PixelIcon name="hint" size={14}/><span>{t('hint')}</span><small>{Math.max(0,2-(me?.hintsUsed||0))}</small></button>}<span>{room.mode==='turn'?(current?t('turnTimer')+': '+seconds+'s':t('notYourTurn')):t('scoreDuel')}</span></div>{hintInfo&&current&&<div className="mp-hint-panel-v34"><PixelIcon name="hint" size={14}/><div><strong>{t('hint')} {hintInfo.level}</strong><p>{hintInfo.text}</p></div></div>}
-          {answerInfo&&<div className={`mp-answer-info ${answerInfo.correct?'ok':'bad'}`}>{answerInfo.correct?'✓ '+t('correct'):'✕ '+t('wrong')}<br/><b>{answerInfo.explanation}</b></div>}</div></div>}
+      {room.status==='battle'&&room.question&&<div className="mp-battle-v23 mp-battle-v26 mp-battle-v104"><div className="mp-arena-v104" data-combat-seq={room.combatEvent?.seq||""}><div className={`mp-battle-side-v104 mp-battle-player-v104 ${room.mode==='turn'&&current?'is-active':''} ${room.combatEvent?.token===me?.token?'is-attacking':''} ${room.combatEvent?.target===me?.token?'is-hit':''}`}><div className="mp-role-v104">{t('player')}</div><div className="mp-fighter-name-v104">{battlePlayers.player?.name||name}</div><div className="mp-sprite-frame-v104 mp-player-frame-v104"><span className="mp-ground-shadow-v104" aria-hidden="true"/><SpriteCharacter ref={playerBattleRef} size={270} onImpact={playerBattleImpact}/></div><div className="mp-hp-v104"><i style={{width:`${Math.max(0,Math.min(100,battlePlayers.player?.hp??100))}%`}}/></div><small>{battlePlayers.player?.hp??100} HP</small></div><div className="mp-arena-center-v104" aria-hidden="true"><span>VS</span><i/><b>CHAPTER {room.levelId||level}</b></div><div className={`mp-battle-side-v104 mp-battle-boss-v104 ${room.combatEvent?.token!==me?.token?'is-attacking':''} ${room.combatEvent?.target===me?.token?'is-hit':''}`}><div className="mp-role-v104 is-boss">{t('enemy')}</div><div className="mp-fighter-name-v104">{battlePlayers.opponent?.name||t('player')}</div><div className="mp-sprite-frame-v104 mp-boss-frame-v104"><span className="mp-ground-shadow-v104" aria-hidden="true"/><BossMonster ref={bossBattleRef} levelId={room.levelId||level} size={300} onImpact={bossBattleImpact}/></div><div className="mp-hp-v104"><i style={{width:`${Math.max(0,Math.min(100,battlePlayers.opponent?.hp??100))}%`}}/></div><small>{battlePlayers.opponent?.hp??100} HP</small></div></div><div className="turn-strip turn-strip-v26"><span>{t('round')} {room.round}/10</span><b>{room.mode==='turn'?(current?t('turnYour'):t('turnOpponent')):seconds+'s'}</b><span>{seconds}s</span></div><div key={`question-${room.questionIndex}-${room.round}`} className="mp-question mp-question-v26"><div className="mp-question-badge-v26">{room.mode==='turn'?(current?t('yourTurn'):t('opponent')):t('scoreDuelBadge')}</div><p>{room.question.context}</p><h2>{room.question.text}</h2><label><input value={answer} disabled={room.mode==='turn'&&!current} onChange={e=>setAnswer(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} placeholder={t('answerPlaceholder')}/><button onClick={submit} disabled={!answer.trim()||(room.mode==='turn'&&!current)}><PixelIcon name="sword" size={15}/><span>{t('answer')}</span></button></label><div className="mp-question-tools-v34">{room.mode==='turn'&&<button className="mp-hint-btn-v34" onClick={useTurnHint} disabled={!current||seconds<=0||!room.question?.hints?.length||Number(me?.hintsUsed||0)>=2}><PixelIcon name="hint" size={14}/><span>{t('hint')}</span><small>{Math.max(0,2-(me?.hintsUsed||0))} • −{turnHintCost} HP</small></button>}<span>{room.mode==='turn'?(current?t('turnTimer')+': '+seconds+'s':t('notYourTurn')):t('scoreDuel')}</span></div>{hintInfo&&current&&<div className="mp-hint-panel-v34"><PixelIcon name="hint" size={14}/><div><strong>{t('hint')} {hintInfo.level}</strong><p>{hintInfo.text}</p></div></div>}
+          </div></div>}
       {room.status==='finished'&&<div className="match-result match-result-v26"><div className="result-emblem-v26"><PixelIcon name={winnerName?'trophy':'star'} size={48}/></div><h2>{winnerName?`${winnerName} — ${t('matchFinished')}`:t('draw')}</h2><p>{room.players?.map(p=>`${p.name}: ${room.mode==='turn'?p.hp+' HP':' '+p.score+' '+t('score')} • ${p.hintsUsed||0} ${t('hints')}`).join(' • ')}</p><div className="match-pedagogy-v34">{room.finishSummary?.[me?.token]||statusText()}</div><div className="match-result-actions-v34"><button className="secondary-btn" onClick={()=>setShowMatchReview(v=>!v)}><PixelIcon name="book" size={14}/><span>{showMatchReview?t('close'):t('viewSolution')}</span></button><button className="primary-btn primary-btn-v26" onClick={()=>socket.emit('rematch')}><PixelIcon name="retry" size={16}/><span>{t('rematch')}</span></button></div>{showMatchReview&&room.decisiveQuestion&&<div className="match-review-v34"><span>{t('questionReview')}</span><h3>{room.decisiveQuestion.text}</h3><b>{t('expected')}: {room.decisiveQuestion.answer}</b><p>{room.decisiveQuestion.explanation}</p><small>{room.decisiveQuestion.concept}</small></div>}</div>}
     </div>}
   </div>;

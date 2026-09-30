@@ -107,6 +107,8 @@ export default function BattleQuestionPanel({
   submit,
   hintsUsed,
   hintsLeft,
+  hintCost,
+  currentHp,
   useHint,
   keypadVisible,
   onToggleKeypad,
@@ -220,7 +222,7 @@ export default function BattleQuestionPanel({
           ) : (
             <div className="hint-empty-v37">
               <strong>{t('hintAvailable')}</strong>
-              <p>{t('hintCost')}</p>
+              <p>{t('hintCostDynamic', { cost: hintCost })}</p>
             </div>
           )}
         </div>
@@ -228,12 +230,12 @@ export default function BattleQuestionPanel({
         <button
           className="hint-reveal-btn-v37"
           type="button"
-          disabled={busy || hintsLeft <= 0 || !q?.hints?.length}
+          disabled={busy || hintsLeft <= 0 || !q?.hints?.length || currentHp <= hintCost}
           onClick={useHint}
         >
           <PixelIcon name="hint" size={14} />
           <span>{t('revealHint')}</span>
-          <em>−5 HP</em>
+          <em>−{hintCost} HP</em>
         </button>
       </aside>
 
