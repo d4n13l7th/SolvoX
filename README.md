@@ -66,10 +66,10 @@ VITE_BACKEND_URL=http://127.0.0.1:8787 npm run dev
 npm run dev
 ```
 
-Kalau diuji dengan room uji, tetap ingat: `http://127.0.0.1:8787`
-tidak punya CORS untuk origin Vite, jadi panggilan dari browser akan gagal
-dengan error CORS, bukan 404. Itu normal — backend lokal bukan untuk diuji
-lewat browser tanpa penyesuaian CORS.
+Worker memantulkan origin di CORS (`Access-Control-Allow-Origin` = origin
+peminta) dan tidak memvalidasi Origin pada upgrade WebSocket, jadi
+`http://127.0.0.1:8787` boleh diakses langsung dari Vite tanpa penyesuaian
+apa pun.
 
 ### Backend Worker di lokal
 
