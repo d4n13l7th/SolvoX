@@ -123,3 +123,45 @@ Object.assign(T.en,{
   explanation:'Explanation',
   hintNotEnoughHp:'Not enough HP to reveal the next hint.'
 });
+
+Object.assign(T.id,{
+  chooseCharacter:'Pilih Karakter',
+  chooseCharacterHint:'Pilih karakter yang akan kamu gunakan di seluruh pertarungan single player.',
+  characterSelectEyebrow:'KARAKTER PEMAIN',
+  selectedCharacter:'Karakter terpilih',
+  startWithCharacter:'Mulai dengan karakter ini',
+  characterTraveler:'The Traveler',
+  characterTravelerRole:'Petualang utama',
+  characterAsuka:'Asuka',
+  characterAsukaRole:'Pejuang cepat',
+});
+Object.assign(T.en,{
+  chooseCharacter:'Choose Character',
+  chooseCharacterHint:'Choose the character you will use throughout single-player battles.',
+  characterSelectEyebrow:'PLAYER CHARACTER',
+  selectedCharacter:'Selected character',
+  startWithCharacter:'Start with this character',
+  characterTraveler:'The Traveler',
+  characterTravelerRole:'Main adventurer',
+  characterAsuka:'Asuka',
+  characterAsukaRole:'Agile fighter',
+});
+
+Object.assign(T.id,{
+  characterSelectTitle:'PILIH KARAKTER',
+  gameStartPrompt:'MULAI PERMAINAN',
+  yes:'YA',
+  no:'TIDAK',
+  previousCharacter:'Karakter sebelumnya',
+  nextCharacter:'Karakter berikutnya',
+  selectCharacter:'Pilih karakter',
+});
+Object.assign(T.en,{
+  characterSelectTitle:'CHARACTER SELECT',
+  gameStartPrompt:'GAME START',
+  yes:'YES',
+  no:'NO',
+  previousCharacter:'Previous character',
+  nextCharacter:'Next character',
+  selectCharacter:'Select character',
+});

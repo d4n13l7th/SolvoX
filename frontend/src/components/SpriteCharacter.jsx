@@ -17,7 +17,7 @@ function load(src) {
 }
 
 const SpriteCharacter = forwardRef(function SpriteCharacter(
-  { size = 280, className = '', onImpact },
+  { size = 280, className = '', onImpact, playerId },
   ref,
 ) {
   const canvasRef = useRef(null);
@@ -28,7 +28,7 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
     impactRef.current = onImpact;
   }, [onImpact]);
 
-  const asset = getPlayerAsset();
+  const asset = getPlayerAsset(playerId);
   const durationFor = (mode) => asset.sequences[mode]?.step || 120;
   const stateRef = useRef({
     mode: 'idle',
@@ -49,7 +49,7 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
           const loaded = await Promise.all(
             sequence.frames.map(async (name) => {
               try {
-                return await load(`${asset.base}/${mode}/${name}`);
+                return await load(`${asset.base}/${asset.sequenceFolders?.[mode] || mode}/${name}`);
               } catch (error) {
                 console.warn('[Player] missing sprite', `${mode}/${name}`);
                 return null;
@@ -137,10 +137,15 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
 
 
         const image = frames[frameIndex];
-        const fit = Math.min(logicalW / image.width, logicalH / image.height) * 0.985;
+        const reference = asset.referenceSize || { width: image.width, height: image.height };
+        // Scale every frame from the character's reference pose rather than
+        // the full source bitmap. This keeps wide attack-effect frames (such
+        // as Asuka's lightning beam) at the same fighter scale as idle/hurt.
+        const fit = Math.min(logicalW / reference.width, logicalH / reference.height) * 0.985;
         const w = image.width * fit;
         const h = image.height * fit;
-        const baseX = (logicalW - w) / 2;
+        const focusX = Number(asset.frameFocus?.[mode] ?? 0.5);
+        const baseX = logicalW / 2 - image.width * focusX * fit;
         const baseY = logicalH - h;
 
         let motionX = 0;
@@ -190,7 +195,7 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
         ctx.filter = 'none';
         ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.ellipse(logicalW / 2, logicalH - 6, Math.max(32, w * 0.22), 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(logicalW / 2, logicalH - 6, Math.max(32, Math.min(w * 0.22, logicalW * 0.28)), 8, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
@@ -254,7 +259,7 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
   useImperativeHandle(ref, () => ({
     play(mode = 'attack', options = {}) {
       const state = stateRef.current;
-      const safeMode = resolvePlayerSequence(mode);
+      const safeMode = resolvePlayerSequence(mode, playerId);
       if (!state.images[safeMode]?.length) return false;
       state.mode = safeMode;
       state.startedAt = performance.now();
@@ -270,11 +275,11 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
     },
     ready: () => stateRef.current.ready,
     modes: () => Object.keys(asset.sequences),
-  }), [asset]);
+  }), [asset, playerId]);
 
   return (
     <div className={`sprite-wrap ${className}`}>
-      <canvas ref={canvasRef} aria-label="The Traveler" />
+      <canvas ref={canvasRef} aria-label={asset.nameId || asset.id} />
     </div>
   );
 });

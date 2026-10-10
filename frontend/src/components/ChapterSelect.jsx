@@ -14,7 +14,7 @@ function chapterProgress(id, progress) {
   return answered ? Math.min(99, Math.round((answered / 10) * 100)) : 0;
 }
 
-export default function ChapterSelect({ progress, onStart, onBack, lang, t }) {
+export default function ChapterSelect({ progress, onSelectChapter, onBack, lang, t }) {
   const completed = useMemo(
     () => new Set((progress.completedLevels || []).map(Number)),
     [progress.completedLevels],
@@ -73,7 +73,7 @@ export default function ChapterSelect({ progress, onStart, onBack, lang, t }) {
               disabled={!open}
               className={`chapter-card-v44 ${open ? 'is-open' : 'is-locked'} ${clear ? 'is-clear' : ''}`}
               style={{ '--chapter-accent': level.accent }}
-              onClick={() => open && onStart(level.id)}
+              onClick={() => open && onSelectChapter?.(level.id)}
             >
               <span className="chapter-card-art-v44" aria-hidden="true">
                 <img src={level.art} alt="" loading="eager" />

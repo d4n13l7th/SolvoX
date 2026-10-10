@@ -35,11 +35,11 @@ const normalizeAnswer = (value) =>
     .replace(/\s+/g, '')
     .trim();
 
-export default function Battle({ levelId, lang, t, onComplete, onBack }) {
+export default function Battle({ levelId, playerId = 'traveler', lang, t, onComplete, onBack }) {
   const boss = getBoss(levelId);
   const bossAttackImpactMs = getBossImpactMs(boss.spriteId, 'attack', 360);
   const bossDieDurationMs = getBossSequenceDurationMs(boss.spriteId, 'die');
-  const playerAsset = getPlayerAsset();
+  const playerAsset = getPlayerAsset(playerId);
   const playerDieDurationMs = (playerAsset.sequences.die?.frames?.length || 1) * (playerAsset.sequences.die?.step || 175);
   const meta = LEVELS.find((entry) => entry.id === levelId) || LEVELS[0];
 
@@ -104,6 +104,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
       questionSource: 'local',
       totalQuestions: questions.length || 10,
       maxHp: PLAYER.stats.hp,
+      playerCharacter: playerAsset.id,
       nextHp: result.nextHp ?? hp,
     });
   };
@@ -463,7 +464,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
             <div className="hp-card-v62 hp-player-v62">
               <div className="hp-card-head-v62">
                 <span className="hp-avatar-v62">
-                  <img src={getPlayerAsset().portrait} alt="" />
+                  <img src={playerAsset.portrait} alt="" />
                 </span>
                 <span className="hp-copy-v62">
                   <small>{t('player')}</small>
@@ -545,6 +546,7 @@ export default function Battle({ levelId, lang, t, onComplete, onBack }) {
             <CombatStage
               ref={combatRef}
               levelId={levelId}
+              playerId={playerId}
               onHit={() => showImpact('boss', 28, 'player')}
             />
           </div>
