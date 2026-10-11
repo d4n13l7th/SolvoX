@@ -13,25 +13,61 @@ export default function SinglePlayerCharacterSelect({
   t,
   lang,
 }) {
+  const [focusId, setFocusId] = useState(null);
+  const [chosenId, setChosenId] = useState(null);
   const [launching, setLaunching] = useState(false);
-  const level = LEVELS.find((item) => item.id === Number(levelId)) || LEVELS[0];
-  const selectedCharacter = getPlayerAsset(playerId);
 
-  const handleStart = () => {
-    if (launching) return;
-    const chapterId = Number(levelId);
-    if (!Number.isInteger(chapterId) || chapterId < 1 || chapterId > LEVELS.length) return;
-    setLaunching(true);
-    onStart?.(chapterId, playerId);
+  const level = LEVELS.find((item) => item.id === Number(levelId)) || LEVELS[0];
+  const selectedCharacter = getPlayerAsset(chosenId || focusId || playerId);
+
+  const handleConfirm = (id) => {
+    if (launching || !['traveler', 'asuka'].includes(id)) return;
+    setFocusId(id);
+    setChosenId(id);
   };
 
-  const handleCancel = () => {
+  const handleStart = () => {
+    if (launching || !chosenId) return;
+
+    const chapterId = Number(levelId);
+    if (!Number.isInteger(chapterId) || chapterId < 1 || chapterId > LEVELS.length) return;
+
+    setLaunching(true);
+
+    try {
+      onPlayerChange?.(chosenId);
+      const result = onStart?.(chapterId, chosenId);
+
+      if (result === false) {
+        setLaunching(false);
+      } else if (result && typeof result.then === 'function') {
+        result.catch((error) => {
+          console.error('[CharacterSelect] Failed to start:', error);
+          setLaunching(false);
+        });
+      }
+    } catch (error) {
+      console.error('[CharacterSelect] Failed to start:', error);
+      setLaunching(false);
+    }
+  };
+
+  const handleBack = () => {
     if (launching) return;
+    if (chosenId) {
+      setChosenId(null);
+      setFocusId(null);
+      return;
+    }
+    if (focusId) {
+      setFocusId(null);
+      return;
+    }
     onBack?.();
   };
 
   return (
-    <div className="character-select-screen-v118">
+    <div className="character-select-screen-v118 cs-redesign">
       <div className="character-select-atmosphere-v118" aria-hidden="true">
         <span className="pixel-star-v118 star-one" />
         <span className="pixel-star-v118 star-two" />
@@ -39,42 +75,51 @@ export default function SinglePlayerCharacterSelect({
       </div>
 
       <header className="character-select-header-v118">
-        <button className="character-select-back-v118" type="button" onClick={handleCancel} disabled={launching}>
+        <button className="character-select-back-v118" type="button"
+          onClick={handleBack} disabled={launching}>
           <PixelIcon name="left" size={16} />
           <span>{t('back')}</span>
         </button>
         <h1>{t('characterSelectTitle')}</h1>
-        <div className="character-select-chapter-v118" aria-label={`${t('chapter')} ${level.id}`}>
+        <div className="character-select-chapter-v118">
           <small>{t('chapter')} {level.id}</small>
           <strong>{lang === 'en' ? level.titleEn : level.title}</strong>
         </div>
       </header>
 
-      <main className="character-select-main-v118">
-        <p className="character-select-hint-v118">{t('chooseCharacterHint')}</p>
-        <SinglePlayerCharacterPicker value={playerId} onChange={onPlayerChange} t={t} />
+      <main className="character-select-main-v118 cs-character-main">
+        <p className="character-select-hint-v118 cs-character-hint">
+          {t('chooseCharacterHint')}
+        </p>
 
-        <section className="character-start-panel-v118" aria-label={t('gameStartPrompt')}>
-          <h2>{t('gameStartPrompt')}</h2>
-          <div className="character-start-options-v118">
-            <button
-              className="character-start-option-v118 is-yes"
-              type="button"
-              disabled={launching}
-              aria-busy={launching}
-              onClick={handleStart}
-            >
-              <span className="character-start-cursor-v118" aria-hidden="true">▶</span>
-              <span>{launching ? t('loading') : t('yes')}</span>
+        <SinglePlayerCharacterPicker
+          focusId={focusId}
+          chosenId={chosenId}
+          onFocus={setFocusId}
+          onConfirm={handleConfirm}
+          t={t}
+        />
+
+        {chosenId ? (
+          <section className="cs-start-panel" aria-live="polite">
+            <div className="cs-start-copy">
+              <span>{lang === 'en' ? 'YOUR ADVENTURE AWAITS' : 'PETUALANGAN MENANTIMU'}</span>
+              <h2>{t('gameStartPrompt')}</h2>
+              <p>{t('selectedCharacter')}: <strong>{t(selectedCharacter.nameId)}</strong></p>
+            </div>
+            <button className="cs-start-button" type="button"
+              disabled={launching} aria-busy={launching} onClick={handleStart}>
+              <span aria-hidden="true">{launching ? '◌' : '▶'}</span>
+              {launching ? t('loading') : lang === 'en' ? 'START' : 'MULAI'}
             </button>
-            <button className="character-start-option-v118 is-no" type="button" disabled={launching} onClick={handleCancel}>
-              <span>{t('no')}</span>
-            </button>
-          </div>
-          <p className="character-start-caption-v118">
-            {t('selectedCharacter')}: <strong>{t(selectedCharacter.nameId)}</strong>
+          </section>
+        ) : (
+          <p className="cs-selection-instruction">
+            {lang === 'en'
+              ? 'Choose your hero to continue.'
+              : 'Pilih karakter untuk melanjutkan.'}
           </p>
-        </section>
+        )}
       </main>
     </div>
   );

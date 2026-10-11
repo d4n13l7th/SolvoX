@@ -1,94 +1,124 @@
-import React from 'react';
-import SpriteCharacter from './SpriteCharacter';
+import React, { useRef } from 'react';
 import { getPlayerAsset } from '../data/playerAssets';
+import CharacterSelectIdle from './CharacterSelectIdle';
 
 const SINGLE_PLAYER_CHARACTERS = Object.freeze([
-  { id: 'traveler', accent: '#ffcf32' },
-  { id: 'asuka', accent: '#ffcf32' },
+  { id: 'traveler', number: '01' },
+  { id: 'asuka', number: '02' },
 ]);
 
-export default function SinglePlayerCharacterPicker({ value = 'traveler', onChange, t }) {
-  const selectedIndex = Math.max(0, SINGLE_PLAYER_CHARACTERS.findIndex((item) => item.id === value));
-  const selected = SINGLE_PLAYER_CHARACTERS[selectedIndex];
-  const previous = SINGLE_PLAYER_CHARACTERS[(selectedIndex - 1 + SINGLE_PLAYER_CHARACTERS.length) % SINGLE_PLAYER_CHARACTERS.length];
-  const next = SINGLE_PLAYER_CHARACTERS[(selectedIndex + 1) % SINGLE_PLAYER_CHARACTERS.length];
-  const selectedAsset = getPlayerAsset(selected.id);
-  const previousAsset = getPlayerAsset(previous.id);
-  const nextAsset = getPlayerAsset(next.id);
+export default function SinglePlayerCharacterPicker({
+  focusId,
+  chosenId,
+  onFocus,
+  onConfirm,
+  t,
+}) {
+  const lastPointerType = useRef('mouse');
+  const touchFocusedId = useRef(null);
 
-  const move = (direction) => {
-    const nextIndex = (selectedIndex + direction + SINGLE_PLAYER_CHARACTERS.length) % SINGLE_PLAYER_CHARACTERS.length;
-    onChange?.(SINGLE_PLAYER_CHARACTERS[nextIndex].id);
-  };
-
-  const handleKeyDown = (event) => {
-    if (event.key === 'ArrowLeft') {
-      event.preventDefault();
-      move(-1);
-    } else if (event.key === 'ArrowRight') {
-      event.preventDefault();
-      move(1);
+  const handleActivate = (id, event) => {
+    if (event.detail === 0) {
+      // Keyboard: Enter atau Space memilih karakter yang sedang difokuskan.
+      onFocus?.(id);
+      onConfirm?.(id);
+      return;
     }
+
+    if (lastPointerType.current === 'touch') {
+      // Tap pertama hanya memfokuskan; tap kedua mengonfirmasi.
+      if (touchFocusedId.current !== id) {
+        touchFocusedId.current = id;
+        onFocus?.(id);
+        return;
+      }
+
+      onConfirm?.(id);
+      return;
+    }
+
+    // Mouse: hover memfokuskan; klik pada kartu fokus mengonfirmasi.
+    if (focusId !== id) {
+      onFocus?.(id);
+      return;
+    }
+
+    onConfirm?.(id);
   };
 
   return (
     <section
-      className="character-carousel-v118"
+      className="cs-picker"
       role="group"
       aria-label={t('characterSelect')}
-      onKeyDown={handleKeyDown}
-      style={{ '--character-accent-v118': selected.accent }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          onFocus?.(null);
+        }
+      }}
     >
-      <button
-        className="character-side-preview-v118 is-left"
-        type="button"
-        onClick={() => onChange?.(previous.id)}
-        aria-label={`${t('selectCharacter')} ${t(previousAsset.nameId)}`}
-        title={t(previousAsset.nameId)}
-      >
-        <img src={previousAsset.portrait} alt="" draggable="false" />
-      </button>
+      {SINGLE_PLAYER_CHARACTERS.map((character) => {
+        const asset = getPlayerAsset(character.id);
+        const isFocused = focusId === character.id;
+        const isChosen = chosenId === character.id;
 
-      <button
-        className="character-carousel-arrow-v118 is-left"
-        type="button"
-        onClick={() => move(-1)}
-        aria-label={t('previousCharacter')}
-      >
-        <span aria-hidden="true">◀</span>
-      </button>
+        return (
+          <button
+            key={character.id}
+            type="button"
+            className={[
+              'cs-character-card',
+              isFocused && 'is-focused',
+              isChosen && 'is-chosen',
+              chosenId && !isChosen && 'is-dimmed',
+            ].filter(Boolean).join(' ')}
+            onPointerDown={(event) => {
+              lastPointerType.current = event.pointerType;
+            }}
+            onPointerEnter={(event) => {
+              if (event.pointerType === 'mouse') {
+                onFocus?.(character.id);
+              }
+            }}
+            onFocus={() => onFocus?.(character.id)}
+            onClick={(event) => handleActivate(character.id, event)}
+            aria-pressed={isChosen}
+            aria-label={`${t('selectCharacter')} ${t(asset.nameId)}`}
+          >
+            <span className="cs-card-top">
+              <span className="cs-card-number">CHARACTER {character.number}</span>
+              <span className="cs-card-status">
+                {isChosen
+                  ? ( 'SELECTED' )
+                  : isFocused
+                    ? ( 'FOCUSED' )
+                    : 'AVAILABLE'}
+              </span>
+            </span>
 
-      <div className="character-hero-card-v118" aria-live="polite" aria-atomic="true">
-        <div className="character-hero-inner-v118" />
-        <div className="character-hero-content-v118">
-          <strong className="character-hero-name-v118">{t(selectedAsset.nameId).toUpperCase()}</strong>
-          <SpriteCharacter
-            playerId={selected.id}
-            className={`character-hero-sprite-v118 character-hero-sprite-v118-${selected.id}`}
-            size={280}
-          />
-          <span className="character-hero-role-v118">{t(selectedAsset.roleId)}</span>
-        </div>
-      </div>
+            <span className="cs-character-art">
+              <CharacterSelectIdle
+                playerId={character.id}
+                size={300}
+                className={`cs-character-sprite cs-character-sprite-${character.id}`}
+              />
+            </span>
 
-      <button
-        className="character-carousel-arrow-v118 is-right"
-        type="button"
-        onClick={() => move(1)}
-        aria-label={t('nextCharacter')}
-      >
-        <span aria-hidden="true">▶</span>
-      </button>
+            <span className="cs-character-info">
+              <strong>{t(asset.nameId)}</strong>
+              <span>{t(asset.roleId)}</span>
+            </span>
 
-      <button
-        className="character-side-preview-v118 is-right"
-        type="button"
-        onClick={() => onChange?.(next.id)}
-        aria-label={`${t('selectCharacter')} ${t(nextAsset.nameId)}`}
-        title={t(nextAsset.nameId)}
-      >
-        <img src={nextAsset.portrait} alt="" draggable="false" />
-      </button>
+            <span className="cs-card-footer">
+              {isChosen
+                ? '✓ ' + (t('selectedCharacter') || 'SELECTED')
+                : isFocused
+                  ? '▶ ' + (t('selectCharacter') || 'SELECT CHARACTER')
+                  : 'TAP TO INSPECT'}
+            </span>
+          </button>
+        );
+      })}
     </section>
   );
 }
