@@ -8,9 +8,11 @@ import Multiplayer from './components/Multiplayer';
 import ModeSelect from './components/ModeSelect';
 import ChapterSelect from './components/ChapterSelect';
 import SinglePlayerCharacterSelect from './components/SinglePlayerCharacterSelect';
+import SinglePlayerSavesList from './components/SinglePlayerSavesList';
 import Settings from './components/Settings';
 import AboutDevelopers from './components/AboutDevelopers';
 import Tutorial from './components/Tutorial';
+import { singlePlayerSaves } from './services/singlePlayerSaves';
 import { SolvoxUtilityArt } from './components/SolvoxUtilityArt';
 import SolvoxBrandLogo from './components/SolvoxBrandLogo';
 import {LEVELS, isUnlocked} from './data/levels';
@@ -36,6 +38,19 @@ export default function App(){
   const [state,setState]=useState(load),[screen,setScreen]=useState('home'),[level,setLevel]=useState(1),[playerId,setPlayerId]=useState(()=>localStorage.getItem(PLAYER_STORAGE)||'traveler'),[playerSelectionLocked,setPlayerSelectionLocked]=useState(()=>localStorage.getItem(PLAYER_LOCK_STORAGE)==='1'),[battleSession,setBattleSession]=useState(0),[evaluation,setEvaluation]=useState(null),[feedback,setFeedback]=useState(false),[settings,setSettings]=useState(false),[profileOpen,setProfileOpen]=useState(false),[tutorialOpen,setTutorialOpen]=useState(false),[lang,setLang]=useState(()=>localStorage.getItem('solvox.lang')||localStorage.getItem('numericore.lang')||localStorage.getItem('aljabarmaster.lang')||'id');
   const t=(k,vars)=>{let value=T[lang]?.[k] ?? T.id?.[k] ?? k; if(vars) Object.entries(vars).forEach(([name,val])=>{value=value.replaceAll(`{${name}}`,String(val))}); return value;};
   useEffect(()=>{save(state);},[state]);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!activeSave?.id) return;
+      try {
+        const r = await singlePlayerSaves.getSave(activeSave.id);
+        if (!mounted || !r.ok || !r.data?.save) return;
+        setActiveSave(r.data.save);
+      } catch (e) {}
+    })();
+    return () => { mounted = false; };
+  }, [activeSave?.id]);
+
   useEffect(()=>{ document.documentElement.lang=lang==='en'?'en':'id'; },[lang]);
   useEffect(()=>{ localStorage.setItem(PLAYER_STORAGE,playerId); },[playerId]);
   const reset=()=>{if(confirm(t('resetConfirm'))){const next={...DEFAULT,profile:{...DEFAULT.profile,createdAt:Date.now()}};setState(next);localStorage.removeItem(STORAGE);localStorage.removeItem(PLAYER_LOCK_STORAGE);localStorage.removeItem(PLAYER_STORAGE);setPlayerSelectionLocked(false);setPlayerId('traveler');setScreen('home')}};
@@ -94,9 +109,10 @@ export default function App(){
   return <div className={`app-shell ${screen==='battle'?'battle-active':''}`}>
     {screen!=='battle'&&screen!=='home'&&screen!=='modes'&&screen!=='chapters'&&screen!=='character'&&screen!=='about'&&<header className="global-bar global-bar-v27"><div className="global-brand-v89"><SolvoxBrandLogo compact/><span><b>ONLINE</b><small>{t('subtitle').toUpperCase()}</small></span></div><div className="top-actions"><button className="icon-action-v27" title={t('feedback')} onClick={()=>setFeedback(true)}><SolvoxUtilityArt name="feedback" size={30}/></button><button className="icon-action-v27" title={t('settingsHint')} onClick={()=>setSettings(true)}><SolvoxUtilityArt name="settings" size={30}/></button></div></header>}
     {screen==='home'&&<HomeMenu t={t} onMain={()=>setScreen('modes')} onTutorial={()=>setTutorialOpen(true)} onSettings={()=>setSettings(true)} onFeedback={()=>setFeedback(true)} onProfile={()=>setProfileOpen(true)}/>} 
-    {screen==='modes'&&<ModeSelect lang={lang} t={t} onBack={()=>setScreen('home')} onSingle={()=>setScreen('chapters')} onMulti={()=>setScreen('multi')}/>} 
-    {screen==='chapters'&&<ChapterSelect progress={state} lang={lang} t={t} onBack={()=>setScreen('modes')} onSelectChapter={selectChapter}/>}
+    {screen==='modes'&&<ModeSelect lang={lang} t={t} onBack={()=>setScreen('home')} onSingle={()=>setScreen('savesList')} onMulti={()=>setScreen('multi')}/>} 
+    {screen==='chapters'&&<ChapterSelect progress={state} activeSave={activeSave} lang={lang} t={t} onBack={()=>setScreen('modes')} onSelectChapter={selectChapter}/>}
     {screen==='character'&&<SinglePlayerCharacterSelect levelId={level} playerId={playerId} lang={lang} t={t} onPlayerChange={setPlayerId} onBack={()=>setScreen('chapters')} onStart={start}/>}
+    {screen==='savesList'&&<SinglePlayerSavesList lang={lang} t={t} onBack={()=>setScreen('modes')} onSelectSave={(sv)=>{ setActiveSave(sv); setScreen('chapters'); }} onCreateSave={(sv)=>{ setActiveSave(sv); setScreen('chapters'); }}/>} 
     {screen==='battle'&&<Battle key={`chapter-${level}-session-${battleSession}`} levelId={level} playerId={playerId} lang={lang} t={t} onComplete={complete} onBack={()=>setScreen('chapters')}/>} 
     {screen==='multi'&&<Multiplayer lang={lang} t={t} playerName={state.profile?.name||state.playerName} onBack={()=>setScreen('modes')}/>} 
     {evaluation&&<Evaluation result={evaluation} onClose={finishEval} onRematch={rematch} onNext={goNext} nextLevel={evaluation.won&&Number(evaluation.chapterId||level)<LEVELS.length?Number(evaluation.chapterId||level)+1:null} t={t} lang={lang}/>} 
