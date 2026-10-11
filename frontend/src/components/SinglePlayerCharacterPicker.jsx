@@ -3,8 +3,8 @@ import { getPlayerAsset } from '../data/playerAssets';
 import SpriteCharacter from './SpriteCharacter';
 
 const SINGLE_PLAYER_CHARACTERS = Object.freeze([
-  { id: 'traveler', number: '01' },
-  { id: 'asuka', number: '02' },
+  { id: 'traveler', number: '01', accent: '#9ad7ff' },
+  { id: 'asuka', number: '02', accent: '#ff7a7a' },
 ]);
 
 export default function SinglePlayerCharacterPicker({ value = 'traveler', onChange, t }) {
