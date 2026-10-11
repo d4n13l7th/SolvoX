@@ -13,12 +13,12 @@ export default function SinglePlayerCharacterSelect({
   t,
   lang,
 }) {
-  const [focusId, setFocusId] = useState(null);
-  const [chosenId, setChosenId] = useState(null);
+  const [unusedFocus, setFocusId] = useState(null);
+  const [unusedChosen, setChosenId] = useState(null);
   const [launching, setLaunching] = useState(false);
 
   const level = LEVELS.find((item) => item.id === Number(levelId)) || LEVELS[0];
-  const selectedCharacter = getPlayerAsset(chosenId || focusId || playerId);
+  const selectedCharacter = getPlayerAsset(unusedChosen || unusedFocus || playerId);
 
   const handleConfirm = (id) => {
     if (launching || !['traveler', 'asuka'].includes(id)) return;
@@ -27,7 +27,7 @@ export default function SinglePlayerCharacterSelect({
   };
 
   const handleStart = () => {
-    if (launching || !chosenId) return;
+    if (launching || !unusedChosen) return;
 
     const chapterId = Number(levelId);
     if (!Number.isInteger(chapterId) || chapterId < 1 || chapterId > LEVELS.length) return;
@@ -35,8 +35,8 @@ export default function SinglePlayerCharacterSelect({
     setLaunching(true);
 
     try {
-      onPlayerChange?.(chosenId);
-      const result = onStart?.(chapterId, chosenId);
+      onPlayerChange?.(unusedChosen);
+      const result = onStart?.(chapterId, unusedChosen);
 
       if (result === false) {
         setLaunching(false);
@@ -54,12 +54,12 @@ export default function SinglePlayerCharacterSelect({
 
   const handleBack = () => {
     if (launching) return;
-    if (chosenId) {
+    if (unusedChosen) {
       setChosenId(null);
       setFocusId(null);
       return;
     }
-    if (focusId) {
+    if (unusedFocus) {
       setFocusId(null);
       return;
     }
@@ -93,32 +93,37 @@ export default function SinglePlayerCharacterSelect({
         </p>
 
         <SinglePlayerCharacterPicker
-          focusId={focusId}
-          chosenId={chosenId}
+          unusedFocus={unusedFocus}
+          unusedChosen={unusedChosen}
           onFocus={setFocusId}
           onConfirm={handleConfirm}
           t={t}
         />
 
-        {chosenId ? (
-          <section className="cs-start-panel" aria-live="polite">
-            <div className="cs-start-copy">
-              <span>{lang === 'en' ? 'YOUR ADVENTURE AWAITS' : 'PETUALANGAN MENANTIMU'}</span>
-              <h2>{t('gameStartPrompt')}</h2>
-              <p>{t('selectedCharacter')}: <strong>{t(selectedCharacter.nameId)}</strong></p>
+        {unusedChosen ? (
+          <section className="character-start-panel-v118" aria-label={t('gameStartPrompt')}>
+            <h2>{t('gameStartPrompt')}</h2>
+            <div className="character-start-options-v118">
+              <button
+                className="character-start-option-v118 is-yes"
+                type="button"
+                disabled={launching}
+                aria-busy={launching}
+                onClick={handleStart}
+              >
+                <span className="character-start-cursor-v118" aria-hidden="true">▶</span>
+                <span>{launching ? t('loading') : t('yes')}</span>
+              </button>
+              <button className="character-start-option-v118 is-no" type="button" disabled={launching} onClick={handleCancel}>
+                <span>{t('no')}</span>
+              </button>
             </div>
-            <button className="cs-start-button" type="button"
-              disabled={launching} aria-busy={launching} onClick={handleStart}>
-              <span aria-hidden="true">{launching ? '◌' : '▶'}</span>
-              {launching ? t('loading') : lang === 'en' ? 'START' : 'MULAI'}
-            </button>
+            <p className="character-start-caption-v118">
+              {t('selectedCharacter')}: <strong>{t(selectedCharacter.nameId)}</strong>
+            </p>
           </section>
         ) : (
-          <p className="cs-selection-instruction">
-            {lang === 'en'
-              ? 'Choose your hero to continue.'
-              : 'Pilih karakter untuk melanjutkan.'}
-          </p>
+          <p className="character-select-hint-v118">{t('chooseCharacterHint')}</p>
         )}
       </main>
     </div>
