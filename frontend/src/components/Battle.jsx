@@ -1,6 +1,3 @@
-  useEffect(() => {
-    syncPendingCheckpoints().catch(() => {});
-  }, [saveId]);
 import { getPlayerAsset } from '../data/playerAssets';
 import React, { useEffect, useRef, useState } from 'react';
 import ArenaBackground from './ArenaBackground';
@@ -85,6 +82,9 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
       return '';
     }
   })();
+  useEffect(() => {
+    syncPendingCheckpoints().catch(() => {});
+  }, [saveId]);
   const [checkpointBaseRevision, setCheckpointBaseRevision] = useState(null);
   const checkpointTimerRef = useRef(null);
   const endedRef = useRef(false);
