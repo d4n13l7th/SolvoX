@@ -80,13 +80,28 @@ export default function App(){
     }
     launchBattle(chapterId);
   };
-  const start=(id, nextPlayerId=playerId)=>{
+  const start=async (id, nextPlayerId=playerId)=>{
     const chapterId=Number(id);
     if(chapterId!==1||!Number.isInteger(chapterId)||chapterId<1||chapterId>LEVELS.length)return;
     const selected=nextPlayerId||'traveler';
     // Completing the full campaign and choosing a new Chapter 1 character
     // starts a fresh run, so the new choice stays locked for that run.
     if(allChaptersCompleted)setState(current=>({...current,completedLevels:[]}));
+    // Sync character to active save before locking/starting
+    if (activeSave?.id) {
+      try {
+        const up = await singlePlayerSaves.updateSave(activeSave.id, { characterId: selected });
+        if (!up.ok) {
+          return false;
+        }
+        try {
+          sessionStorage.setItem('solvox.sp.saveId', activeSave.id);
+        } catch (e) {}
+        setActiveSave((s) => (s ? { ...s, characterId: selected } : s));
+      } catch (e) {
+        return false;
+      }
+    }
     setPlayerId(selected);
     localStorage.setItem(PLAYER_LOCK_STORAGE,'1');
     setPlayerSelectionLocked(true);

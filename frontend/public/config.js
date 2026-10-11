@@ -15,7 +15,7 @@
 // need a working backend locally.
 const PROD_BACKEND_URL = 'https://solvox-api.solvox-worker.workers.dev';
 
-const DEV_PORTS = ['5173', '4173'];
+const DEV_PORTS = ['5173', '5174', '4173'];
 const port = typeof location !== 'undefined' ? location.port : '';
 const isLocalDev = DEV_PORTS.indexOf(port) !== -1;
 

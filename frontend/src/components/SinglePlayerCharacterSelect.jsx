@@ -27,13 +27,17 @@ export default function SinglePlayerCharacterSelect({
       onPlayerChange?.(playerId);
       const result = onStart?.(chapterId, playerId);
 
-      if (result === false) {
+      if (result && typeof result.then === 'function') {
+        result
+          .then((resolved) => {
+            if (resolved === false) setLaunching(false);
+          })
+          .catch((error) => {
+            console.error('[CharacterSelect] Failed to start:', error);
+            setLaunching(false);
+          });
+      } else if (result === false) {
         setLaunching(false);
-      } else if (result && typeof result.then === 'function') {
-        result.catch((error) => {
-          console.error('[CharacterSelect] Failed to start:', error);
-          setLaunching(false);
-        });
       }
     } catch (error) {
       console.error('[CharacterSelect] Failed to start:', error);
