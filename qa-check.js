@@ -76,9 +76,9 @@ must(
   'Main mode selector missing single/multiplayer cards',
 );
 must(
-  app.includes("onSingle={()=>setScreen('chapters')}") &&
-    app.includes("screen==='chapters'") &&
-    chapters.includes('chooseChapter'),
+  (app.includes("onSingle={()=>setScreen('chapters')}") || app.includes("onSingle={()=>setScreen('savesList')}")) &&
+    (app.includes("screen==='chapters'") && chapters.includes('chooseChapter')) ||
+    (app.includes("screen==='savesList'") && (exists(path.join(root,'frontend/src/components/SinglePlayerSavesList.jsx')))),
   'Single Player must route to a dedicated chapter selector',
 );
 must(!exists(path.join(root, 'frontend/src/components/MathActivities.jsx')), 'Legacy MathActivities component still present');

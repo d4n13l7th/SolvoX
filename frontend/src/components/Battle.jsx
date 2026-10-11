@@ -1,3 +1,6 @@
+  useEffect(() => {
+    syncPendingCheckpoints().catch(() => {});
+  }, [saveId]);
 import { getPlayerAsset } from '../data/playerAssets';
 import React, { useEffect, useRef, useState } from 'react';
 import ArenaBackground from './ArenaBackground';
@@ -14,6 +17,7 @@ import PixelIcon from './PixelIcon';
 import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 import { playSound } from '../services/sound';
 import { enhanceFeedback } from '../services/aiFeedback';
+import { singlePlayerSaves } from '../services/singlePlayerSaves';
 
 // Hints cost more HP the longer a run drags on, so a struggling player is never
 // punished into a dead end by repeatedly buying help.
@@ -74,6 +78,15 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
   });
 
   const combatRef = useRef(null);
+  const saveId = (() => {
+    try {
+      return sessionStorage.getItem('solvox.sp.saveId') || '';
+    } catch (e) {
+      return '';
+    }
+  })();
+  const [checkpointBaseRevision, setCheckpointBaseRevision] = useState(null);
+  const checkpointTimerRef = useRef(null);
   const endedRef = useRef(false);
   const timersRef = useRef(new Set());
   const questionAttemptRef = useRef({
@@ -81,6 +94,36 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
     answers: [],
     startedAt: Date.now(),
   });
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!saveId) return;
+      try {
+        const r = await singlePlayerSaves.getCheckpoint(saveId, levelId);
+        if (!mounted || !r.ok || !r.data?.checkpoint) return;
+        const cp = r.data.checkpoint;
+        try {
+          if (Array.isArray(cp.questions) && cp.questions.length) setQuestions(cp.questions);
+        } catch (e) {}
+        if (Number.isInteger(cp.idx)) setIdx(cp.idx);
+        if (Number.isFinite(cp.hp)) setHp(cp.hp);
+        if (Number.isFinite(cp.enemyHp)) setEnemyHp(cp.enemyHp);
+        if (Number.isInteger(cp.correctCount)) setCorrectCount(cp.correctCount);
+        if (Number.isInteger(cp.attempts)) setAttempts(cp.attempts);
+        if (Number.isInteger(cp.currentHints)) setCurrentHints(cp.currentHints);
+        if (Number.isInteger(cp.round)) setRound(cp.round);
+        if (Array.isArray(cp.questionLogs)) setQuestionLogs(cp.questionLogs);
+        if (cp.questionStartedAt) setQuestionStartedAt(cp.questionStartedAt);
+        if (cp.startedAt) setStartedAt(cp.startedAt);
+        if (cp.revision != null) setCheckpointBaseRevision(cp.revision);
+        if (cp.questionAttemptRef && typeof cp.questionAttemptRef === 'object') {
+          questionAttemptRef.current = { ...questionAttemptRef.current, ...cp.questionAttemptRef };
+        }
+      } catch (e) {}
+    })();
+    return () => { mounted = false; };
+  }, [saveId, levelId]);
+
 
   /* ----------------------------- Small helpers ---------------------------- */
   const later = (callback, delay) => {
@@ -93,11 +136,110 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
     return timerId;
   };
 
+
+  const buildCheckpointPayload = () => ({
+    schemaVersion: 1,
+    saveId: saveId || null,
+    chapterId: levelId,
+    questions,
+    idx,
+    hp,
+    enemyHp,
+    correctCount,
+    attempts,
+    currentHints,
+    round,
+    questionLogs,
+    questionAttemptRef: questionAttemptRef.current,
+    startedAt,
+    questionStartedAt,
+    updatedAt: Date.now(),
+  });
+
+  const saveCheckpoint = async (force = false) => {
+    if (!saveId || endedRef.current) return;
+    try {
+      const payload = buildCheckpointPayload();
+      const r = await singlePlayerSaves.putCheckpoint(saveId, levelId, payload, checkpointBaseRevision);
+      if (r.ok && r.data?.checkpoint) {
+        setCheckpointBaseRevision(r.data.checkpoint.revision);
+        return;
+      }
+      if (r.status === 409 && r.data?.checkpoint) {
+        setCheckpointBaseRevision(r.data.checkpoint.revision);
+        return;
+      }
+      // store pending
+      const list = readPending();
+      list.push({ saveId, chapterId: levelId, payload, baseRevision: checkpointBaseRevision, ts: Date.now() });
+      writePending(list);
+    } catch (e) {
+      try {
+        const list = readPending();
+        list.push({ saveId, chapterId: levelId, payload: buildCheckpointPayload(), baseRevision: checkpointBaseRevision, ts: Date.now() });
+        writePending(list);
+      } catch (e2) {}
+    }
+  };
+
+
+const PENDING_KEY = 'solvox.sp.pendingCheckpoints';
+
+function readPending() {
+  try {
+    const raw = localStorage.getItem(PENDING_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function writePending(arr) {
+  try {
+    localStorage.setItem(PENDING_KEY, JSON.stringify(arr));
+  } catch (e) {}
+}
+
+async function syncPendingCheckpoints() {
+  const list = readPending();
+  if (!list.length) return;
+  const now = Date.now();
+  const keep = [];
+  for (const p of list) {
+    if (!p || !p.saveId || !p.chapterId) { keep.push(p); continue; }
+    // drop stale > 24h
+    if (p.ts && now - p.ts > 24 * 60 * 60 * 1000) continue;
+    try {
+      const r = await singlePlayerSaves.putCheckpoint(p.saveId, p.chapterId, p.payload, p.baseRevision);
+      if (r.ok) continue; // synced
+      if (r.status === 409) continue; // will reconcile on next load/put
+      keep.push(p); continue;
+    } catch (e) {
+      keep.push(p); continue;
+    }
+  }
+  writePending(keep);
+}
+
+  const scheduleCheckpoint = () => {
+    if (!saveId || endedRef.current) return;
+    if (checkpointTimerRef.current) clearTimeout(checkpointTimerRef.current);
+    checkpointTimerRef.current = setTimeout(() => {
+      saveCheckpoint().catch(() => {});
+    }, 1500);
+  };
+
   const finish = (result) => {
     if (endedRef.current) return;
 
     endedRef.current = true;
-    onComplete({
+    try {
+      const activeSave = null; // will be read from props/context later; App keeps activeSave
+      // try to read activeSave from App state via global? simpler: check sessionStorage marker
+    } catch (e) {}
+    const completion = {
       ...result,
       chapterId: levelId,
       questionLogs: result.questionLogs || questionLogs,
@@ -106,7 +248,33 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
       maxHp: PLAYER.stats.hp,
       playerCharacter: playerAsset.id,
       nextHp: result.nextHp ?? hp,
-    });
+    };
+    if (saveId) {
+      try {
+        const clientRunId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
+        const outcome = completion.won !== false ? 'win' : 'lose';
+        singlePlayerSaves.finishRun(saveId, levelId, {
+          outcome,
+          clientRunId,
+          score: completion.score,
+          totalQuestions: completion.totalQuestions,
+          correct: completion.correct,
+          wrong: completion.wrong,
+          maxHp: completion.maxHp,
+          hpLeft: completion.nextHp ?? completion.hpLeft,
+          timeSec: completion.timeSec,
+          attempts: completion.attempts,
+          hintsUsed: completion.hintsUsed,
+          bossDefeated: completion.bossDefeated,
+          questionLogs: completion.questionLogs,
+        }).then(async (r) => {
+          try { await singlePlayerSaves.deleteCheckpoint(saveId, levelId); } catch (e) {}
+        }).catch(() => {
+          // keep pending; store result payload locally if desired later
+        });
+      } catch (e) {}
+    }
+    onComplete(completion);
   };
 
   const showImpact = (side, amount, theme) => {
@@ -191,6 +359,12 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
     },
     [],
   );
+
+
+  useEffect(() => {
+    scheduleCheckpoint();
+  }, [idx, hp, enemyHp, round, questionLogs.length]);
+
 
   useEffect(() => {
     const now = Date.now();

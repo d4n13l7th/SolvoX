@@ -1,4 +1,5 @@
 import React from 'react';
+import SpriteCharacter from './SpriteCharacter';
 import { getPlayerAsset } from '../data/playerAssets';
 
 const SINGLE_PLAYER_CHARACTERS = Object.freeze([
@@ -61,12 +62,10 @@ export default function SinglePlayerCharacterPicker({ value = 'traveler', onChan
         <div className="character-hero-inner-v118" />
         <div className="character-hero-content-v118">
           <strong className="character-hero-name-v118">{t(selectedAsset.nameId).toUpperCase()}</strong>
-          <img
-            key={selected.id}
+          <SpriteCharacter
+            playerId={selected.id}
             className={`character-hero-sprite-v118 character-hero-sprite-v118-${selected.id}`}
-            src={selectedAsset.portrait}
-            alt={t(selectedAsset.nameId)}
-            draggable="false"
+            size={280}
           />
           <span className="character-hero-role-v118">{t(selectedAsset.roleId)}</span>
         </div>

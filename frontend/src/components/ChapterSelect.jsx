@@ -14,10 +14,20 @@ function chapterProgress(id, progress) {
   return answered ? Math.min(99, Math.round((answered / 10) * 100)) : 0;
 }
 
-export default function ChapterSelect({ progress, onSelectChapter, onBack, lang, t }) {
+export default function ChapterSelect({ progress, activeSave, onSelectChapter, onBack, lang, t }) {
+  const sourceProgress = useMemo(() => {
+    if (activeSave && typeof activeSave === 'object') {
+      return {
+        completedLevels: Array.isArray(activeSave.completedLevels) ? activeSave.completedLevels : [],
+        analytics: Array.isArray(activeSave.analytics) ? activeSave.analytics : [],
+      };
+    }
+    return progress || {};
+  }, [activeSave, progress]);
+
   const completed = useMemo(
-    () => new Set((progress.completedLevels || []).map(Number)),
-    [progress.completedLevels],
+    () => new Set((sourceProgress.completedLevels || []).map(Number)),
+    [sourceProgress.completedLevels],
   );
 
   return (
@@ -59,10 +69,10 @@ export default function ChapterSelect({ progress, onSelectChapter, onBack, lang,
 
       <main className="chapter-select-grid-v44">
         {LEVELS.map((level) => {
-          const open = isUnlocked(progress, level.id);
+          const open = isUnlocked(sourceProgress, level.id);
           const clear = completed.has(level.id);
           const boss = getBoss(level.id);
-          const pct = chapterProgress(level.id, progress);
+          const pct = chapterProgress(level.id, sourceProgress);
           const title = lang === 'en' ? level.titleEn : level.title;
           const bossName = lang === 'en' ? boss.nameEn : boss.name;
 

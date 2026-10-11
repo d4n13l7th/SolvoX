@@ -8,13 +8,14 @@
  */
 import { CHARACTERS, TOTAL_QUESTIONS, TURN_MS, cleanLevel, freshQuestions, listLevels } from './game.js';
 import { listMatches, recordEvaluation, recordFeedback } from './store.js';
+import { createSinglePlayerStore } from './singlePlayerStore.js';
 import { SolvoxRoom } from './room.js';
 
 export { SolvoxRoom };
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type,Authorization',
   'Access-Control-Max-Age': '86400',
 };
 
@@ -51,6 +52,167 @@ async function readJson(request) {
   }
 }
 
+function bearerToken(request) {
+  const header = request.headers.get('Authorization') || '';
+  const match = /^Bearer\s+(.+)$/i.exec(header);
+  return match ? match[1].trim() : '';
+}
+
+function methodNotAllowed(request) {
+  return json(request, { ok: false, message: 'Method not allowed' }, 405);
+}
+
+function guestUnauthorized(request) {
+  return json(request, { ok: false, message: 'Sesi tamu tidak valid' }, 401);
+}
+
+function saveNotFound(request) {
+  return json(request, { ok: false, message: 'Petualangan tidak ditemukan' }, 404);
+}
+
+/**
+ * Single player cloud save. All routes here need the D1 binding, so the caller
+ * has already returned 503 when `env.DB` is missing. Every save-scoped route
+ * resolves the guest from the bearer token before touching the store, which is
+ * what enforces per-guest ownership.
+ */
+async function handleSinglePlayer(request, store, path) {
+  const method = request.method;
+
+  // ── guest session ─────────────────────────────────────────────────────
+  if (path === '/api/guest/session') {
+    if (method === 'POST') {
+      const body = await readJson(request);
+      const { token, guest } = await store.createSession({ displayName: body?.displayName });
+      return json(request, { ok: true, token, profile: guest }, 201);
+    }
+    if (method === 'GET') {
+      const guest = await store.resolveGuest(bearerToken(request));
+      if (!guest) return guestUnauthorized(request);
+      return json(request, { ok: true, profile: guest });
+    }
+    return methodNotAllowed(request);
+  }
+
+  if (path === '/api/guest/profile') {
+    const guest = await store.resolveGuest(bearerToken(request));
+    if (!guest) return guestUnauthorized(request);
+    if (method === 'GET') return json(request, { ok: true, profile: guest });
+    if (method === 'PATCH') {
+      const body = await readJson(request);
+      const updated = await store.updateProfile(guest.id, body || {});
+      return json(request, { ok: true, profile: updated });
+    }
+    return methodNotAllowed(request);
+  }
+
+  // ── legacy import (slot "Petualangan Lama") ────────────────────────────
+  if (path === '/api/single-player/legacy-import') {
+    if (method !== 'POST') return methodNotAllowed(request);
+    const guest = await store.resolveGuest(bearerToken(request));
+    if (!guest) return guestUnauthorized(request);
+    const body = await readJson(request);
+    const result = await store.legacyImport(guest.id, body || {});
+    if (result.limit) {
+      return json(request, { ok: false, message: 'Batas 5 petualangan tercapai', saves: result.saves }, 409);
+    }
+    return json(request, { ok: true, save: result.save, alreadyImported: !!result.already }, result.already ? 200 : 201);
+  }
+
+  // ── saves collection ───────────────────────────────────────────────────
+  if (path === '/api/single-player/saves') {
+    const guest = await store.resolveGuest(bearerToken(request));
+    if (!guest) return guestUnauthorized(request);
+    if (method === 'GET') {
+      const saves = await store.listSaves(guest.id);
+      return json(request, { ok: true, saves });
+    }
+    if (method === 'POST') {
+      const body = await readJson(request);
+      const result = await store.createSave(guest.id, body || {});
+      if (result.limit) {
+        return json(request, { ok: false, message: 'Batas 5 petualangan tercapai', saves: result.saves }, 409);
+      }
+      return json(request, { ok: true, save: result.save }, 201);
+    }
+    return methodNotAllowed(request);
+  }
+
+  // ── saves/:saveId and below ────────────────────────────────────────────
+  const tail = path.slice('/api/single-player/'.length);
+  const parts = tail.split('/').filter(Boolean);
+  if (parts[0] !== 'saves' || !parts[1]) {
+    return json(request, { ok: false, message: 'Not found' }, 404);
+  }
+  const saveId = decodeURIComponent(parts[1]);
+
+  const guest = await store.resolveGuest(bearerToken(request));
+  if (!guest) return guestUnauthorized(request);
+
+  // /saves/:saveId
+  if (parts.length === 2) {
+    if (method === 'GET') {
+      const save = await store.getSave(guest.id, saveId);
+      if (!save) return saveNotFound(request);
+      return json(request, { ok: true, save });
+    }
+    if (method === 'PATCH') {
+      const body = await readJson(request);
+      const save = await store.updateSave(guest.id, saveId, body || {});
+      if (!save) return saveNotFound(request);
+      return json(request, { ok: true, save });
+    }
+    if (method === 'DELETE') {
+      const ok = await store.deleteSave(guest.id, saveId);
+      if (!ok) return saveNotFound(request);
+      return json(request, { ok: true });
+    }
+    return methodNotAllowed(request);
+  }
+
+  // /saves/:saveId/checkpoints/:chapterId
+  if (parts[2] === 'checkpoints') {
+    if (parts.length !== 4 || !parts[3]) return json(request, { ok: false, message: 'Not found' }, 404);
+    const chapterId = Number(decodeURIComponent(parts[3]));
+    if (method === 'GET') {
+      const result = await store.getCheckpoint(guest.id, saveId, chapterId);
+      return json(request, { ok: true, checkpoint: result.found ? result.checkpoint : null });
+    }
+    if (method === 'PUT') {
+      const body = await readJson(request);
+      const result = await store.putCheckpoint(guest.id, saveId, chapterId, {
+        baseRevision: body?.baseRevision,
+        payload: body?.payload,
+      });
+      if (result.conflict) {
+        return json(request, { ok: false, conflict: true, message: 'Checkpoint sudah berubah', checkpoint: result.current }, 409);
+      }
+      if (!result.checkpoint) return saveNotFound(request);
+      return json(request, { ok: true, checkpoint: result.checkpoint });
+    }
+    if (method === 'DELETE') {
+      const removed = await store.deleteCheckpoint(guest.id, saveId, chapterId);
+      return json(request, { ok: true, removed });
+    }
+    return methodNotAllowed(request);
+  }
+
+  // /saves/:saveId/runs
+  if (parts[2] === 'runs' && parts.length === 3) {
+    if (method !== 'POST') return methodNotAllowed(request);
+    const body = await readJson(request);
+    const result = await store.finishRun(guest.id, saveId, body?.chapterId, body || {});
+    if (!result.run) return saveNotFound(request);
+    return json(
+      request,
+      { ok: true, run: result.run, save: result.save, alreadyRecorded: !!result.already },
+      result.already ? 200 : 201,
+    );
+  }
+
+  return json(request, { ok: false, message: 'Not found' }, 404);
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') {
@@ -59,6 +221,19 @@ export default {
 
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
+
+    // ── single player cloud save: D1-backed guest sessions and saves ─────────
+    if (
+      path === '/api/guest/session' ||
+      path === '/api/guest/profile' ||
+      path.startsWith('/api/single-player/')
+    ) {
+      if (!env.DB) {
+        return json(request, { ok: false, message: 'Cloud save belum dikonfigurasi' }, 503);
+      }
+      const store = createSinglePlayerStore(env);
+      return handleSinglePlayer(request, store, path);
+    }
 
     // ── realtime: hand the upgrade to the Durable Object that owns the code ──
     if (path === '/ws') {
