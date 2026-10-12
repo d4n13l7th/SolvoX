@@ -16,21 +16,51 @@ export default function CharacterSelectIdle({
   className = '',
 }) {
   const [frameIndex, setFrameIndex] = useState(0);
+  const [animationReady, setAnimationReady] = useState(false);
   const frames = IDLE_FRAMES[playerId] || IDLE_FRAMES.traveler;
 
   useEffect(() => {
     setFrameIndex(0);
+    setAnimationReady(false);
 
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
       return undefined;
     }
+
+    let cancelled = false;
+    let loaded = 0;
+    const readyFrameCount = Math.min(6, frames.length);
+    const markFrameReady = () => {
+      loaded += 1;
+      if (!cancelled && loaded >= readyFrameCount) setAnimationReady(true);
+    };
+
+    const preloadedFrames = frames.map((src) => {
+      const image = new Image();
+      image.addEventListener('load', markFrameReady, { once: true });
+      image.addEventListener('error', markFrameReady, { once: true });
+      image.src = src;
+      return image;
+    });
+
+    return () => {
+      cancelled = true;
+      preloadedFrames.forEach((image) => {
+        image.removeEventListener('load', markFrameReady);
+        image.removeEventListener('error', markFrameReady);
+      });
+    };
+  }, [frames]);
+
+  useEffect(() => {
+    if (!animationReady) return undefined;
 
     const timer = window.setInterval(() => {
       setFrameIndex((current) => (current + 1) % frames.length);
     }, 83);
 
     return () => window.clearInterval(timer);
-  }, [frames]);
+  }, [animationReady, frames]);
 
   return (
     <img
