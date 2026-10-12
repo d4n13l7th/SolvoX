@@ -427,7 +427,7 @@ async function syncPendingCheckpoints() {
       explanation: learningFeedback || `${correctAnswer}`,
       nextStep: isCorrect
         ? t('feedbackNextStep')
-        : attemptNow < 2
+        : attemptNow < 3
           ? t('feedbackRetryPrompt')
           : t('recommendReview'),
     };
@@ -563,7 +563,7 @@ async function syncPendingCheckpoints() {
         explanation: q.explanation,
       };
 
-      if (attemptNow >= 2) {
+      if (attemptNow >= 3 || nextHp <= 0) {
         const logs = [...questionLogs, log];
         setQuestionLogs(logs);
 
@@ -591,7 +591,7 @@ async function syncPendingCheckpoints() {
           setIdx((value) => value + 1);
           setRound((value) => value + 1);
           setBusy(false);
-        }, nextHp <= 0 ? playerDieDurationMs + 140 : 650);
+        }, nextHp <= 0 ? playerDieDurationMs + 140 : (attemptNow >= 3 ? 3000 : 2600));
         return;
       }
 
@@ -601,7 +601,7 @@ async function syncPendingCheckpoints() {
         window.requestAnimationFrame(() => {
           document.querySelector('.battle-answer-input-v66')?.focus();
         });
-      }, 480);
+      }, 2600);
     }, bossAttackImpactMs);
   };
 
