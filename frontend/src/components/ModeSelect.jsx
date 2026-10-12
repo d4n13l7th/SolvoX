@@ -34,7 +34,7 @@ export default function ModeSelect({lang,t,onBack,onSingle,onMulti}){
   return <div className="mode-select">
     <div className="mode-select-backdrop" aria-hidden="true">
       <video autoPlay loop muted playsInline preload="metadata" poster="/assets/home/home-background-v83-poster.jpg">
-        <source src="/assets/home/home-background-v83.mp4" type="video/mp4" />
+        <source src="/assets/home/home-background-v83-1080p.mp4" type="video/mp4" />
       </video>
       <div />
     </div>
