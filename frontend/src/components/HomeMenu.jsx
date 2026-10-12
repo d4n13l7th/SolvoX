@@ -29,10 +29,10 @@ export default function HomeMenu({ onMain, onTutorial, onSettings, onFeedback, o
           loop
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           poster="/assets/home/home-background-v83-poster.jpg"
         >
-          <source src="/assets/home/home-background-v83.mp4" type="video/mp4" />
+          <source src="/assets/home/home-background-v83-1080p.mp4" type="video/mp4" />
         </video>
         <div className="home-menu-shade" />
       </div>

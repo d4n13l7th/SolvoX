@@ -56,7 +56,7 @@ export default function SinglePlayerSavesList({ lang, t, onBack, onSelectSave, o
     } catch (cause) { setError(String(cause.message || cause)); } finally { setDeletingId(''); }
   };
   return <div className="save-select">
-    <div className="save-select-bg" aria-hidden="true"><video autoPlay loop muted playsInline preload="metadata" poster="/assets/home/home-background-cinematic-poster.jpg"><source src="/assets/home/home-background-cinematic.mp4" type="video/mp4" /></video><i /></div>
+    <div className="save-select-bg" aria-hidden="true"><video autoPlay loop muted playsInline preload="metadata" poster="/assets/home/home-background-v83-poster.jpg"><source src="/assets/home/home-background-v83-1080p.mp4" type="video/mp4" /></video><i /></div>
     <header className="save-select-header"><button className="save-select-back" type="button" onClick={onBack}><SolvoxUtilityArt name="back" size={24} /><span>{t('back')}</span></button><div><small>{t('singleAdventure')}</small><h1>{lang === 'en' ? 'Your adventures' : 'Petualanganmu'}</h1><p>{lang === 'en' ? 'Choose a progress slot or begin a new adventure.' : 'Pilih progress untuk melanjutkan, atau mulai petualangan baru.'}</p></div><strong>{saves.length}/{MAX_SAVES}<span>{lang === 'en' ? 'slots' : 'slot'}</span></strong></header>
     <main className="save-select-grid">{saves.map((save, index) => {
       const character = getPlayerAsset(save.characterId || 'traveler'); const completed = Array.isArray(save.completedLevels) ? save.completedLevels.length : 0;
