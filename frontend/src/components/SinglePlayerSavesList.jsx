@@ -5,182 +5,63 @@ import PixelIcon from './PixelIcon';
 import { getPlayerAsset } from '../data/playerAssets';
 
 const MAX_SAVES = 5;
+const slotName = (name, index) => String(name || '').trim().slice(0, 40) || `Petualangan ${index + 1}`;
 
-function slotName(name, index) {
-  if (name && name.trim()) return name.trim().slice(0, 40);
-  return `Petualangan ${index + 1}`;
-}
-
-export default function SinglePlayerSavesList({ lang, t, onBack, onSelectSave, onCreateSave }) {
-  const [loading, setLoading] = useState(false);
-  const [saves, setSaves] = useState([]);
-  const [error, setError] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [retryAction, setRetryAction] = useState(null);
-
+export default function SinglePlayerSavesList({ lang, t, onBack, onSelectSave, onCreateSave, onDeleted }) {
+  const [loading, setLoading] = useState(false), [creating, setCreating] = useState(false), [deletingId, setDeletingId] = useState(''), [saves, setSaves] = useState([]), [error, setError] = useState('');
   const ensureGuest = async () => {
-    const g = await singlePlayerSaves.getGuestSession();
-    if (g.ok) return g.data?.profile ? g : { ...g, ok: false, error: { kind: 'invalid_response' } };
-    // A missing/expired token is the only reason to create a new guest. Keep
-    // network and Worker errors intact so we don't mask them with another call.
-    if (g.status !== 401) return g;
-    const created = await singlePlayerSaves.createGuestSession('Player');
-    if (created.ok && !created.data?.token) return { ...created, ok: false, error: { kind: 'invalid_response' } };
-    return created;
+    const guest = await singlePlayerSaves.getGuestSession();
+    return guest.ok || guest.status !== 401 ? guest : singlePlayerSaves.createGuestSession('Player');
   };
-
   const load = async () => {
-    setLoading(true);
-    setError('');
-    setRetryAction(null);
+    setLoading(true); setError('');
     try {
-      const g = await ensureGuest();
-      if (!g.ok) throw new Error(singlePlayerRequestError(g, lang, 'Gagal memuat sesi.'));
-      const r = await singlePlayerSaves.listSaves();
-      if (!r.ok) throw new Error(singlePlayerRequestError(r, lang, 'Gagal memuat petualangan.'));
-      if (!Array.isArray(r.data?.saves)) throw new Error(singlePlayerRequestError({ error: { kind: 'invalid_response' } }, lang));
-      setSaves(r.data.saves || []);
-    } catch (e) {
-      setError(String(e.message || e));
-      setRetryAction({ type: 'load' });
-    } finally {
-      setLoading(false);
-    }
+      const guest = await ensureGuest();
+      if (!guest.ok) throw new Error(singlePlayerRequestError(guest, lang));
+      const result = await singlePlayerSaves.listSaves();
+      if (!result.ok || !Array.isArray(result.data?.saves)) throw new Error(singlePlayerRequestError(result, lang));
+      setSaves(result.data.saves);
+    } catch (cause) { setError(String(cause.message || cause)); } finally { setLoading(false); }
   };
-
-  useEffect(() => {
-    load();
-  }, []);
-
+  useEffect(() => { load(); }, []);
   const handleCreate = async () => {
-    setCreating(true);
-    setError('');
-    setRetryAction(null);
+    setCreating(true); setError('');
     try {
-      const g = await ensureGuest();
-      if (!g.ok) throw new Error(singlePlayerRequestError(g, lang, 'Gagal memuat sesi.'));
-      const name = `Petualangan ${saves.length + 1}`;
-      let initialChar = 'traveler';
-      try {
-        const c = localStorage.getItem('solvox.singlePlayer.character.v1') || sessionStorage.getItem('solvox.singlePlayer.character.v1');
-        if (c) initialChar = c;
-      } catch (e) {}
-      const r = await singlePlayerSaves.createSave({ name, characterId: initialChar, currentChapterId: 1, completedLevels: [] });
-      if (r.ok && r.data?.save) {
-        const ns = r.data.save;
-        setSaves((s) => [...s, ns]);
-        try {
-          sessionStorage.setItem('solvox.sp.saveId', ns.id);
-        } catch (e) {}
-        if (onCreateSave) onCreateSave(ns);
-        else if (onSelectSave) onSelectSave(ns);
-        return;
-      }
-      if (r.status === 409 && Array.isArray(r.data?.saves)) {
-        setSaves(r.data.saves);
-        setError('Batas 5 petualangan tercapai');
-        return;
-      }
-      throw new Error(singlePlayerRequestError(r, lang, 'Gagal membuat petualangan.'));
-    } catch (e) {
-      setError(String(e.message || e));
-      setRetryAction({ type: 'create' });
-    } finally {
-      setCreating(false);
-    }
+      const guest = await ensureGuest();
+      if (!guest.ok) throw new Error(singlePlayerRequestError(guest, lang));
+      const result = await singlePlayerSaves.createSave({ name: lang === 'en' ? `Adventure ${saves.length + 1}` : `Petualangan ${saves.length + 1}`, characterId: 'traveler', currentChapterId: 1, completedLevels: [] });
+      if (!result.ok || !result.data?.save) throw new Error(singlePlayerRequestError(result, lang));
+      sessionStorage.setItem('solvox.sp.saveId', result.data.save.id);
+      onCreateSave?.(result.data.save);
+    } catch (cause) { setError(String(cause.message || cause)); } finally { setCreating(false); }
   };
-
-  const handleSelectSave = async (sv) => {
-    setLoading(true);
-    setError('');
-    setRetryAction(null);
+  const handleSelect = async (save) => {
+    setLoading(true); setError('');
     try {
-      const g = await ensureGuest();
-      if (!g.ok) throw new Error(singlePlayerRequestError(g, lang, 'Gagal memuat sesi.'));
-      const r = await singlePlayerSaves.getSave(sv.id);
-      if (!r.ok || !r.data?.save || r.data.save.id !== sv.id) throw new Error(singlePlayerRequestError(r, lang, 'Data petualangan tidak valid atau tidak ditemukan.'));
-      const saveData = r.data.save;
-      try {
-        sessionStorage.setItem('solvox.sp.saveId', saveData.id);
-      } catch (e) {}
-      if (onSelectSave) onSelectSave(saveData);
-    } catch (e) {
-      setError(String(e.message || e));
-      setRetryAction({ type: 'select', save: sv });
-    } finally {
-      setLoading(false);
-    }
+      const result = await singlePlayerSaves.getSave(save.id);
+      if (!result.ok || !result.data?.save) throw new Error(singlePlayerRequestError(result, lang));
+      sessionStorage.setItem('solvox.sp.saveId', result.data.save.id);
+      onSelectSave?.(result.data.save);
+    } catch (cause) { setError(String(cause.message || cause)); } finally { setLoading(false); }
   };
-
-  const retry = () => {
-    if (!retryAction) return;
-    if (retryAction.type === 'select') handleSelectSave(retryAction.save);
-    else if (retryAction.type === 'create') handleCreate();
-    else load();
+  const handleDelete = async (save) => {
+    const message = lang === 'en' ? `Delete “${slotName(save.name, 0)}”? This cannot be undone.` : `Hapus “${slotName(save.name, 0)}”? Tindakan ini tidak dapat dibatalkan.`;
+    if (!window.confirm(message)) return;
+    setDeletingId(save.id); setError('');
+    try {
+      const result = await singlePlayerSaves.deleteSave(save.id);
+      if (!result.ok) throw new Error(singlePlayerRequestError(result, lang));
+      setSaves((current) => current.filter((item) => item.id !== save.id));
+      onDeleted?.(save.id);
+    } catch (cause) { setError(String(cause.message || cause)); } finally { setDeletingId(''); }
   };
-
-  return (
-    <div className="chapter-select-v44">
-      <div className="chapter-select-bg-v44" aria-hidden="true">
-        <video autoPlay loop muted playsInline preload="metadata" poster="/assets/home/home-background-cinematic-poster.jpg">
-          <source src="/assets/home/home-background-cinematic.mp4" type="video/mp4" />
-        </video>
-        <div />
-      </div>
-      <header className="chapter-select-top-v44">
-        <button className="chapter-select-back-v44" type="button" onClick={onBack} disabled={loading || creating}>
-          <SolvoxUtilityArt name="back" size={28} className="solvox-back-art" />
-          <span className="solvox-back-label-v82">{t('back')}</span>
-        </button>
-        <div className="chapter-select-title-v44">
-          <small>{t('singleAdventure')}</small>
-          <h1>{lang === 'en' ? 'Your Adventures' : 'Petualanganmu'}</h1>
-          <p>{lang === 'en' ? 'Select a save slot to continue, or start a new adventure.' : 'Pilih slot petualangan untuk melanjutkan, atau buat petualangan baru.'}</p>
-        </div>
-        <div className="chapter-select-stat-v44">
-          <b>{saves.length}/{MAX_SAVES}</b>
-          <span>Slot Petualangan</span>
-        </div>
-      </header>
-      <main className="chapter-select-list-v44">
-        {saves.length === 0 && (
-          <button type="button" disabled={creating || loading} className="chapter-card-v44 is-open is-list" style={{ '--chapter-accent': '#5B9BFF' }} onClick={handleCreate}>
-            <span className="chapter-card-copy-v44"><small>Slot kosong</small><strong>Petualangan Baru</strong></span>
-            <span className="chapter-card-progress-v44"><span>{creating ? 'Membuat...' : 'Buat Baru'}</span><span><PixelIcon name="right" size={13} /></span></span>
-          </button>
-        )}
-        {saves.length > 0 && saves.map((sv, i) => {
-          const completed = Array.isArray(sv.completedLevels) ? sv.completedLevels.length : 0;
-          const total = 5;
-          const ch = getPlayerAsset(sv.characterId || 'traveler');
-          return (
-            <button key={sv.id} type="button" className="chapter-card-v44 is-open is-list" style={{ '--chapter-accent': ch.accent || '#3FB984' }} onClick={() => handleSelectSave(sv)} disabled={loading || creating}>
-              <span className="chapter-card-copy-v44">
-                <span className="save-row-v44">
-                  <img src={ch.portrait} alt="" className="save-portrait-v44" />
-                  <span>
-                    <small>Slot {i + 1}</small>
-                    <strong>{slotName(sv.name, i)}</strong>
-                    <em>Chapter aktif: {sv.currentChapterId || 1} • Selesai: {completed}/{total}</em>
-                  </span>
-                </span>
-              </span>
-              <span className="chapter-card-progress-v44"><span>{loading ? 'Memuat...' : 'Lanjutkan'}</span><span><PixelIcon name="right" size={13} /></span></span>
-            </button>
-          );
-        })}
-        {saves.length > 0 && saves.length < MAX_SAVES && (
-          <button type="button" disabled={creating || loading} className="chapter-card-v44 is-open is-list" style={{ '--chapter-accent': '#5B9BFF' }} onClick={handleCreate}>
-            <span className="chapter-card-copy-v44"><small>Slot kosong</small><strong>Petualangan Baru</strong></span>
-            <span className="chapter-card-progress-v44"><span>{creating ? 'Membuat...' : 'Buat Baru'}</span><span><PixelIcon name="right" size={13} /></span></span>
-          </button>
-        )}
-      </main>
-      {error && (<div role="alert" style={{ padding: '1rem 2rem', color: '#ffb4b4', textAlign: 'center' }}>
-        <p>{error}</p>
-        {retryAction && <button type="button" onClick={retry} disabled={loading || creating}>{lang === 'en' ? 'Try again' : 'Coba lagi'}</button>}
-      </div>)}
-      {(loading || creating) && !error && (<div style={{ padding: '0 2rem 1rem', color: '#e6e6e6', textAlign: 'center', opacity: 0.9 }}>Memuat...</div>)}
-    </div>
-  );
+  return <div className="save-select">
+    <div className="save-select-bg" aria-hidden="true"><video autoPlay loop muted playsInline preload="metadata" poster="/assets/home/home-background-cinematic-poster.jpg"><source src="/assets/home/home-background-cinematic.mp4" type="video/mp4" /></video><i /></div>
+    <header className="save-select-header"><button className="save-select-back" type="button" onClick={onBack}><SolvoxUtilityArt name="back" size={24} /><span>{t('back')}</span></button><div><small>{t('singleAdventure')}</small><h1>{lang === 'en' ? 'Your adventures' : 'Petualanganmu'}</h1><p>{lang === 'en' ? 'Choose a progress slot or begin a new adventure.' : 'Pilih progress untuk melanjutkan, atau mulai petualangan baru.'}</p></div><strong>{saves.length}/{MAX_SAVES}<span>{lang === 'en' ? 'slots' : 'slot'}</span></strong></header>
+    <main className="save-select-grid">{saves.map((save, index) => {
+      const character = getPlayerAsset(save.characterId || 'traveler'); const completed = Array.isArray(save.completedLevels) ? save.completedLevels.length : 0;
+      return <article className="save-card" key={save.id} style={{ '--save-accent': character.accent || '#61e2d5' }}><button className="save-card-open" type="button" onClick={() => handleSelect(save)} disabled={loading || !!deletingId}><img src={character.portrait} alt="" /><span><small>Slot {index + 1}</small><b>{slotName(save.name, index)}</b><em>{lang === 'en' ? `Chapter ${save.currentChapterId || 1} · ${completed}/5 cleared` : `Chapter ${save.currentChapterId || 1} · ${completed}/5 selesai`}</em></span><PixelIcon name="right" size={18} /></button><button className="save-card-delete" type="button" onClick={() => handleDelete(save)} disabled={loading || deletingId === save.id}>{deletingId === save.id ? '…' : (lang === 'en' ? 'Delete' : 'Hapus')}</button></article>;
+    })}{saves.length < MAX_SAVES && <button className="save-card save-card-new" type="button" onClick={handleCreate} disabled={loading || creating}><PixelIcon name="spark" size={22} /><span><small>{lang === 'en' ? 'Empty slot' : 'Slot kosong'}</small><b>{creating ? (lang === 'en' ? 'Creating…' : 'Membuat…') : (lang === 'en' ? 'New adventure' : 'Petualangan baru')}</b></span><PixelIcon name="right" size={18} /></button>}</main>
+    {error && <div className="save-select-error" role="alert">{error}<button type="button" onClick={load}>{lang === 'en' ? 'Retry' : 'Coba lagi'}</button></div>}
+  </div>;
 }

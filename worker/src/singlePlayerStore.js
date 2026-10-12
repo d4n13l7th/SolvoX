@@ -119,6 +119,7 @@ function mapGuest(row) {
     id: row.id,
     displayName: row.display_name,
     characterId: row.character_id,
+    characterLocked: Number(row.character_locked) === 1,
     exp: Number(row.exp) || 0,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -285,8 +286,8 @@ export function createSinglePlayerStore(env) {
     await db
       .prepare(
         `INSERT INTO single_player_saves
-           (id, guest_id, name, character_id, current_chapter_id, completed_levels_json, exp, revision, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+           (id, guest_id, name, character_id, character_locked, current_chapter_id, completed_levels_json, exp, revision, created_at, updated_at)
+         VALUES (?, ?, ?, ?, 0, ?, ?, ?, 1, ?, ?)`,
       )
       .bind(
         id,
@@ -320,6 +321,10 @@ export function createSinglePlayerStore(env) {
     if (fields.characterId !== undefined) {
       sets.push('character_id = ?');
       values.push(cleanText(fields.characterId, 40, row.character_id || 'traveler'));
+    }
+    if (fields.characterLocked !== undefined) {
+      sets.push('character_locked = ?');
+      values.push(fields.characterLocked ? 1 : 0);
     }
     if (fields.currentChapterId !== undefined) {
       sets.push('current_chapter_id = ?');

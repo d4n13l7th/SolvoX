@@ -8,6 +8,7 @@ import './styles/ui-v33.css';
 import './styles/ui-v34.css';
 import './styles/ui-v42.css';
 import './styles/chapter-select-v44.css';
+import './styles/single-player-saves.css';
 import './styles/character-select-v118.css';
 import './styles/mode-select-v45.css';
 import './styles/battle-v43.css';
