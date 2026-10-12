@@ -14,6 +14,7 @@ import PixelIcon from './PixelIcon';
 import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 import { playSound } from '../services/sound';
 import { findFeedbackBankMatch, getFeedbackFallback } from '../data/feedbackBank';
+import { singlePlayerSaves } from '../services/singlePlayerSaves';
 
 /**
  * Normalise algebra answers so keyboard symbols and typed Unicode variants
@@ -31,7 +32,7 @@ const normalizeAnswer = (value) =>
     .replace(/\s+/g, '')
     .trim();
 
-export default function Battle({ levelId, playerId = 'traveler', lang, t, onComplete, onBack }) {
+export default function Battle({ levelId, playerId = 'traveler', saveId = '', lang, t, onComplete, onSaveUpdated, onBack }) {
   const boss = getBoss(levelId);
   const bossAttackImpactMs = getBossImpactMs(boss.spriteId, 'attack', 360);
   const bossDieDurationMs = getBossSequenceDurationMs(boss.spriteId, 'die');
@@ -94,7 +95,7 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
     if (endedRef.current) return;
 
     endedRef.current = true;
-    onComplete({
+    const completion={
       ...result,
       chapterId: levelId,
       questionLogs: result.questionLogs || questionLogs,
@@ -103,7 +104,18 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
       maxHp: PLAYER.stats.hp,
       playerCharacter: playerAsset.id,
       nextHp: result.nextHp ?? hp,
-    });
+    };
+    if(saveId){
+      const clientRunId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;
+      singlePlayerSaves.finishRun(saveId,levelId,{
+        outcome:completion.won?'win':'lose',clientRunId,correct:completion.correct,
+        answered:completion.questionLogs?.length||0,
+        hintsUsed:completion.hints||0,durationSec:completion.timeSec||0,
+      }).then((saved)=>{
+        if(saved.ok&&saved.data?.save)onSaveUpdated?.(saved.data.save);
+      }).catch(()=>{});
+    }
+    onComplete(completion);
   };
 
   const showImpact = (side, amount, theme) => {

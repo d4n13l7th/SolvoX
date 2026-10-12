@@ -10,12 +10,13 @@ export default function SinglePlayerCharacterSelect({ levelId, playerId = 'trave
   const level = LEVELS.find((item) => item.id === Number(levelId)) || LEVELS[0];
   const selectedCharacter = getPlayerAsset(playerId);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (launching) return;
     const chapterId = Number(levelId);
     if (!Number.isInteger(chapterId) || chapterId < 1 || chapterId > LEVELS.length) return;
     setLaunching(true);
-    onStart?.(chapterId, playerId);
+    const started = await onStart?.(chapterId, playerId);
+    if (started === false) setLaunching(false);
   };
 
   const handleCancel = () => {

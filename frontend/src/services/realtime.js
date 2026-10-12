@@ -25,6 +25,8 @@
  * disconnect and redials itself.
  */
 
+import { BACKEND_URL } from '../config';
+
 const CODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 // The liveness interval must be SHORTER than PONG_TIMEOUT_MS: a quiet waiting
 // room emits no broadcasts, so judging liveness by silence alone would flag
@@ -52,6 +54,12 @@ function toWebSocketBase(base) {
 }
 
 export function io(baseUrl, options = {}) {
+  // Source UI calls io({ autoConnect: false }); keep that Socket.IO shape while
+  // routing the transport to the configured Worker.
+  if (baseUrl && typeof baseUrl === 'object') {
+    options = baseUrl;
+    baseUrl = BACKEND_URL || undefined;
+  }
   const handlers = new Map();
   const base = toWebSocketBase(baseUrl);
   const autoConnect = options.autoConnect !== false;
@@ -286,7 +294,32 @@ export function io(baseUrl, options = {}) {
       return;
     }
 
-    emitToClient(frame.event, frame.data);
+    // The source UI was written for the Express Socket.IO protocol. Translate
+    // the Worker token fields at the transport boundary so the UI can retain
+    // its player-id based rendering and animation model.
+    let data = frame.data;
+    if (data && Array.isArray(data.players)) {
+      const playerIdForToken = (token) => data.players.find((player) => player.token === token)?.id;
+      const summary = data.finishSummary && typeof data.finishSummary === 'object'
+        ? Object.fromEntries(Object.entries(data.finishSummary).map(([token, text]) => [playerIdForToken(token) || token, text]))
+        : data.finishSummary;
+      const combat = data.combatEvent
+        ? {
+          ...data.combatEvent,
+          playerId: playerIdForToken(data.combatEvent.token),
+          targetPlayerId: playerIdForToken(data.combatEvent.target),
+        }
+        : data.combatEvent;
+      data = {
+        ...data,
+        currentTurnPlayerId: playerIdForToken(data.currentTurnToken),
+        winner: data.winner === 'draw' ? 'draw' : (playerIdForToken(data.winner) || data.winner),
+        finishSummary: summary,
+        combatEvent: combat,
+      };
+    }
+
+    emitToClient(frame.event, data);
   };
 
   const dial = (targetCode, intent) => {
@@ -327,6 +360,7 @@ export function io(baseUrl, options = {}) {
       if (dialTimer) clearTimeout(dialTimer);
       dialTimer = null;
       lastKnownAlive = Date.now();
+      emitToClient('connect');
       heartbeatTimer = setInterval(() => {
         if (!socket || socket.readyState !== WebSocket.OPEN) return;
         // Probe first, then judge: the ping lets the server prove it is alive
@@ -358,6 +392,7 @@ export function io(baseUrl, options = {}) {
     socket.onclose = () => {
       socket = null;
       stopTimers();
+      if (opened) emitToClient('disconnect');
       if (!opened) return tryPollFallback();
       if (!closedByUser) scheduleReconnect();
     };
@@ -405,6 +440,22 @@ export function io(baseUrl, options = {}) {
       }
       send(event, data);
       return client;
+    },
+    timeout() {
+      // The only source call site uses this for room:leave. The Worker does not
+      // acknowledge that event, so complete its callback after queuing the
+      // frame rather than leaving navigation blocked indefinitely.
+      return {
+        emit(event, data, callback) {
+          if (typeof data === 'function') {
+            callback = data;
+            data = undefined;
+          }
+          client.emit(event, data);
+          if (typeof callback === 'function') queueMicrotask(() => callback(null));
+          return client;
+        },
+      };
     },
     connect() {
       closedByUser = false;

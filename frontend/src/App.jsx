@@ -8,6 +8,7 @@ import Multiplayer from './components/Multiplayer';
 import ModeSelect from './components/ModeSelect';
 import ChapterSelect from './components/ChapterSelect';
 import SinglePlayerCharacterSelect from './components/SinglePlayerCharacterSelect';
+import SinglePlayerSavesList from './components/SinglePlayerSavesList';
 import Settings from './components/Settings';
 import AboutDevelopers from './components/AboutDevelopers';
 import Tutorial from './components/Tutorial';
@@ -17,6 +18,7 @@ import {LEVELS, isUnlocked} from './data/levels';
 import {T} from './services/i18n';
 import {summarizePerformance} from './services/evaluation';
 import {GAME_META} from './config/game';
+import {singlePlayerSaves} from './services/singlePlayerSaves';
 
 const STORAGE='solvox.progress.v1';
 const PLAYER_STORAGE='solvox.singlePlayer.character.v1';
@@ -33,7 +35,7 @@ function sanitizeState(raw){const base={...DEFAULT,...(raw||{})};const cleanBase
 function load(){try{const current=localStorage.getItem(STORAGE);if(current)return sanitizeState(JSON.parse(current));for(const key of LEGACY_STORAGES){const legacy=localStorage.getItem(key);if(legacy)return sanitizeState(JSON.parse(legacy));}return {...DEFAULT}}catch{return {...DEFAULT}}}
 function save(s){localStorage.setItem(STORAGE,JSON.stringify(s))}
 export default function App(){
-  const [state,setState]=useState(load),[screen,setScreen]=useState('home'),[level,setLevel]=useState(1),[playerId,setPlayerId]=useState(()=>localStorage.getItem(PLAYER_STORAGE)||'traveler'),[playerSelectionLocked,setPlayerSelectionLocked]=useState(()=>localStorage.getItem(PLAYER_LOCK_STORAGE)==='1'),[battleSession,setBattleSession]=useState(0),[evaluation,setEvaluation]=useState(null),[feedback,setFeedback]=useState(false),[settings,setSettings]=useState(false),[profileOpen,setProfileOpen]=useState(false),[tutorialOpen,setTutorialOpen]=useState(false),[lang,setLang]=useState(()=>localStorage.getItem('solvox.lang')||localStorage.getItem('numericore.lang')||localStorage.getItem('aljabarmaster.lang')||'id');
+  const [state,setState]=useState(load),[screen,setScreen]=useState('home'),[level,setLevel]=useState(1),[playerId,setPlayerId]=useState(()=>localStorage.getItem(PLAYER_STORAGE)||'traveler'),[playerSelectionLocked,setPlayerSelectionLocked]=useState(()=>localStorage.getItem(PLAYER_LOCK_STORAGE)==='1'),[battleSession,setBattleSession]=useState(0),[evaluation,setEvaluation]=useState(null),[feedback,setFeedback]=useState(false),[settings,setSettings]=useState(false),[profileOpen,setProfileOpen]=useState(false),[tutorialOpen,setTutorialOpen]=useState(false),[activeSave,setActiveSave]=useState(null),[lang,setLang]=useState(()=>localStorage.getItem('solvox.lang')||localStorage.getItem('numericore.lang')||localStorage.getItem('aljabarmaster.lang')||'id');
   const t=(k,vars)=>{let value=T[lang]?.[k] ?? T.id?.[k] ?? k; if(vars) Object.entries(vars).forEach(([name,val])=>{value=value.replaceAll(`{${name}}`,String(val))}); return value;};
   useEffect(()=>{save(state);},[state]);
   useEffect(()=>{ document.documentElement.lang=lang==='en'?'en':'id'; },[lang]);
@@ -82,17 +84,33 @@ export default function App(){
     }
     launchBattle(chapterId);
   };
-  const start=(id, nextPlayerId=playerId)=>{
+  const activateSave=(nextSave)=>{
+    if(!nextSave?.id)return;
+    setActiveSave(nextSave);
+    setPlayerId(nextSave.characterId||'traveler');
+    setPlayerSelectionLocked(true);
+    localStorage.setItem(PLAYER_LOCK_STORAGE,'1');
+    setState(current=>({...current,completedLevels:normalizeCompleted(nextSave.completedLevels),playerEXP:Number(nextSave.exp)||0}));
+  };
+  const start=async (id, nextPlayerId=playerId)=>{
     const chapterId=Number(id);
     if(chapterId!==1||!Number.isInteger(chapterId)||chapterId<1||chapterId>LEVELS.length)return;
     const selected=nextPlayerId||'traveler';
     // Completing the full campaign and choosing a new Chapter 1 character
     // starts a fresh run, so the new choice stays locked for that run.
     if(allChaptersCompleted)setState(current=>({...current,completedLevels:[]}));
+    if(activeSave?.id){
+      try{
+        const updated=await singlePlayerSaves.updateSave(activeSave.id,{characterId:selected});
+        if(!updated.ok)return false;
+        setActiveSave(updated.data?.save||({...activeSave,characterId:selected}));
+      }catch{return false;}
+    }
     setPlayerId(selected);
     localStorage.setItem(PLAYER_LOCK_STORAGE,'1');
     setPlayerSelectionLocked(true);
     launchBattle(chapterId);
+    return true;
   };
   const complete=(result)=>{const id=level; const won=result.won!==false; const completed=new Set(normalizeCompleted(state.completedLevels)); if(won)completed.add(id); const run={level:id,chapterId:id,...result,mastery:summarizePerformance(result).mastery,ts:Date.now()}; const next={...state,completedLevels:normalizeCompleted([...completed]),playerEXP:state.playerEXP+(won?100:20),playerName:state.profile?.name||state.playerName,analytics:[...(state.analytics||[]),run]}; setState(next); setEvaluation(result);};
   const finishEval=()=>{setEvaluation(null);setScreen('chapters')};
@@ -111,10 +129,11 @@ export default function App(){
   return <div className={`app-shell ${screen==='battle'?'battle-active':''}`}>
     {screen!=='battle'&&screen!=='home'&&screen!=='modes'&&screen!=='chapters'&&screen!=='character'&&screen!=='about'&&<header className="global-bar"><div className="global-brand"><SolvoxBrandLogo compact/><span className="global-brand-copy"><b>{t('online')}</b><small>{t('subtitle')}</small></span></div><nav className="global-actions" aria-label={lang==='en'?'Game options':'Pengaturan game'}><button className="global-action" title={t('feedback')} aria-label={t('feedback')} onClick={()=>setFeedback(true)}><PixelIcon name="feedback" size={17}/><span>{t('feedback')}</span></button><button className="global-action" title={t('settingsTitle')} aria-label={t('settingsTitle')} onClick={()=>setSettings(true)}><PixelIcon name="gear" size={17}/><span>{t('settingsTitle')}</span></button></nav></header>}
     {screen==='home'&&<HomeMenu t={t} onMain={()=>setScreen('modes')} onTutorial={()=>setTutorialOpen(true)} onSettings={()=>setSettings(true)} onFeedback={()=>setFeedback(true)} onProfile={()=>setProfileOpen(true)}/>} 
-    {screen==='modes'&&<ModeSelect lang={lang} t={t} onBack={()=>setScreen('home')} onSingle={()=>setScreen('chapters')} onMulti={()=>setScreen('multi')}/>} 
-    {screen==='chapters'&&<ChapterSelect progress={state} lang={lang} t={t} onBack={()=>setScreen('modes')} onSelectChapter={selectChapter}/>}
+    {screen==='modes'&&<ModeSelect lang={lang} t={t} onBack={()=>setScreen('home')} onSingle={()=>setScreen('savesList')} onMulti={()=>setScreen('multi')}/>}
+    {screen==='savesList'&&<SinglePlayerSavesList lang={lang} t={t} onBack={()=>setScreen('modes')} onSelectSave={(nextSave)=>{activateSave(nextSave);setScreen('chapters')}} onCreateSave={(nextSave)=>{activateSave(nextSave);setScreen('chapters')}}/>}
+    {screen==='chapters'&&<ChapterSelect progress={state} activeSave={activeSave} lang={lang} t={t} onBack={()=>setScreen('modes')} onSelectChapter={selectChapter}/>}
     {screen==='character'&&<SinglePlayerCharacterSelect levelId={level} playerId={playerId} lang={lang} t={t} onPlayerChange={setPlayerId} onBack={()=>setScreen('chapters')} onStart={start}/>}
-    {screen==='battle'&&<Battle key={`chapter-${level}-session-${battleSession}`} levelId={level} playerId={playerId} lang={lang} t={t} onComplete={complete} onBack={()=>setScreen('chapters')}/>} 
+    {screen==='battle'&&<Battle key={`chapter-${level}-session-${battleSession}`} levelId={level} playerId={playerId} saveId={activeSave?.id||''} lang={lang} t={t} onComplete={complete} onSaveUpdated={activateSave} onBack={()=>setScreen('chapters')}/>}
     {screen==='multi'&&<Multiplayer lang={lang} t={t} playerName={state.profile?.name||state.playerName} onBack={()=>setScreen('modes')}/>} 
     {evaluation&&<Evaluation result={evaluation} onClose={finishEval} onRematch={rematch} onNext={goNext} nextLevel={evaluation.won&&Number(evaluation.chapterId||level)<LEVELS.length?Number(evaluation.chapterId||level)+1:null} t={t} lang={lang}/>} 
     {feedback&&<Feedback lang={lang} t={t} onClose={()=>setFeedback(false)}/>}

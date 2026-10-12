@@ -7,10 +7,9 @@ import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 import {GAME_META} from '../config/game';
 import { playSound } from '../services/sound';
 import {apiJson} from '../services/api';
-import {BACKEND_URL} from '../config';
 
 export default function Multiplayer({lang,onBack,t,playerName=''} ){
-  const [socket]=useState(()=>io(BACKEND_URL||undefined,{autoConnect:false}));
+  const [socket]=useState(()=>io({autoConnect:false}));
   const [socketConnected,setSocketConnected]=useState(false);
   const roomRef=useRef(null);
   const pendingActionRef=useRef(null);
@@ -160,11 +159,10 @@ useEffect(()=>{
 },[room?.status,room?.combatEvent?.seq,battlePlayers.player?.id]);
 
   const runWhenConnected=(action)=>{
-    if(socket.connected){action();return;}
-    // Keep the first pending action and run it once the socket is ready.
-    if(!pendingActionRef.current)pendingActionRef.current=action;
-    setError('');
-    socket.connect();
+    // The Worker client needs room:create / room:join to know which Durable
+    // Object to dial. Sending through it directly starts that lazy connection;
+    // later gameplay frames are safely queued by realtime.js while reconnecting.
+    action();
   };
   const prepareRoomToken=()=>{
     const token=globalThis.crypto?.randomUUID?.()||`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
@@ -206,8 +204,8 @@ useEffect(()=>{
       localStorage.removeItem('aljabarmaster.mpToken');
       onBack?.();
     };
-    if(socket.connected)socket.emit('room:leave');
-    finishLeave();
+    if(socket.connected)socket.timeout(750).emit('room:leave',finishLeave);
+    else finishLeave();
   };
 
   const myStats=dashboard?.players?.find(p=>String(p.name).trim().toLowerCase()===String(name).trim().toLowerCase());

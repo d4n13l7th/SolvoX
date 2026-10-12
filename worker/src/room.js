@@ -297,7 +297,7 @@ export class SolvoxRoom {
 
   // ── room lifecycle ─────────────────────────────────────────────────────────
 
-  onCreate(ws, { name, character = 'mage', levelId = 1, token, lang = 'id', mode = 'turn' } = {}) {
+  onCreate(ws, { name, character = 'mage', levelId = 1, token, lang = 'id', mode = 'turn', bot = false } = {}) {
     const code = this.code;
     // The code is chosen by the client so that both players can reach the same
     // Durable Object from the WebSocket URL alone. If a different, still active
@@ -319,10 +319,14 @@ export class SolvoxRoom {
     }
     const playerToken = cleanToken(token) || makeToken();
     const level = cleanLevel(levelId);
+    const botEnabled = bot === true;
+    const botToken = botEnabled ? makeToken() : null;
     this.room = {
       code,
       hostToken: playerToken,
       mode: mode === 'score' ? 'score' : 'turn',
+      isBot: botEnabled,
+      botToken,
       status: 'waiting',
       statusKey: 'WAITING_PLAYER',
       levelId: level,
@@ -356,6 +360,23 @@ export class SolvoxRoom {
         lastMistake: null,
       }],
     };
+    if (botEnabled) {
+      this.room.players.push({
+        id: crypto.randomUUID(),
+        token: botToken,
+        name: lang === 'en' ? 'Solvox Bot' : 'Bot Solvox',
+        character: 'ninja',
+        ready: true,
+        hp: 100,
+        connected: true,
+        score: 0,
+        correct: 0,
+        answered: 0,
+        hintsUsed: 0,
+        hintLevels: [],
+        lastMistake: null,
+      });
+    }
     this.sockets.set(ws, playerToken);
     this.saveRoom();
     this.emitTo(ws, 'room:created', this.publicRoom(this.room));
@@ -559,7 +580,7 @@ export class SolvoxRoom {
     room.decisiveQuestion = null;
     room.finishSummary = null;
     room.players.forEach((p) => {
-      p.ready = false;
+      p.ready = p.token === room.botToken;
       p.hp = 100;
       p.score = 0;
       p.correct = 0;
@@ -582,6 +603,11 @@ export class SolvoxRoom {
     if (explicit) {
       this.clearGrace(player.token);
       room.players = room.players.filter((x) => x.token !== player.token);
+      if (room.isBot) {
+        this.clearTurnDeadline();
+        this.dropRoom();
+        return;
+      }
       if (!room.players.length) {
         this.clearTurnDeadline();
         this.dropRoom();
@@ -606,6 +632,9 @@ export class SolvoxRoom {
       const idx = current.players.findIndex((x) => x.token === player.token);
       if (idx >= 0) current.players.splice(idx, 1);
       if (!current.players.length) {
+        this.clearTurnDeadline();
+        this.dropRoom();
+      } else if (current.isBot && current.players.every((x) => x.token === current.botToken)) {
         this.clearTurnDeadline();
         this.dropRoom();
       } else {
@@ -663,6 +692,29 @@ export class SolvoxRoom {
     });
     this.setTurnDeadline(room);
     this.broadcast('game:start', room);
+    this.scheduleBotAnswer(room);
+  }
+
+  /** The bot is a regular second player whose answers stay inside this DO. */
+  scheduleBotAnswer(room) {
+    if (!room?.isBot || room.status !== 'battle') return;
+    const bot = room.players.find((player) => player.token === room.botToken);
+    const botCanAnswer = room.mode === 'score'
+      || room.turnToken === room.botToken;
+    if (!bot || !botCanAnswer || room.turnAnswers?.[bot.token]?.submitted) return;
+
+    setTimeout(() => {
+      if (this.room !== room || room.status !== 'battle') return;
+      if (room.mode === 'turn' && room.turnToken !== bot.token) return;
+      if (room.turnAnswers?.[bot.token]?.submitted) return;
+      const question = room.questions[room.questionIndex];
+      if (!question) return;
+      const correct = Math.random() < 0.7;
+      const answer = correct
+        ? (Array.isArray(question.answer) ? question.answer[0] : question.answer)
+        : '__solvox_bot_wrong_answer__';
+      this.onAnswer({ send() {} }, { token: bot.token, answer });
+    }, room.mode === 'score' ? 1200 : 900);
   }
 
   advanceTurn(room, timeout = false) {
@@ -683,6 +735,7 @@ export class SolvoxRoom {
       room.combatEvent = null;
       this.broadcast('turn:next', room);
       this.setTurnDeadline(room);
+      this.scheduleBotAnswer(room);
       return;
     }
     return this.resolveRound(room);
@@ -715,6 +768,7 @@ export class SolvoxRoom {
       room.statusKey = 'NEW_ROUND';
       this.broadcast('round:next', room);
       this.setTurnDeadline(room);
+      this.scheduleBotAnswer(room);
     }, 700);
   }
 
@@ -755,6 +809,7 @@ export class SolvoxRoom {
       room.combatEvent = null;
       this.broadcast('round:next', room);
       this.setTurnDeadline(room);
+      this.scheduleBotAnswer(room);
     }, 1000);
   }
 
@@ -884,6 +939,7 @@ export class SolvoxRoom {
       code: room.code,
       status: room.status,
       mode: room.mode,
+      isBot: !!room.isBot,
       levelId: room.levelId,
       questionIndex: room.questionIndex,
       totalQuestions: room.totalQuestions,
