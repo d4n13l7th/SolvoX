@@ -1,52 +1,9 @@
-/**
- * Storage interface for Solvox match history, feedback and evaluation logs.
- *
- * ── WHY THIS FILE EXISTS ────────────────────────────────────────────────────
- * The team is running the "no database" option (b) for now, so this module keeps
- * records in process memory. On Cloudflare Workers process memory is NOT shared
- * between isolates and is discarded on eviction, so in practice the Dashboard and
- * leaderboard come back empty. In-match results are unaffected: those are served
- * from Durable Object room state, not from here.
- *
- * ── SWITCHING TO OPTION (a), LATER, WITHOUT A REWRITE ────────────────────────
- *   1. `wrangler d1 create solvox` and add the [[d1_databases]] binding in
- *      wrangler.toml (the block is already present, commented out).
- *   2. Create the tables with the schema in ./schema.sql.
- *   3. Replace the body of the functions below with the D1 calls. The exported
- *      signatures, and therefore every caller, stay exactly the same.
- * Nothing in room.js, index.js or the frontend needs to change.
- *
- * The Express backend in backend/server.js appends to data/*.jsonl instead, and
- * remains the fallback until this path is verified in production.
- */
-
-// ── option (b): process memory ───────────────────────────────────────────────
-const matches = [];
-const feedback = [];
-const evaluation = [];
-
-const MAX_RECORDS = 500;
-
-function push(list, row) {
-  list.push(row);
-  if (list.length > MAX_RECORDS) list.splice(0, list.length - MAX_RECORDS);
-  return row;
-}
-
-export async function recordMatch(row) {
-  return push(matches, { ...row, ts: row.ts || new Date().toISOString() });
-}
-
-export async function recordFeedback(row) {
-  return push(feedback, { type: 'feedback', ts: new Date().toISOString(), ...row });
-}
-
-export async function recordEvaluation(row) {
-  return push(evaluation, { type: 'evaluation', ts: new Date().toISOString(), ...row });
-}
-
-export async function listMatches({ player, limit = 30 } = {}) {
-  const key = String(player || '').trim().toLowerCase();
-  const rows = key ? matches.filter((m) => String(m.player || '').trim().toLowerCase() === key) : matches;
-  return rows.slice(-Math.max(1, Math.min(100, Number(limit) || 30)));
-}
+const MAX_LIMIT = 100;
+const number = (value) => Math.max(0, Number(value) || 0);
+const text = (value, fallback = '') => String(value ?? fallback).trim();
+function requireDb(db) { if (!db) throw new Error('D1 binding "DB" is not configured'); return db; }
+function matchRow(row) { return { ts:row.ts, matchId:row.match_id, levelId:row.level_id, mode:row.mode, player:row.player, opponent:row.opponent, answered:number(row.answered), correct:number(row.correct), accuracy:number(row.accuracy), score:number(row.score), hpRemaining:number(row.hp_remaining), wins:number(row.wins), draw:number(row.draw), losses:number(row.losses), durationSec:number(row.duration_sec), totalQuestions:number(row.total_questions), hintsUsed:number(row.hints_used), decisiveQuestion:row.decisive_question, decisiveConcept:row.decisive_concept }; }
+export async function recordMatch(db, row={}) { await requireDb(db).prepare(`INSERT INTO matches (ts,match_id,level_id,mode,player,opponent,answered,correct,accuracy,score,hp_remaining,wins,draw,losses,duration_sec,total_questions,hints_used,decisive_question,decisive_concept) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(text(row.ts,new Date().toISOString()),text(row.matchId),number(row.levelId),text(row.mode),text(row.player,'Player'),text(row.opponent,'—'),number(row.answered),number(row.correct),number(row.accuracy),number(row.score),number(row.hpRemaining),number(row.wins),number(row.draw),number(row.losses),number(row.durationSec),number(row.totalQuestions||10),number(row.hintsUsed),row.decisiveQuestion==null?null:text(row.decisiveQuestion),row.decisiveConcept==null?null:text(row.decisiveConcept)).run(); }
+export async function recordFeedback(db, row) { await requireDb(db).prepare('INSERT INTO feedback (ts,payload) VALUES (?,?)').bind(new Date().toISOString(),JSON.stringify(row||{})).run(); }
+export async function recordEvaluation(db, row) { await requireDb(db).prepare('INSERT INTO evaluations (ts,payload) VALUES (?,?)').bind(new Date().toISOString(),JSON.stringify(row||{})).run(); }
+export async function listMatches(db,{player,limit=30}={}) { const safeLimit=Math.max(1,Math.min(MAX_LIMIT,Number(limit)||30)); const name=text(player).toLowerCase(); const statement=name?requireDb(db).prepare('SELECT * FROM matches WHERE lower(player)=? ORDER BY id DESC LIMIT ?').bind(name,safeLimit):requireDb(db).prepare('SELECT * FROM matches ORDER BY id DESC LIMIT ?').bind(safeLimit); const result=await statement.all(); return (result.results||[]).reverse().map(matchRow); }

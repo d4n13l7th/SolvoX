@@ -1,8 +1,7 @@
 /**
  * Shared game rules for the Solvox Worker + Durable Object.
  *
- * Ported verbatim from backend/server.js so single player, the old Express server
- * and the new Cloudflare runtime all grade answers and shape payloads identically.
+ * Shared game rules for question grading and multiplayer payloads.
  */
 import packId from './data/solvoxQuestions.json';
 import packEn from './data/solvoxQuestions.en.json';

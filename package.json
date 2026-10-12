@@ -2,7 +2,7 @@
   "name": "solvox",
   "version": "103.0.0",
   "private": true,
-  "description": "Solvox V103 — math-first RPG. Multiplayer backend runs on Cloudflare Workers + Durable Objects (worker/); backend/ and server.js are the archived Express + Socket.IO implementation.",
+  "description": "Solvox — React frontend on Vercel with a Cloudflare Workers + Durable Objects + D1 backend.",
   "scripts": {
     "build": "npm run qa && npm --workspace frontend run build",
     "dev": "npm --workspace frontend run dev",
@@ -11,8 +11,7 @@
     "qa": "node qa-check.js",
     "worker:dev": "npm --prefix worker run dev",
     "worker:deploy": "npm --prefix worker run deploy",
-    "worker:tail": "npm --prefix worker run tail",
-    "start:legacy": "node server.js"
+    "worker:tail": "npm --prefix worker run tail"
   },
   "engines": {
     "node": ">=18"

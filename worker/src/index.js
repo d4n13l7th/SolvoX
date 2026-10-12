@@ -322,7 +322,7 @@ export default {
 
     if (path === '/api/feedback' && request.method === 'POST') {
       try {
-        await recordFeedback(await readJson(request));
+        await recordFeedback(env.DB, await readJson(request));
         return json(request, { ok: true });
       } catch {
         return json(request, { ok: false, message: 'Feedback gagal disimpan' }, 500);
@@ -331,7 +331,7 @@ export default {
 
     if (path === '/api/evaluation' && request.method === 'POST') {
       try {
-        await recordEvaluation(await readJson(request));
+        await recordEvaluation(env.DB, await readJson(request));
         return json(request, { ok: true });
       } catch {
         return json(request, { ok: false, message: 'Evaluasi gagal disimpan' }, 500);
@@ -341,7 +341,7 @@ export default {
     if (path === '/api/player-profile') {
       const name = (url.searchParams.get('name') || '').trim().toLowerCase();
       if (!name) return json(request, { ok: true, player: null });
-      const rows = await listMatches({ player: name, limit: 100 });
+      const rows = await listMatches(env.DB, { player: name, limit: 100 });
       if (!rows.length) return json(request, { ok: true, player: null });
       const matches = rows.length;
       const sum = (key) => rows.reduce((total, r) => total + (Number(r[key]) || 0), 0);
@@ -369,7 +369,7 @@ export default {
 
     if (path === '/api/dashboard') {
       const limit = Math.max(1, Math.min(100, Number(url.searchParams.get('limit')) || 30));
-      const rows = await listMatches({ limit: 100 });
+      const rows = await listMatches(env.DB, { limit: 100 });
       const players = new Map();
       for (const row of rows) {
         const key = String(row.player || 'Player').trim().toLowerCase() || 'player';

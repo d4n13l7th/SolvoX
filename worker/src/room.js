@@ -2,7 +2,7 @@
  * Solvox room — one Durable Object instance per room code.
  *
  * A Durable Object is single threaded and long lived, which makes it a natural
- * home for the state that used to live in the `rooms` Map in backend/server.js.
+ * home for the state of one multiplayer room.
  * Everything a client can see about a duel (players, hp, score, turn order, the
  * finish summary) lives on `this.room` and is serialised by `publicRoom()`.
  *
@@ -853,7 +853,7 @@ export class SolvoxRoom {
       const correct = Math.max(0, Number(player.correct) || 0);
       const isWinner = room.winner === player.token;
       const isDraw = room.winner === 'draw';
-      recordMatch({
+      recordMatch(this.env.DB, {
         type: 'multiplayer_match',
         ts: new Date(finishedAt).toISOString(),
         matchId: room.code,
@@ -874,7 +874,7 @@ export class SolvoxRoom {
         hintsUsed: Number(player.hintsUsed) || 0,
         decisiveQuestion: room.decisiveQuestion?.id || null,
         decisiveConcept: room.decisiveQuestion?.concept || null,
-      });
+      }).catch(() => {});
     }
   }
 
