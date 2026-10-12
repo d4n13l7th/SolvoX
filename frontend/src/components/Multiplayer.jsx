@@ -7,9 +7,10 @@ import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 import {GAME_META} from '../config/game';
 import { playSound } from '../services/sound';
 import {apiJson} from '../services/api';
+import {BACKEND_URL} from '../config';
 
 export default function Multiplayer({lang,onBack,t,playerName=''} ){
-  const [socket]=useState(()=>io(undefined,{autoConnect:false}));
+  const [socket]=useState(()=>io(BACKEND_URL||undefined,{autoConnect:false}));
   const [socketConnected,setSocketConnected]=useState(false);
   const roomRef=useRef(null);
   const pendingActionRef=useRef(null);
