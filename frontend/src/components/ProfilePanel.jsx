@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {SolvoxUtilityArt} from './SolvoxUtilityArt';
 import {deriveProfile} from '../services/profile';
-import {apiUrl} from '../config';
+import {apiJson} from '../services/api';
 
 function fmtTime(seconds){
   const s=Math.max(0,Number(seconds)||0);
@@ -21,8 +21,7 @@ export default function ProfilePanel({progress,profile,onClose,onSave,t,lang}){
     let alive=true;
     const lookupName=String(profile?.name||progress.playerName||'Player').trim();
     setLoading(true);
-    fetch(apiUrl(`/api/player-profile?name=${encodeURIComponent(lookupName)}`))
-      .then(response=>response.ok?response.json():Promise.reject())
+    apiJson(`/api/player-profile?name=${encodeURIComponent(lookupName)}`)
       .then(data=>{if(alive)setMp(data?.player||null)})
       .catch(()=>{if(alive)setMp(null)})
       .finally(()=>{if(alive)setLoading(false)});

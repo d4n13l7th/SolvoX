@@ -13,13 +13,7 @@ import { getBossImpactMs, getBossPreviewSrc, getBossSequenceDurationMs } from '.
 import PixelIcon from './PixelIcon';
 import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 import { playSound } from '../services/sound';
-import { enhanceFeedback } from '../services/aiFeedback';
-import { singlePlayerSaves } from '../services/singlePlayerSaves';
-import { findFeedbackBankMatch } from '../data/feedbackBank';
-
-// Hints cost more HP the longer a run drags on, so a struggling player is never
-// punished into a dead end by repeatedly buying help.
-const HINT_COSTS = [5, 10, 15];
+import { findFeedbackBankMatch, getFeedbackFallback } from '../data/feedbackBank';
 
 /**
  * Normalise algebra answers so keyboard symbols and typed Unicode variants
@@ -76,18 +70,6 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
   });
 
   const combatRef = useRef(null);
-  const saveId = (() => {
-    try {
-      return sessionStorage.getItem('solvox.sp.saveId') || '';
-    } catch (e) {
-      return '';
-    }
-  })();
-  useEffect(() => {
-    syncPendingCheckpoints().catch(() => {});
-  }, [saveId]);
-  const [checkpointBaseRevision, setCheckpointBaseRevision] = useState(null);
-  const checkpointTimerRef = useRef(null);
   const endedRef = useRef(false);
   const timersRef = useRef(new Set());
   const questionAttemptRef = useRef({
@@ -96,36 +78,6 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
     feedbackBankHistory: [],
     startedAt: Date.now(),
   });
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      if (!saveId) return;
-      try {
-        const r = await singlePlayerSaves.getCheckpoint(saveId, levelId);
-        if (!mounted || !r.ok || !r.data?.checkpoint) return;
-        const cp = r.data.checkpoint;
-        try {
-          if (Array.isArray(cp.questions) && cp.questions.length) setQuestions(cp.questions);
-        } catch (e) {}
-        if (Number.isInteger(cp.idx)) setIdx(cp.idx);
-        if (Number.isFinite(cp.hp)) setHp(cp.hp);
-        if (Number.isFinite(cp.enemyHp)) setEnemyHp(cp.enemyHp);
-        if (Number.isInteger(cp.correctCount)) setCorrectCount(cp.correctCount);
-        if (Number.isInteger(cp.attempts)) setAttempts(cp.attempts);
-        if (Number.isInteger(cp.currentHints)) setCurrentHints(cp.currentHints);
-        if (Number.isInteger(cp.round)) setRound(cp.round);
-        if (Array.isArray(cp.questionLogs)) setQuestionLogs(cp.questionLogs);
-        if (cp.questionStartedAt) setQuestionStartedAt(cp.questionStartedAt);
-        if (cp.startedAt) setStartedAt(cp.startedAt);
-        if (cp.revision != null) setCheckpointBaseRevision(cp.revision);
-        if (cp.questionAttemptRef && typeof cp.questionAttemptRef === 'object') {
-          questionAttemptRef.current = { ...questionAttemptRef.current, ...cp.questionAttemptRef };
-        }
-      } catch (e) {}
-    })();
-    return () => { mounted = false; };
-  }, [saveId, levelId]);
-
 
   /* ----------------------------- Small helpers ---------------------------- */
   const later = (callback, delay) => {
@@ -138,110 +90,11 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
     return timerId;
   };
 
-
-  const buildCheckpointPayload = () => ({
-    schemaVersion: 1,
-    saveId: saveId || null,
-    chapterId: levelId,
-    questions,
-    idx,
-    hp,
-    enemyHp,
-    correctCount,
-    attempts,
-    currentHints,
-    round,
-    questionLogs,
-    questionAttemptRef: questionAttemptRef.current,
-    startedAt,
-    questionStartedAt,
-    updatedAt: Date.now(),
-  });
-
-  const saveCheckpoint = async (force = false) => {
-    if (!saveId || endedRef.current) return;
-    try {
-      const payload = buildCheckpointPayload();
-      const r = await singlePlayerSaves.putCheckpoint(saveId, levelId, payload, checkpointBaseRevision);
-      if (r.ok && r.data?.checkpoint) {
-        setCheckpointBaseRevision(r.data.checkpoint.revision);
-        return;
-      }
-      if (r.status === 409 && r.data?.checkpoint) {
-        setCheckpointBaseRevision(r.data.checkpoint.revision);
-        return;
-      }
-      // store pending
-      const list = readPending();
-      list.push({ saveId, chapterId: levelId, payload, baseRevision: checkpointBaseRevision, ts: Date.now() });
-      writePending(list);
-    } catch (e) {
-      try {
-        const list = readPending();
-        list.push({ saveId, chapterId: levelId, payload: buildCheckpointPayload(), baseRevision: checkpointBaseRevision, ts: Date.now() });
-        writePending(list);
-      } catch (e2) {}
-    }
-  };
-
-
-const PENDING_KEY = 'solvox.sp.pendingCheckpoints';
-
-function readPending() {
-  try {
-    const raw = localStorage.getItem(PENDING_KEY);
-    if (!raw) return [];
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : [];
-  } catch (e) {
-    return [];
-  }
-}
-
-function writePending(arr) {
-  try {
-    localStorage.setItem(PENDING_KEY, JSON.stringify(arr));
-  } catch (e) {}
-}
-
-async function syncPendingCheckpoints() {
-  const list = readPending();
-  if (!list.length) return;
-  const now = Date.now();
-  const keep = [];
-  for (const p of list) {
-    if (!p || !p.saveId || !p.chapterId) { keep.push(p); continue; }
-    // drop stale > 24h
-    if (p.ts && now - p.ts > 24 * 60 * 60 * 1000) continue;
-    try {
-      const r = await singlePlayerSaves.putCheckpoint(p.saveId, p.chapterId, p.payload, p.baseRevision);
-      if (r.ok) continue; // synced
-      if (r.status === 409) continue; // will reconcile on next load/put
-      keep.push(p); continue;
-    } catch (e) {
-      keep.push(p); continue;
-    }
-  }
-  writePending(keep);
-}
-
-  const scheduleCheckpoint = () => {
-    if (!saveId || endedRef.current) return;
-    if (checkpointTimerRef.current) clearTimeout(checkpointTimerRef.current);
-    checkpointTimerRef.current = setTimeout(() => {
-      saveCheckpoint().catch(() => {});
-    }, 1500);
-  };
-
   const finish = (result) => {
     if (endedRef.current) return;
 
     endedRef.current = true;
-    try {
-      const activeSave = null; // will be read from props/context later; App keeps activeSave
-      // try to read activeSave from App state via global? simpler: check sessionStorage marker
-    } catch (e) {}
-    const completion = {
+    onComplete({
       ...result,
       chapterId: levelId,
       questionLogs: result.questionLogs || questionLogs,
@@ -250,33 +103,7 @@ async function syncPendingCheckpoints() {
       maxHp: PLAYER.stats.hp,
       playerCharacter: playerAsset.id,
       nextHp: result.nextHp ?? hp,
-    };
-    if (saveId) {
-      try {
-        const clientRunId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
-        const outcome = completion.won !== false ? 'win' : 'lose';
-        singlePlayerSaves.finishRun(saveId, levelId, {
-          outcome,
-          clientRunId,
-          score: completion.score,
-          totalQuestions: completion.totalQuestions,
-          correct: completion.correct,
-          wrong: completion.wrong,
-          maxHp: completion.maxHp,
-          hpLeft: completion.nextHp ?? completion.hpLeft,
-          timeSec: completion.timeSec,
-          attempts: completion.attempts,
-          hintsUsed: completion.hintsUsed,
-          bossDefeated: completion.bossDefeated,
-          questionLogs: completion.questionLogs,
-        }).then(async (r) => {
-          try { await singlePlayerSaves.deleteCheckpoint(saveId, levelId); } catch (e) {}
-        }).catch(() => {
-          // keep pending; store result payload locally if desired later
-        });
-      } catch (e) {}
-    }
-    onComplete(completion);
+    });
   };
 
   const showImpact = (side, amount, theme) => {
@@ -363,12 +190,6 @@ async function syncPendingCheckpoints() {
     [],
   );
 
-
-  useEffect(() => {
-    scheduleCheckpoint();
-  }, [idx, hp, enemyHp, round, questionLogs.length]);
-
-
   useEffect(() => {
     const now = Date.now();
 
@@ -386,22 +207,20 @@ async function syncPendingCheckpoints() {
     };
 
     window.requestAnimationFrame(() => {
-      document.querySelector('.battle-answer-input-v66')?.focus();
+      document.querySelector('.battle-answer-input')?.focus();
     });
   }, [idx]);
 
   /* ------------------------------- Hint ----------------------------------- */
   const useHint = () => {
-    const hintCost = HINT_COSTS[currentHints] ?? HINT_COSTS[HINT_COSTS.length - 1];
+    const hintCost = [5, 10, 15][currentHints] ?? 15;
     if (busy || currentHints >= 3 || hp <= hintCost) return;
 
     setCurrentHints((value) => value + 1);
     setHp((value) => Math.max(1, value - hintCost));
     playSound('hint');
 
-    // Hints live only in the dedicated hint rail; they never expand the
-    // question area or push the answer controls downward.
-    setFeedback(null);
+    // Keep the learning feedback visible while the player uses a hint and retries.
   };
 
   /* ----------------------------- Answer flow ------------------------------ */
@@ -424,7 +243,11 @@ async function syncPendingCheckpoints() {
     setAttempts(attemptNow);
     const bankMatch = isCorrect ? null : findFeedbackBankMatch(q.id ?? idx + 1, answer, lang);
     const learningFeedback = String(q.feedback || q.explanation || '').trim();
-    const feedbackUsed = bankMatch ? String(bankMatch.feedback).trim() : (learningFeedback || t('tryAgain'));
+    const fallbackFeedback = getFeedbackFallback(lang, attemptNow);
+    const bankAwareFeedback = isCorrect
+      ? learningFeedback
+      : String(bankMatch?.feedback || fallbackFeedback || t('tryAgain')).trim();
+
     if (!isCorrect) {
       tracker.feedbackBankHistory = [
         ...(tracker.feedbackBankHistory || []),
@@ -437,17 +260,21 @@ async function syncPendingCheckpoints() {
         },
       ];
     }
+
     const baseFeedback = {
       type: isCorrect ? 'correct' : 'wrong',
       title: isCorrect ? t('correct') : t('wrong'),
-      message: isCorrect ? t('attackReady') : feedbackUsed,
+      message: isCorrect ? t('attackReady') : bankAwareFeedback,
       errorTag: isCorrect ? null : (bankMatch?.errorType || q.errorTag),
-      explanation: isCorrect ? (learningFeedback || `${correctAnswer}`) : feedbackUsed,
+      explanation: bankAwareFeedback || `${correctAnswer}`,
       nextStep: isCorrect
         ? t('feedbackNextStep')
         : attemptNow < 3
           ? t('feedbackRetryPrompt')
           : t('recommendReview'),
+      feedbackBankMatched: !!bankMatch,
+      feedbackBankCode: bankMatch?.code || null,
+      feedbackBankRow: bankMatch?.id || null,
     };
     setFeedback(baseFeedback);
     playSound(isCorrect ? 'correct' : 'wrong');
@@ -457,28 +284,7 @@ async function syncPendingCheckpoints() {
       return;
     }
 
-    if (!bankMatch) {
-      // The Worker has no /api/ai-feedback route, so this resolves straight back
-      // to `baseFeedback` today. It exists so a future route needs no Battle change.
-      enhanceFeedback({
-        question: q.text,
-        context: q.context,
-        concept: q.concept,
-        errorTag: q.errorTag,
-        explanation: q.explanation,
-        localFeedback: learningFeedback,
-        answer: correctAnswer,
-        userAnswer: answer,
-        attempt: attemptNow,
-        wrongAttempts: tracker.wrongAttempts,
-        chapter: levelId,
-        lang,
-      }, baseFeedback).then((nextFeedback) => {
-        if (nextFeedback !== baseFeedback) setFeedback(nextFeedback);
-      });
-    }
-
-    handleWrongAnswer({ elapsed, attemptNow, history, tracker, feedbackUsed, bankMatch });
+    handleWrongAnswer({ elapsed, attemptNow, history, tracker, feedbackUsed: bankAwareFeedback, bankMatch });
   };
 
   const handleCorrectAnswer = ({ elapsed, attemptNow, history, tracker }) => {
@@ -497,7 +303,7 @@ async function syncPendingCheckpoints() {
         text: q.text,
         concept: q.concept,
         errorTag: q.errorTag,
-      feedback: q.feedback,
+        feedback: q.feedback,
         correct: true,
         answer,
         correctAnswer: q.answer,
@@ -509,9 +315,6 @@ async function syncPendingCheckpoints() {
         answerHistory: history,
         feedbackBankHistory: [...(tracker.feedbackBankHistory || [])],
         feedbackBankMatched: (tracker.feedbackBankHistory || []).some((entry) => entry.matched),
-        feedbackBankCode: [...(tracker.feedbackBankHistory || [])].reverse().find((entry) => entry.matched)?.code || null,
-        feedbackBankRow: [...(tracker.feedbackBankHistory || [])].reverse().find((entry) => entry.matched)?.row || null,
-        unregisteredFeedbackAnswer: [...(tracker.feedbackBankHistory || [])].reverse().find((entry) => !entry.matched)?.answer || null,
         firstAttemptCorrect: tracker.wrongAttempts === 0,
         explanation: q.explanation,
       };
@@ -574,7 +377,7 @@ async function syncPendingCheckpoints() {
         text: q.text,
         concept: q.concept,
         errorTag: q.errorTag,
-      feedback: feedbackUsed,
+        feedback: feedbackUsed,
         correct: false,
         answer,
         correctAnswer: q.answer,
@@ -625,13 +428,11 @@ async function syncPendingCheckpoints() {
         return;
       }
 
-      later(() => {
-        setBusy(false);
-        setAnswer('');
-        window.requestAnimationFrame(() => {
-          document.querySelector('.battle-answer-input-v66')?.focus();
-        });
-      }, 2600);
+      setBusy(false);
+      setAnswer('');
+      window.requestAnimationFrame(() => {
+        document.querySelector('.battle-answer-input')?.focus();
+      });
     }, bossAttackImpactMs);
   };
 
@@ -649,15 +450,15 @@ async function syncPendingCheckpoints() {
   }
 
   return (
-    <div className="battle-page battle-reference-v43">
-      <div className="battle-world-v43">
+    <div className="battle-page battle-reference">
+      <div className="battle-world">
         <ArenaBackground levelId={levelId} />
 
-        <div className={`battle-ui-v43${feedback?.type === 'wrong' ? ' has-feedback-v106' : ''}`}>
+        <div className={`battle-ui${feedback?.type === 'wrong' ? ' has-feedback' : ''}`}> 
           {/* Top HUD */}
-          <div className="battle-top-rail-v43">
+          <div className="battle-top-rail">
             <button
-              className="battle-home-back-v43"
+              className="battle-home-back"
               onClick={onBack}
               aria-label={t('backToMap')}
               title={t('backToMap')}
@@ -665,29 +466,29 @@ async function syncPendingCheckpoints() {
               <SolvoxUtilityArt name="back" size={28} className="solvox-back-art" />
             </button>
 
-            <div className="hp-card-v62 hp-player-v62">
-              <div className="hp-card-head-v62">
-                <span className="hp-avatar-v62">
+            <div className="hp-card hp-player">
+              <div className="hp-card-head">
+                <span className="hp-avatar">
                   <img src={playerAsset.portrait} alt="" />
                 </span>
-                <span className="hp-copy-v62">
+                <span className="hp-copy">
                   <small>{t('player')}</small>
                   <b>{hp} / {PLAYER.stats.hp}</b>
                 </span>
-                <span className="hp-percent-v62">
+                <span className="hp-percent">
                   {Math.max(0, Math.round((hp / PLAYER.stats.hp) * 100))}%
                 </span>
               </div>
-              <div className="hp-track-v62" aria-label={`${hp}/${PLAYER.stats.hp} HP`}>
+              <div className="hp-track" aria-label={`${hp}/${PLAYER.stats.hp} HP`}>
                 <span style={{ width: `${Math.max(0, (hp / PLAYER.stats.hp) * 100)}%` }} />
               </div>
-              <div className="hp-footer-v62">
+              <div className="hp-footer">
                 <span>{hp <= 0 ? t('defeated') : t('readyStatus')}</span>
                 <span><img src="/assets/ui/reference/heart-icon.png" alt="" /> HP</span>
               </div>
             </div>
 
-            <div className="stage-crown-v43">
+            <div className="stage-crown">
               <span>
                 <PixelIcon name="crown" size={12} />
                 {lang === 'en' ? meta.chapterEn : meta.chapter} - {t('stage')} 1
@@ -695,27 +496,27 @@ async function syncPendingCheckpoints() {
               <b>{lang === 'en' ? meta.titleEn : meta.title}</b>
             </div>
 
-            <div className="hp-card-v62 hp-boss-v62">
-              <div className="hp-card-head-v62">
-                <span className="hp-avatar-v62 boss">
+            <div className="hp-card hp-boss">
+              <div className="hp-card-head">
+                <span className="hp-avatar boss">
                   {boss.renderer === 'webp' ? (
                     <img src={getBossPreviewSrc(boss.spriteId)} alt="" />
                   ) : (
-                    <span className="hp-skull-v62"><PixelIcon name="skull" size={17} /></span>
+                    <span className="hp-skull"><PixelIcon name="skull" size={17} /></span>
                   )}
                 </span>
-                <span className="hp-copy-v62">
+                <span className="hp-copy">
                   <small>{lang === 'en' ? boss.nameEn : boss.name}</small>
                   <b>{enemyHp} / {maxEnemy}</b>
                 </span>
-                <span className="hp-percent-v62">
+                <span className="hp-percent">
                   {Math.max(0, Math.round((enemyHp / maxEnemy) * 100))}%
                 </span>
               </div>
-              <div className="hp-track-v62" aria-label={`${enemyHp}/${maxEnemy} HP`}>
+              <div className="hp-track" aria-label={`${enemyHp}/${maxEnemy} HP`}>
                 <span style={{ width: `${Math.max(0, (enemyHp / maxEnemy) * 100)}%` }} />
               </div>
-              <div className="hp-footer-v62">
+              <div className="hp-footer">
                 <span>{enemyHp <= 0 ? t('defeated') : t('boss')}</span>
                 <span>ENEMY HP</span>
               </div>
@@ -730,23 +531,23 @@ async function syncPendingCheckpoints() {
           )}
 
           {feedback?.type === 'wrong' && (
-            <aside className="battle-mistake-banner-v41" role="alert" aria-live="polite">
-              <span className="battle-mistake-icon-v41" aria-hidden="true">
+            <aside className="battle-mistake-banner" role="alert" aria-live="polite">
+              <span className="battle-mistake-icon" aria-hidden="true">
                 <PixelIcon name="warning" size={15} />
               </span>
-              <div className="battle-mistake-copy-v41">
-                <div className="battle-mistake-heading-v41">
+              <div className="battle-mistake-copy">
+                <div className="battle-mistake-heading">
                   <b>{feedback.title}</b>
                   <span>{t('questionNumber')} {q.id ?? idx + 1}</span>
                 </div>
                 <p>{feedback.message}</p>
               </div>
-              {feedback.errorTag && <em className="battle-mistake-tag-v41">{feedback.errorTag}</em>}
+              {feedback.errorTag && <em className="battle-mistake-tag">{feedback.errorTag}</em>}
             </aside>
           )}
 
           {/* The arena stays separate so fighter animations never affect the deck layout. */}
-          <div className="battle-reference-arena-v43">
+          <div className="battle-reference-arena">
             <CombatStage
               ref={combatRef}
               levelId={levelId}
@@ -770,14 +571,14 @@ async function syncPendingCheckpoints() {
             submit={submit}
             hintsUsed={currentHints}
             hintsLeft={Math.max(0, 3 - currentHints)}
-            hintCost={HINT_COSTS[currentHints] ?? HINT_COSTS[HINT_COSTS.length - 1]}
+            hintCost={[5, 10, 15][currentHints] ?? 15}
             currentHp={hp}
             useHint={useHint}
             keypadVisible={keypadVisible}
             onToggleKeypad={() => setKeypadVisible((value) => !value)}
           />
 
-          <div className="battle-reference-footer-v43" aria-hidden="true" />
+          <div className="battle-reference-footer" aria-hidden="true" />
           <HitEffect side={impact} amount={impactAmount} theme={impactTheme} />
         </div>
       </div>

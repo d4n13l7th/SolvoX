@@ -6,10 +6,10 @@ import MultiplayerFighter from './MultiplayerFighter';
 import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 import {GAME_META} from '../config/game';
 import { playSound } from '../services/sound';
-import {apiUrl, BACKEND_URL} from '../config';
+import {apiJson} from '../services/api';
 
 export default function Multiplayer({lang,onBack,t,playerName=''} ){
-  const [socket]=useState(()=>io(BACKEND_URL||undefined,{autoConnect:false}));
+  const [socket]=useState(()=>io(undefined,{autoConnect:false}));
   const [socketConnected,setSocketConnected]=useState(false);
   const roomRef=useRef(null);
   const pendingActionRef=useRef(null);
@@ -31,7 +31,7 @@ export default function Multiplayer({lang,onBack,t,playerName=''} ){
 
   const loadDashboard=()=>{
     setDashboardLoading(true);
-    fetch(apiUrl('/api/dashboard?limit=20')).then(response=>response.ok?response.json():Promise.reject()).then(data=>setDashboard(data)).catch(()=>setDashboard(null)).finally(()=>setDashboardLoading(false));
+    apiJson('/api/dashboard?limit=20').then(data=>setDashboard(data)).catch(()=>setDashboard(null)).finally(()=>setDashboardLoading(false));
   };
   useEffect(()=>{if(playerName)setName(playerName)},[playerName]);
   useEffect(()=>{loadDashboard();},[]);

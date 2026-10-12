@@ -21,7 +21,7 @@ export default function HomeMenu({ onMain, onTutorial, onSettings, onFeedback, o
   };
 
   return (
-    <div className="home-menu home-menu-v83" data-ui="solvox-home">
+    <div className="home-menu" data-ui="solvox-home">
       <div className="home-menu-backdrop" aria-hidden="true">
         <video
           className="home-menu-backdrop-video"

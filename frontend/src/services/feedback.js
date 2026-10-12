@@ -1,3 +1,3 @@
-import {apiUrl} from '../config';
+import {apiJson} from './api';
 
-export async function sendFeedback(payload){const r=await fetch(apiUrl('/api/feedback'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!r.ok)throw new Error('Feedback request failed');return r.json();}
+export async function sendFeedback(payload){return apiJson('/api/feedback',{method:'POST',body:JSON.stringify(payload)});}

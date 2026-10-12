@@ -15,11 +15,7 @@ export default function SinglePlayerCharacterSelect({ levelId, playerId = 'trave
     const chapterId = Number(levelId);
     if (!Number.isInteger(chapterId) || chapterId < 1 || chapterId > LEVELS.length) return;
     setLaunching(true);
-    try {
-      const result=onStart?.(chapterId, playerId);
-      if(result&&typeof result.then==='function')result.then(resolved=>{if(resolved===false)setLaunching(false);}).catch(()=>setLaunching(false));
-      else if(result===false)setLaunching(false);
-    } catch { setLaunching(false); }
+    onStart?.(chapterId, playerId);
   };
 
   const handleCancel = () => {

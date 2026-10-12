@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { classifyMastery, summarizePerformance } from '../services/evaluation';
 import { evaluateSolvoxChapter } from '../services/solvoxEvaluation';
 import PixelIcon from './PixelIcon';
-import {apiUrl} from '../config';
+import {apiJson} from '../services/api';
 
 function buildStrengths(summary, t) {
   const strengths = [];
@@ -40,9 +40,8 @@ export default function Evaluation({ result, onClose, onRematch, onNext, nextLev
   const outcomeNote = result.won ? t('evaluationWinNote') : t('evaluationLoseNote');
 
   useEffect(() => {
-    fetch(apiUrl('/api/evaluation'), {
+    apiJson('/api/evaluation', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         chapterId: result.chapterId,
         won: !!result.won,
@@ -52,7 +51,7 @@ export default function Evaluation({ result, onClose, onRematch, onNext, nextLev
         completionReason: result.completionReason || '',
         ts: Date.now(),
       }),
-    }).then(response=>response.ok?response.json():Promise.reject()).catch(() => {});
+    }).catch(() => {});
   }, [result, summary]);
 
   return (
