@@ -44,6 +44,7 @@
 .character-stage-fighter .mp-fighter-art{width:100%;height:100%;align-items:flex-end;justify-content:center}
 .character-stage-fighter .sprite-wrap{width:min(100%,345px)!important;height:100%!important}
 .character-stage-fighter .sprite-wrap canvas{max-width:100%;max-height:100%;object-fit:contain}
+.character-stage-fighter .character-select-idle{display:block;max-width:min(100%,345px);width:100%;height:100%;object-fit:contain;object-position:center bottom}
 .character-stage-fighter .asset-boss-sprite{width:min(100%,370px)!important;height:min(100%,444px)!important}
 .character-stage-fighter .asset-boss-sprite canvas{width:100%;height:100%}
 .character-stage-name{position:absolute;z-index:4;top:15px;right:16px;display:flex;flex-direction:column;align-items:flex-end;max-width:53%;text-align:right;text-shadow:0 2px 9px #000}

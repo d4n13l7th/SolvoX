@@ -1,6 +1,7 @@
 import React from 'react';
 import { getBossBySpriteId } from '../data/bosses';
 import { PLAYER } from '../data/player';
+import CharacterSelectIdle from './CharacterSelectIdle';
 import MultiplayerFighter from './MultiplayerFighter';
 import PixelIcon from './PixelIcon';
 
@@ -59,7 +60,11 @@ export default function CharacterShowcase({ characters, value, onChange, t, leve
         <div className="character-stage-ground" aria-hidden="true" />
         <div className="character-stage-id"><PixelIcon name={selected.kind === 'boss' ? 'skull' : 'profile'} size={13} /><span>{t(selected.kind === 'boss' ? 'characterTypeBoss' : 'characterTypePlayer')}</span><b>{String(selectedIndex + 1).padStart(2, '0')}</b></div>
         <div className="character-stage-fighter" key={selected.id}>
-          <MultiplayerFighter characterId={selected.id} levelId={levelId} size={selected.kind === 'boss' ? 370 : 345} />
+          {className.includes('single-character-showcase') && selected.kind === 'player' ? (
+            <CharacterSelectIdle playerId={selected.id} className="character-select-idle" />
+          ) : (
+            <MultiplayerFighter characterId={selected.id} levelId={levelId} size={selected.kind === 'boss' ? 370 : 345} />
+          )}
         </div>
         <div className="character-stage-name"><span>{t('selectedCharacter')}</span><strong>{t(selected.nameId)}</strong><small>{t(selected.roleId)}</small></div>
         <nav className="character-showcase-strip" aria-label={t('characterSelect')}>
