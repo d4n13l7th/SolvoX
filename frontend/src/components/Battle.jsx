@@ -15,6 +15,7 @@ import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 import { playSound } from '../services/sound';
 import { enhanceFeedback } from '../services/aiFeedback';
 import { singlePlayerSaves } from '../services/singlePlayerSaves';
+import { findFeedbackBankMatch } from '../data/feedbackBank';
 
 // Hints cost more HP the longer a run drags on, so a struggling player is never
 // punished into a dead end by repeatedly buying help.
@@ -92,6 +93,7 @@ export default function Battle({ levelId, playerId = 'traveler', lang, t, onComp
   const questionAttemptRef = useRef({
     wrongAttempts: 0,
     answers: [],
+    feedbackBankHistory: [],
     startedAt: Date.now(),
   });
   useEffect(() => {
@@ -309,6 +311,7 @@ async function syncPendingCheckpoints() {
     questionAttemptRef.current = {
       wrongAttempts: 0,
       answers: [],
+      feedbackBankHistory: [],
       startedAt: now,
     };
   }, [levelId, boss.hp]);
@@ -378,6 +381,7 @@ async function syncPendingCheckpoints() {
     questionAttemptRef.current = {
       wrongAttempts: 0,
       answers: [],
+      feedbackBankHistory: [],
       startedAt: now,
     };
 
@@ -418,13 +422,27 @@ async function syncPendingCheckpoints() {
     tracker.wrongAttempts = (tracker.wrongAttempts || 0) + (isCorrect ? 0 : 1);
 
     setAttempts(attemptNow);
+    const bankMatch = isCorrect ? null : findFeedbackBankMatch(q.id ?? idx + 1, answer, lang);
     const learningFeedback = String(q.feedback || q.explanation || '').trim();
+    const feedbackUsed = bankMatch ? String(bankMatch.feedback).trim() : (learningFeedback || t('tryAgain'));
+    if (!isCorrect) {
+      tracker.feedbackBankHistory = [
+        ...(tracker.feedbackBankHistory || []),
+        {
+          answer,
+          matched: !!bankMatch,
+          row: bankMatch?.id ?? null,
+          code: bankMatch?.code ?? null,
+          errorType: bankMatch?.errorType ?? null,
+        },
+      ];
+    }
     const baseFeedback = {
       type: isCorrect ? 'correct' : 'wrong',
       title: isCorrect ? t('correct') : t('wrong'),
-      message: isCorrect ? t('attackReady') : (learningFeedback || t('tryAgain')),
-      errorTag: isCorrect ? null : q.errorTag,
-      explanation: learningFeedback || `${correctAnswer}`,
+      message: isCorrect ? t('attackReady') : feedbackUsed,
+      errorTag: isCorrect ? null : (bankMatch?.errorType || q.errorTag),
+      explanation: isCorrect ? (learningFeedback || `${correctAnswer}`) : feedbackUsed,
       nextStep: isCorrect
         ? t('feedbackNextStep')
         : attemptNow < 3
@@ -439,26 +457,28 @@ async function syncPendingCheckpoints() {
       return;
     }
 
-    // The Worker has no /api/ai-feedback route, so this resolves straight back
-    // to `baseFeedback` today. It exists so a future route needs no Battle change.
-    enhanceFeedback({
-      question: q.text,
-      context: q.context,
-      concept: q.concept,
-      errorTag: q.errorTag,
-      explanation: q.explanation,
-      localFeedback: learningFeedback,
-      answer: correctAnswer,
-      userAnswer: answer,
-      attempt: attemptNow,
-      wrongAttempts: tracker.wrongAttempts,
-      chapter: levelId,
-      lang,
-    }, baseFeedback).then((nextFeedback) => {
-      if (nextFeedback !== baseFeedback) setFeedback(nextFeedback);
-    });
+    if (!bankMatch) {
+      // The Worker has no /api/ai-feedback route, so this resolves straight back
+      // to `baseFeedback` today. It exists so a future route needs no Battle change.
+      enhanceFeedback({
+        question: q.text,
+        context: q.context,
+        concept: q.concept,
+        errorTag: q.errorTag,
+        explanation: q.explanation,
+        localFeedback: learningFeedback,
+        answer: correctAnswer,
+        userAnswer: answer,
+        attempt: attemptNow,
+        wrongAttempts: tracker.wrongAttempts,
+        chapter: levelId,
+        lang,
+      }, baseFeedback).then((nextFeedback) => {
+        if (nextFeedback !== baseFeedback) setFeedback(nextFeedback);
+      });
+    }
 
-    handleWrongAnswer({ elapsed, attemptNow, history, tracker });
+    handleWrongAnswer({ elapsed, attemptNow, history, tracker, feedbackUsed, bankMatch });
   };
 
   const handleCorrectAnswer = ({ elapsed, attemptNow, history, tracker }) => {
@@ -487,6 +507,11 @@ async function syncPendingCheckpoints() {
         hintsUsed: currentHints,
         hintMaxUsed: currentHints,
         answerHistory: history,
+        feedbackBankHistory: [...(tracker.feedbackBankHistory || [])],
+        feedbackBankMatched: (tracker.feedbackBankHistory || []).some((entry) => entry.matched),
+        feedbackBankCode: [...(tracker.feedbackBankHistory || [])].reverse().find((entry) => entry.matched)?.code || null,
+        feedbackBankRow: [...(tracker.feedbackBankHistory || [])].reverse().find((entry) => entry.matched)?.row || null,
+        unregisteredFeedbackAnswer: [...(tracker.feedbackBankHistory || [])].reverse().find((entry) => !entry.matched)?.answer || null,
         firstAttemptCorrect: tracker.wrongAttempts === 0,
         explanation: q.explanation,
       };
@@ -529,7 +554,7 @@ async function syncPendingCheckpoints() {
     }, 380);
   };
 
-  const handleWrongAnswer = ({ elapsed, attemptNow, history, tracker }) => {
+  const handleWrongAnswer = ({ elapsed, attemptNow, history, tracker, feedbackUsed, bankMatch }) => {
     const nextHp = Math.max(0, hp - 8);
 
     setHp(nextHp);
@@ -549,7 +574,7 @@ async function syncPendingCheckpoints() {
         text: q.text,
         concept: q.concept,
         errorTag: q.errorTag,
-      feedback: q.feedback,
+      feedback: feedbackUsed,
         correct: false,
         answer,
         correctAnswer: q.answer,
@@ -559,8 +584,13 @@ async function syncPendingCheckpoints() {
         hintsUsed: currentHints,
         hintMaxUsed: currentHints,
         answerHistory: history,
+        feedbackBankHistory: [...(tracker.feedbackBankHistory || [])],
+        feedbackBankMatched: (tracker.feedbackBankHistory || []).some((entry) => entry.matched),
+        feedbackBankCode: bankMatch?.code || [...(tracker.feedbackBankHistory || [])].reverse().find((entry) => entry.matched)?.code || null,
+        feedbackBankRow: bankMatch?.id || [...(tracker.feedbackBankHistory || [])].reverse().find((entry) => entry.matched)?.row || null,
+        unregisteredFeedbackAnswer: bankMatch ? null : answer,
         firstAttemptCorrect: false,
-        explanation: q.explanation,
+        explanation: feedbackUsed || q.explanation,
       };
 
       if (attemptNow >= 3 || nextHp <= 0) {
