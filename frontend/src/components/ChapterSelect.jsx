@@ -14,25 +14,16 @@ function chapterProgress(id, progress) {
   return answered ? Math.min(99, Math.round((answered / 10) * 100)) : 0;
 }
 
-export default function ChapterSelect({ progress, activeSave, onSelectChapter, onBack, lang, t }) {
-  const sourceProgress = useMemo(() => {
-    if (activeSave && typeof activeSave === 'object') {
-      return {
-        completedLevels: Array.isArray(activeSave.completedLevels) ? activeSave.completedLevels : [],
-        analytics: Array.isArray(activeSave.analytics) ? activeSave.analytics : [],
-      };
-    }
-    return progress || {};
-  }, [activeSave, progress]);
+export default function ChapterSelect({ progress, onSelectChapter, onBack, lang, t }) {
 
   const completed = useMemo(
-    () => new Set((sourceProgress.completedLevels || []).map(Number)),
-    [sourceProgress.completedLevels],
+    () => new Set((progress.completedLevels || []).map(Number)),
+    [progress.completedLevels],
   );
 
   return (
-    <div className="chapter-select-v44">
-      <div className="chapter-select-bg-v44" aria-hidden="true">
+    <div className="chapter-select">
+      <div className="chapter-select-bg" aria-hidden="true">
         <video
           autoPlay
           loop
@@ -49,30 +40,30 @@ export default function ChapterSelect({ progress, activeSave, onSelectChapter, o
         <div />
       </div>
 
-      <header className="chapter-select-top-v44">
-        <button className="chapter-select-back-v44" type="button" onClick={onBack}>
+      <header className="chapter-select-top">
+        <button className="chapter-select-back" type="button" onClick={onBack}>
           <SolvoxUtilityArt name="back" size={28} className="solvox-back-art" />
-          <span className="solvox-back-label-v82">{t('back')}</span>
+          <span className="solvox-back-label">{t('back')}</span>
         </button>
 
-        <div className="chapter-select-title-v44">
+        <div className="chapter-select-title">
           <small>{t('singleAdventure')}</small>
           <h1>{t('chooseChapter')}</h1>
           <p>{t('chooseChapterHint')}</p>
         </div>
 
-        <div className="chapter-select-stat-v44">
+        <div className="chapter-select-stat">
           <b>{completed.size}/{LEVELS.length}</b>
           <span>{t('chaptersCleared')}</span>
         </div>
       </header>
 
-      <main className="chapter-select-grid-v44">
+      <main className="chapter-select-grid">
         {LEVELS.map((level) => {
-          const open = isUnlocked(sourceProgress, level.id);
+          const open = isUnlocked(progress, level.id);
           const clear = completed.has(level.id);
           const boss = getBoss(level.id);
-          const pct = chapterProgress(level.id, sourceProgress);
+          const pct = chapterProgress(level.id, progress);
           const title = lang === 'en' ? level.titleEn : level.title;
           const bossName = lang === 'en' ? boss.nameEn : boss.name;
 
@@ -81,22 +72,22 @@ export default function ChapterSelect({ progress, activeSave, onSelectChapter, o
               key={level.id}
               type="button"
               disabled={!open}
-              className={`chapter-card-v44 ${open ? 'is-open' : 'is-locked'} ${clear ? 'is-clear' : ''}`}
+              className={`chapter-card ${open ? 'is-open' : 'is-locked'} ${clear ? 'is-clear' : ''}`}
               style={{ '--chapter-accent': level.accent }}
-              onClick={() => open && onSelectChapter?.(level.id)}
+              onClick={() => onSelectChapter?.(level.id)}
             >
-              <span className="chapter-card-art-v44" aria-hidden="true">
+              <span className="chapter-card-art" aria-hidden="true">
                 <img src={level.art} alt="" loading="eager" />
               </span>
 
-              <span className="chapter-card-shade-v44" aria-hidden="true" />
-              <span className="chapter-card-copy-v44">
+              <span className="chapter-card-shade" aria-hidden="true" />
+              <span className="chapter-card-copy">
                 <small>{t('chapter')} {level.id}</small>
                 <strong>{title}</strong>
                 <em>{bossName}</em>
               </span>
 
-              <span className="chapter-card-progress-v44">
+              <span className="chapter-card-progress">
                 <span>
                   {clear ? '100%' : open ? (pct ? `${pct}%` : t('readyToPlay')) : t('locked')}
                 </span>
@@ -105,7 +96,7 @@ export default function ChapterSelect({ progress, activeSave, onSelectChapter, o
                 </span>
               </span>
 
-              <span className="chapter-card-meter-v44" aria-hidden="true">
+              <span className="chapter-card-meter" aria-hidden="true">
                 <i>
                   <b style={{ width: `${clear ? 100 : pct}%` }} />
                 </i>
@@ -114,6 +105,7 @@ export default function ChapterSelect({ progress, activeSave, onSelectChapter, o
           );
         })}
       </main>
+
     </div>
   );
 }

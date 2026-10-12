@@ -21,10 +21,10 @@ export default function HomeMenu({ onMain, onTutorial, onSettings, onFeedback, o
   };
 
   return (
-    <div className="home-menu-v83" data-ui="solvox-home">
-      <div className="home-menu-v83-backdrop" aria-hidden="true">
+    <div className="home-menu home-menu-v83" data-ui="solvox-home">
+      <div className="home-menu-backdrop" aria-hidden="true">
         <video
-          className="home-menu-v83-backdrop-video"
+          className="home-menu-backdrop-video"
           autoPlay
           loop
           muted
@@ -34,26 +34,26 @@ export default function HomeMenu({ onMain, onTutorial, onSettings, onFeedback, o
         >
           <source src="/assets/home/home-background-v83.mp4" type="video/mp4" />
         </video>
-        <div className="home-menu-v83-shade" />
+        <div className="home-menu-shade" />
       </div>
 
-      <aside className="home-menu-v83-nav" aria-label={t('menu')}>
-        <div className="home-menu-v83-brand" aria-label="Solvox">
+      <aside className="home-menu-nav" aria-label={t('menu')}>
+        <div className="home-menu-brand" aria-label="Solvox">
           <SolvoxBrandLogo />
         </div>
 
-        <nav className="home-menu-v83-menu">
+        <nav className="home-menu-menu">
           {NAV_ITEMS.map((item) => {
             const active = activeNav === item.id;
             return (
               <button
                 key={item.id}
                 type="button"
-                className={`home-menu-v83-item${active ? ' is-active' : ''}`}
+                className={`home-menu-item${active ? ' is-active' : ''}`}
                 onClick={() => activate(item.id)}
                 aria-current={active ? 'page' : undefined}
               >
-                <span className="home-menu-v83-marker" aria-hidden="true" />
+                <span className="home-menu-marker" aria-hidden="true" />
                 <span>{t(item.labelKey)}</span>
               </button>
             );
@@ -61,7 +61,7 @@ export default function HomeMenu({ onMain, onTutorial, onSettings, onFeedback, o
         </nav>
       </aside>
 
-      <div className="home-menu-v83-content" aria-hidden="true" />
+      <div className="home-menu-content" aria-hidden="true" />
     </div>
   );
 }

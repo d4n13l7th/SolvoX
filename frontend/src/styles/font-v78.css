@@ -14,34 +14,34 @@
   --font-display-solvox: "Solvox04B", monospace;
 }
 
-.home-menu-v83-item {
+.home-menu-item {
   font-family: var(--font-display-solvox);
   font-weight: 400;
   letter-spacing: .015em;
 }
 
-.mode-select-header-v45 h1,
-.mode-card-v45-copy h2,
-.chapter-select-title-v44 h1,
-.chapter-card-copy-v44 strong,
-.stage-crown-v43 b {
+.mode-select-header h1,
+.mode-card-copy h2,
+.chapter-select-title h1,
+.chapter-card-copy strong,
+.stage-crown b {
   font-family: var(--font-display-solvox);
   font-weight: 400;
 }
 
-.stage-crown-v43 span,
-.question-chip-v66.is-title,
+.stage-crown span,
+.question-chip.is-title,
 .utility-art-modal-head h2 {
   font-family: var(--font-display-solvox);
   font-weight: 400;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .font-v78-motion-safe { animation: none !important; }
+  .font-motion-safe { animation: none !important; }
 }
 
 /* V82 — Back navigation only: keep the 04B display font limited to this high-salience label. */
-.solvox-back-label-v82 {
+.solvox-back-label {
   font-family: var(--font-display-solvox);
   font-weight: 400;
   letter-spacing: .02em;

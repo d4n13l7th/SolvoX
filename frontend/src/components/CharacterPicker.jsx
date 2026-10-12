@@ -1,31 +1,50 @@
 import React from 'react';
-import PixelIcon from './PixelIcon';
+import { BOSSES } from '../data/bosses';
+import { getBossPreviewSrc } from '../data/bossAssets';
+import { PLAYER_ASSETS } from '../data/playerAssets';
+import CharacterShowcase from './CharacterShowcase';
 
-export const MULTIPLAYER_CHARACTERS = [
-  {id:'mage', name:'Arcane Mage', icon:'pixelMage', roleKey:'roleBurstControl', accent:'#9a7cff'},
-  {id:'ninja', name:'Shadow Ninja', icon:'pixelNinja', roleKey:'roleSpeedPrecision', accent:'#5e718c'},
-  {id:'robot', name:'Byte Robot', icon:'pixelRobot', roleKey:'roleTankUtility', accent:'#45ddff'},
-  {id:'elf', name:'Forest Elf', icon:'pixelElf', roleKey:'roleBalanceSupport', accent:'#5fe391'},
-  {id:'hero', name:'Sky Hero', icon:'pixelHero', roleKey:'roleBalancedBrave', accent:'#5ca7ff'},
-  {id:'dragon', name:'Dragon Knight', icon:'pixelDragon', roleKey:'rolePowerPressure', accent:'#ff6d7e'},
-];
+export const MULTIPLAYER_CHARACTERS = Object.freeze([
+  {
+    id: 'traveler',
+    nameId: 'characterTraveler',
+    roleId: 'characterTravelerRole',
+    portrait: PLAYER_ASSETS.traveler.portrait,
+    accent: '#efbd52',
+    kind: 'player',
+  },
+  {
+    id: 'asuka',
+    nameId: 'characterAsuka',
+    roleId: 'characterAsukaRole',
+    portrait: PLAYER_ASSETS.asuka.portrait,
+    accent: '#f17a83',
+    kind: 'player',
+  },
+  ...Object.values(BOSSES).map((boss) => ({
+    id: boss.spriteId,
+    nameId: `character_${boss.spriteId}`,
+    roleId: `character_${boss.spriteId}_role`,
+    portrait: getBossPreviewSrc(boss.spriteId),
+    accent: boss.accent,
+    kind: 'boss',
+  })),
+]);
 
-export default function CharacterPicker({value,onChange,compact=false,t}){
-  return <div className={`character-picker-v26 ${compact?'compact':''}`}>
-    {MULTIPLAYER_CHARACTERS.map(char=><button
-      key={char.id}
-      type="button"
-      className={`character-choice-v26 ${value===char.id?'selected':''}`}
-      style={{'--character-accent':char.accent}}
-      onClick={()=>onChange?.(char.id)}
-      aria-pressed={value===char.id}
-    >
-      <span className="character-choice-icon-v26"><PixelIcon name={char.icon} size={22}/></span>
-      <span className="character-choice-copy-v26">
-        <strong>{char.name}</strong>
-        <small>{t ? t(char.roleKey) : char.roleKey}</small>
-      </span>
-      {value===char.id&&<span className="character-check-v26"><PixelIcon name="check" size={10}/></span>}
-    </button>)}
-  </div>;
+export function findCharacter(characterId) {
+  return MULTIPLAYER_CHARACTERS.find((character) => character.id === characterId)
+    || MULTIPLAYER_CHARACTERS[0];
+}
+
+export default function CharacterPicker({ value = 'traveler', onChange, levelId = 1, t }) {
+  return (
+    <CharacterShowcase
+      characters={MULTIPLAYER_CHARACTERS}
+      value={findCharacter(value).id}
+      onChange={onChange}
+      t={t}
+      levelId={levelId}
+      className="multiplayer-character-showcase"
+    />
+  );
 }

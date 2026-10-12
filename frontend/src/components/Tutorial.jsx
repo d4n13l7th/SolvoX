@@ -12,26 +12,26 @@ const STEPS = [
 
 export default function Tutorial({ t, onClose }) {
   return (
-    <div className="tutorial-backdrop-v102" role="dialog" aria-modal="true" aria-labelledby="tutorial-title-v102">
-      <section className="tutorial-card-v102">
-        <header className="tutorial-head-v102">
-          <div className="tutorial-kicker-v102">{t('tutorialKicker')}</div>
-          <div className="tutorial-title-wrap-v102">
+    <div className="tutorial-backdrop" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+      <section className="tutorial-card">
+        <header className="tutorial-head">
+          <div className="tutorial-kicker">{t('tutorialKicker')}</div>
+          <div className="tutorial-title-wrap">
             <div>
-              <h2 id="tutorial-title-v102">{t('tutorialTitle')}</h2>
+              <h2 id="tutorial-title">{t('tutorialTitle')}</h2>
               <p>{t('tutorialIntro')}</p>
             </div>
-            <button className="tutorial-close-v102" type="button" onClick={onClose} aria-label={t('close')} title={t('close')}>
+            <button className="tutorial-close" type="button" onClick={onClose} aria-label={t('close')} title={t('close')}>
               <SolvoxUtilityArt name="close" size={16} />
             </button>
           </div>
         </header>
 
-        <div className="tutorial-grid-v102">
+        <div className="tutorial-grid">
           {STEPS.map(([num,titleKey,bodyKey]) => (
-            <article className="tutorial-step-v102" key={num}>
-              <span className="tutorial-step-index-v102">{num}</span>
-              <div className="tutorial-step-copy-v102">
+            <article className="tutorial-step" key={num}>
+              <span className="tutorial-step-index">{num}</span>
+              <div className="tutorial-step-copy">
                 <h3>{t(titleKey)}</h3>
                 <p>{t(bodyKey)}</p>
               </div>
@@ -39,9 +39,9 @@ export default function Tutorial({ t, onClose }) {
           ))}
         </div>
 
-        <footer className="tutorial-footer-v102">
+        <footer className="tutorial-footer">
           <p>{t('tutorialTip')}</p>
-          <button className="primary-btn tutorial-action-v102" type="button" onClick={onClose}>{t('tutorialGotIt')}</button>
+          <button className="primary-btn tutorial-action" type="button" onClick={onClose}>{t('tutorialGotIt')}</button>
         </footer>
       </section>
     </div>

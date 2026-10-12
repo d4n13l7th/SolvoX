@@ -21,20 +21,20 @@ export default function Keypad({ value, onChange, onEnter, disabled = false, t, 
   };
   const label = (key) => key === 'backspace' ? '⌫' : key === 'clear' ? t('clearInput') : key === 'enter' ? '↵' : key;
   return (
-    <div className="keypad-panel-v24 keypad-panel-v34" aria-label={t('keyboardLabel')}>
-      <div className="keypad-grid-v24">
+    <div className="keypad-panel--legacy keypad-panel" aria-label={t('keyboardLabel')}>
+      <div className="keypad-grid">
         {KEYS.flat().map((key) => (
           <button key={key} type="button" disabled={disabled} onClick={() => push(key)}
-            className={`keypad-key-v24 keypad-key-v64 ${/^\d$/.test(key) ? 'is-number-v64' : ''} ${['+','−','/','·'].includes(key) ? 'is-operator-v64' : ''} ${key==='x'||key==='y'||key==='a'||key==='b'||key==='c'||key==='z'?'is-variable-v34 is-variable-v64':''} ${key==='^'||key==='²'?'is-power is-power-v64':''} ${key==='/'?'is-fraction-v34':''} ${key==='−'?'is-minus-v34':''}`}
+            className={`keypad-key--legacy keypad-key ${/^\d$/.test(key) ? 'is-number' : ''} ${['+','−','/','·'].includes(key) ? 'is-operator' : ''} ${key==='x'||key==='y'||key==='a'||key==='b'||key==='c'||key==='z'?'is-variable--legacy is-variable':''} ${key==='^'||key==='²'?'is-power is-power':''} ${key==='/'?'is-fraction':''} ${key==='−'?'is-minus':''}`}
             aria-label={labelKeys[key] ? t(labelKeys[key]) : label(key)} title={labelKeys[key] ? t(labelKeys[key]) : label(key)}>
             <span>{label(key)}</span>
           </button>
         ))}
       </div>
-      <div className="keypad-footer-v34">
-        <button type="button" disabled={disabled} onClick={()=>push('backspace')} className="keypad-key-v24 is-backspace" aria-label={t('backspace')} title={t('backspace')}>⌫</button>
-        <button type="button" disabled={disabled} onClick={()=>push('clear')} className="keypad-key-v24 is-clear">{t('clearInput')}</button>
-        <button type="button" disabled={disabled} onClick={()=>push('enter')} className="keypad-key-v24 is-enter">↵</button>
+      <div className="keypad-footer">
+        <button type="button" disabled={disabled} onClick={()=>push('backspace')} className="keypad-key--legacy is-backspace" aria-label={t('backspace')} title={t('backspace')}>⌫</button>
+        <button type="button" disabled={disabled} onClick={()=>push('clear')} className="keypad-key--legacy is-clear">{t('clearInput')}</button>
+        <button type="button" disabled={disabled} onClick={()=>push('enter')} className="keypad-key--legacy is-enter">↵</button>
       </div>
     </div>
   );

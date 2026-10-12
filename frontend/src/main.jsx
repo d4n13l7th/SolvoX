@@ -8,7 +8,7 @@ import './styles/ui-v33.css';
 import './styles/ui-v34.css';
 import './styles/ui-v42.css';
 import './styles/chapter-select-v44.css';
-import './styles/characterSelect.css';
+import './styles/character-select-v118.css';
 import './styles/mode-select-v45.css';
 import './styles/battle-v43.css';
 import './styles/utility-art-v75.css';
@@ -17,10 +17,11 @@ import './styles/home-menu-v83.css';
 import './styles/font-v78.css';
 import './styles/ui-v93.css';
 import './styles/ui-v96.css';
-import './styles/tutorial-v102.css';
 import './styles/ui-v104.css';
+import './styles/tutorial-v102.css';
 import './styles/evaluation-v105.css';
 import './styles/responsive-v105.css';
+import './styles/multiplayer-characters-v120.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

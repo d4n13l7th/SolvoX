@@ -1,5 +1,5 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
-import { getBoss } from '../data/bosses';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import { getBoss, getBossBySpriteId } from '../data/bosses';
 import {
   getBossAsset,
   getBossImpactMs,
@@ -20,8 +20,11 @@ function load(src) {
   });
 }
 
-const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact }, ref) {
+const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact, mirrored = false, attackDirection = -1 }, ref) {
   const asset = getBossAsset(boss.spriteId);
+  const activeAsset = mirrored && asset?.mirror ? asset.mirror : asset;
+  const direction = attackDirection < 0 ? -1 : 1;
+  const flipArt = mirrored;
   const canvasRef = useRef(null);
   const rafRef = useRef(0);
   const impactRef = useRef(onImpact);
@@ -40,7 +43,7 @@ const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact
     impactRef.current = onImpact;
   }, [onImpact]);
 
-  const durationFor = (mode) => asset?.sequences?.[mode]?.step || 160;
+  const durationFor = (mode) => activeAsset?.sequences?.[mode]?.step || 160;
 
   const startAction = (action = 'idle', options = {}) => {
     const state = stateRef.current;
@@ -57,9 +60,14 @@ const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact
   useEffect(() => {
     let alive = true;
     const state = stateRef.current;
+    state.images = {};
+    state.effects = {};
+    state.ready = false;
+    state.mode = 'idle';
+    state.pending = null;
 
-    const sequenceEntries = Object.entries(asset?.sequences || {});
-    const effectEntries = Object.entries(asset?.effects || {});
+    const sequenceEntries = Object.entries(activeAsset?.sequences || {});
+    const effectEntries = Object.entries(activeAsset?.effects || {});
 
     (async () => {
       const sequences = await Promise.all(
@@ -67,7 +75,7 @@ const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact
           const loaded = await Promise.all(
             sequence.frames.map(async (name) => {
               try {
-                return await load(`${asset.base}/${mode}/${name}`);
+                return await load(`${activeAsset.base}/${activeAsset.sequenceFolders?.[mode] || mode}/${name}`);
               } catch (error) {
                 console.warn('[Boss] missing sprite', `${mode}/${name}`);
                 return null;
@@ -83,7 +91,7 @@ const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact
           const loaded = await Promise.all(
             sequence.frames.map(async (name) => {
               try {
-                return await load(`${asset.base}/effects/${effectName}/${name}`);
+                return await load(`${activeAsset.base}/${activeAsset.effectFolders?.[effectName] || `effects/${effectName}`}/${name}`);
               } catch (error) {
                 console.warn('[Boss] missing effect frame', `${effectName}/${name}`);
                 return null;
@@ -212,17 +220,17 @@ const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact
           : p < 0.68
             ? 0.04 + 0.96 * easeOutCubic((p - 0.18) / 0.50)
             : Math.max(0, 1 - ((p - 0.68) / 0.32));
-        motionX = -Math.max(0, f) * travel;
+        motionX = direction * Math.max(0, f) * travel;
         motionY = -easeInOutSine(p) * 3.5;
         rotation = -easeInOutSine(p) * 0.024;
         scale = 1 + easeInOutSine(p) * 0.022;
       } else if (mode === 'hurt') {
         const decay = 1 - p;
-        motionX = Math.sin(elapsed / 22) * 7 * decay;
+        motionX = Math.sin(elapsed / 22) * 7 * decay * direction;
         rotation = Math.sin(elapsed / 20) * 0.014 * decay;
       } else if (mode === 'die') {
         motionY = 14 * p;
-        rotation = -0.09 * p;
+        rotation = -0.09 * p * direction;
         scale = 1 - 0.08 * p;
         alpha = 1 - 0.20 * p;
       }
@@ -241,7 +249,7 @@ const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact
       const drawElementAttack = () => {
         if (mode !== 'attack') return;
         const effectFrames = state.effects.attackElement || [];
-        const effectConfig = asset?.effects?.attackElement;
+        const effectConfig = activeAsset?.effects?.attackElement;
         if (!effectFrames.length || !effectConfig) return;
 
         const effectElapsed = Math.min(
@@ -265,7 +273,7 @@ const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact
         ctx.globalAlpha = beamAlpha;
         ctx.globalCompositeOperation = 'screen';
         ctx.translate(beamRight, beamY);
-        ctx.scale(-1, 1);
+        ctx.scale(direction, 1);
         ctx.drawImage(effectImage, 0, 0, effectImage.width, effectImage.height, 0, 0, effectW, effectH);
         ctx.restore();
       };
@@ -285,6 +293,10 @@ const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.filter = 'none';
+      if (flipArt) {
+        ctx.translate(baseX * 2 + w, 0);
+        ctx.scale(-1, 1);
+      }
       ctx.drawImage(image, 0, 0, image.width, image.height, baseX, baseY, w, h);
       ctx.restore();
 
@@ -309,7 +321,7 @@ const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact
       alive = false;
       cancelAnimationFrame(rafRef.current);
     };
-  }, [asset, boss, size]);
+  }, [asset, activeAsset, boss, size]);
 
   useImperativeHandle(ref, () => ({
     play(action = 'attack', options = {}) {
@@ -330,19 +342,22 @@ const WebPBossSprite = forwardRef(function WebPBossSprite({ size, boss, onImpact
 
   return (
     <div
-      className={`asset-boss-sprite-v40 asset-boss-${boss.spriteId}-v40 asset-boss-canvas-v62`}
+      className={`asset-boss-sprite asset-boss-${boss.spriteId} asset-boss-canvas`}
       style={{ width: size, height: Math.round(size * 1.20), '--boss-accent': boss.accent }}
       aria-label={`${boss.nameEn} boss`}
     >
-      <div className="asset-boss-aura-v40" aria-hidden="true" />
+      <div className="asset-boss-aura" aria-hidden="true" />
       <canvas ref={canvasRef} aria-hidden="true" />
-      <div className="asset-boss-ground-v40" aria-hidden="true" />
+      <div className="asset-boss-ground" aria-hidden="true" />
     </div>
   );
 });
 
-const BossMonster = forwardRef(function BossMonster({ levelId, size = 310, onImpact }, ref) {
-  const boss = getBoss(levelId);
+const BossMonster = forwardRef(function BossMonster({ levelId, spriteId, size = 310, onImpact, mirrored = false, attackDirection = -1 }, ref) {
+  const chapterBoss = getBoss(levelId);
+  const boss = useMemo(() => spriteId && getBossAsset(spriteId)
+    ? getBossBySpriteId(spriteId) || { ...chapterBoss, spriteId }
+    : chapterBoss, [chapterBoss, spriteId]);
   const spriteRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
@@ -360,6 +375,8 @@ const BossMonster = forwardRef(function BossMonster({ levelId, size = 310, onImp
       size={size}
       boss={boss}
       onImpact={onImpact}
+      mirrored={mirrored}
+      attackDirection={attackDirection}
     />
   );
 });

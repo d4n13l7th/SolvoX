@@ -13,8 +13,8 @@ import Settings from './components/Settings';
 import AboutDevelopers from './components/AboutDevelopers';
 import Tutorial from './components/Tutorial';
 import { singlePlayerSaves } from './services/singlePlayerSaves';
-import { SolvoxUtilityArt } from './components/SolvoxUtilityArt';
 import SolvoxBrandLogo from './components/SolvoxBrandLogo';
+import PixelIcon from './components/PixelIcon';
 import {LEVELS, isUnlocked} from './data/levels';
 import {T} from './services/i18n';
 import {summarizePerformance} from './services/evaluation';
@@ -122,7 +122,7 @@ export default function App(){
   const changeLang=(next)=>setLang(v=>{const n=next|| (v==='id'?'en':'id');localStorage.setItem('solvox.lang',n);return n});
   const saveProfile=(profile)=>{const clean={...state.profile,...profile,name:String(profile?.name||state.profile?.name||'Player').trim().slice(0,18)||'Player'};setState(v=>({...v,profile:clean,playerName:clean.name}));setProfileOpen(false)};
   return <div className={`app-shell ${screen==='battle'?'battle-active':''}`}>
-    {screen!=='battle'&&screen!=='home'&&screen!=='modes'&&screen!=='chapters'&&screen!=='character'&&screen!=='about'&&<header className="global-bar global-bar-v27"><div className="global-brand-v89"><SolvoxBrandLogo compact/><span><b>ONLINE</b><small>{t('subtitle').toUpperCase()}</small></span></div><div className="top-actions"><button className="icon-action-v27" title={t('feedback')} onClick={()=>setFeedback(true)}><SolvoxUtilityArt name="feedback" size={30}/></button><button className="icon-action-v27" title={t('settingsHint')} onClick={()=>setSettings(true)}><SolvoxUtilityArt name="settings" size={30}/></button></div></header>}
+    {screen!=='battle'&&screen!=='home'&&screen!=='modes'&&screen!=='chapters'&&screen!=='character'&&screen!=='about'&&<header className="global-bar"><div className="global-brand"><SolvoxBrandLogo compact/><span className="global-brand-copy"><b>{t('online')}</b><small>{t('subtitle')}</small></span></div><nav className="global-actions" aria-label={lang==='en'?'Game options':'Pengaturan game'}><button className="global-action" title={t('feedback')} aria-label={t('feedback')} onClick={()=>setFeedback(true)}><PixelIcon name="feedback" size={17}/><span>{t('feedback')}</span></button><button className="global-action" title={t('settingsTitle')} aria-label={t('settingsTitle')} onClick={()=>setSettings(true)}><PixelIcon name="gear" size={17}/><span>{t('settingsTitle')}</span></button></nav></header>}
     {screen==='home'&&<HomeMenu t={t} onMain={()=>setScreen('modes')} onTutorial={()=>setTutorialOpen(true)} onSettings={()=>setSettings(true)} onFeedback={()=>setFeedback(true)} onProfile={()=>setProfileOpen(true)}/>} 
     {screen==='modes'&&<ModeSelect lang={lang} t={t} onBack={()=>setScreen('home')} onSingle={()=>setScreen('savesList')} onMulti={()=>setScreen('multi')}/>} 
     {screen==='chapters'&&<ChapterSelect progress={state} activeSave={activeSave} lang={lang} t={t} onBack={()=>setScreen('modes')} onSelectChapter={selectChapter}/>}

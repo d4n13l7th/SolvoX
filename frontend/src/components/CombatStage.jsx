@@ -9,9 +9,9 @@ const CombatStage = forwardRef(function CombatStage({ levelId, playerId, onHit }
 
   const getDistance = () => {
     const root = rootRef.current;
-    const player = root?.querySelector('.fighter-player-v43 .sprite-wrap');
+    const player = root?.querySelector('.fighter-player .sprite-wrap');
     const bossEl = root?.querySelector(
-      '.fighter-boss-v43 .asset-boss-sprite-v40',
+      '.fighter-boss .asset-boss-sprite',
     );
 
     if (!player || !bossEl) {
@@ -38,9 +38,9 @@ const CombatStage = forwardRef(function CombatStage({ levelId, playerId, onHit }
   }), []);
 
   return (
-    <div ref={rootRef} className="combat-stage-v43" data-level={levelId}>
-      <div className="fighter-slot-v62 fighter-player-slot-v62">
-        <div className="fighter-player-v43 player-lane-shift">
+    <div ref={rootRef} className="combat-stage" data-level={levelId}>
+      <div className="fighter-slot fighter-player-slot">
+        <div className="fighter-player player-lane-shift">
           <div className="fighter-shadow-anchor" aria-hidden="true" />
           <SpriteCharacter
             ref={playerRef}
@@ -53,8 +53,8 @@ const CombatStage = forwardRef(function CombatStage({ levelId, playerId, onHit }
       </div>
 
 
-      <div className="fighter-slot-v62 fighter-boss-slot-v62">
-        <div className="fighter-boss-v43">
+      <div className="fighter-slot fighter-boss-slot">
+        <div className="fighter-boss">
           <div className="fighter-shadow-anchor" aria-hidden="true" />
           <BossMonster ref={bossRef} levelId={levelId} size={310} />
         </div>

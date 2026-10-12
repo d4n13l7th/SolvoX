@@ -4,7 +4,7 @@ import React from 'react';
 export default function SolvoxBrandLogo({ compact = false, className = '' }) {
   return (
     <div
-      className={`solvox-brand-v89${compact ? ' is-compact' : ''}${className ? ` ${className}` : ''}`}
+      className={`solvox-brand${compact ? ' is-compact' : ''}${className ? ` ${className}` : ''}`}
       role="img"
       aria-label="Solvox"
     >

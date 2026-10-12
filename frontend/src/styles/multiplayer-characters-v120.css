@@ -1,0 +1,441 @@
+/* Room roster: keep both fighters balanced and give each portrait room to read. */
+.multiplayer .multi-room .players {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: clamp(12px, 2vw, 22px);
+  width: min(820px, 100%);
+  margin: 22px auto 18px;
+}
+
+.multiplayer .multi-room .p-card {
+  display: flex;
+  min-width: 0;
+  min-height: 148px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 17px 14px;
+  border-color: color-mix(in srgb, var(--fighter-accent) 30%, transparent);
+  background: radial-gradient(ellipse at 50% 20%, color-mix(in srgb, var(--fighter-accent) 10%, transparent), transparent 65%), linear-gradient(180deg, rgba(14, 28, 36, .92), rgba(7, 17, 23, .94));
+  text-align: center;
+}
+
+.multiplayer .multi-room .p-avatar {
+  display: grid;
+  width: 62px;
+  height: 62px;
+  flex: 0 0 62px;
+  place-items: center;
+  margin: 2px auto 8px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--fighter-accent) 38%, transparent);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--fighter-accent) 9%, rgba(4, 13, 18, .8));
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .24), 0 0 22px color-mix(in srgb, var(--fighter-accent) 12%, transparent);
+}
+
+.multiplayer .multi-room .p-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.multiplayer .multi-room .p-card > b {
+  max-width: 100%;
+  overflow: hidden;
+  color: #f0e8cf;
+  font-size: .84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multiplayer .multi-room .p-card > span {
+  max-width: 100%;
+  color: #9fb4b6;
+  font-size: .67rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.multiplayer .multi-room .p-card > small {
+  margin-top: 8px;
+  color: var(--fighter-accent);
+  font-size: .57rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* The picker is part of the created room lobby, below the player cards. */
+.multiplayer .multi-character-selection-lobby {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  margin: 14px 0 18px;
+  border-color: rgba(132, 196, 173, .2);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, .3), inset 0 1px rgba(255, 255, 255, .04);
+}
+
+.multiplayer .multi-character-selection-lobby .character-showcase-roster {
+  z-index: 6;
+}
+
+.multiplayer .multi-character-selection-lobby .character-showcase-list {
+  position: relative;
+  z-index: 7;
+}
+
+.multiplayer .multi-character-selection-lobby .character-showcase-choice {
+  min-height: 54px;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.multiplayer .multi-character-selection-lobby .character-showcase-choice.is-active .character-showcase-choice-index {
+  color: var(--character-accent);
+}
+
+.multiplayer .multi-character-selection-lobby .character-showcase-choice:focus-visible {
+  position: relative;
+  z-index: 8;
+  outline: 2px solid var(--character-accent);
+  outline-offset: 2px;
+}
+
+.multiplayer-character-showcase .character-stage-rune,
+.multiplayer-character-showcase .character-showcase-strip,
+.multiplayer-character-showcase .character-detail-note,
+.multiplayer-character-showcase .character-detail-current {
+  display: none;
+}
+
+.multiplayer-character-showcase .character-stage-ground {
+  bottom: 11%;
+  height: 14%;
+  opacity: .65;
+}
+
+.multiplayer .multi-character-selection-lobby .character-showcase-roster,
+.multiplayer .multi-character-selection-lobby .character-showcase-details {
+  padding: 14px;
+}
+
+.multiplayer .multi-character-selection-lobby .character-showcase-stage {
+  background: radial-gradient(ellipse at 50% 58%, color-mix(in srgb, var(--character-accent) 12%, transparent), transparent 44%), linear-gradient(180deg, rgba(5, 21, 16, .12), rgba(4, 13, 12, .58));
+}
+
+.multiplayer .multi-character-selection-lobby .character-showcase {
+  grid-template-columns: minmax(185px, .8fr) minmax(300px, 1.35fr) minmax(225px, .9fr);
+  min-height: 370px;
+  max-height: 430px;
+}
+
+.multiplayer .multi-character-selection-lobby .character-showcase-stage {
+  min-height: 370px;
+}
+
+.multiplayer .multi-character-selection-lobby .character-showcase-list {
+  max-height: 335px;
+}
+
+/* Arena fighters share the stage evenly and face toward one another. */
+.mp-fighter-art {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.mp-fighter-art .sprite-wrap {
+  width: min(100%, 270px) !important;
+  height: auto !important;
+}
+
+.mp-fighter-art .asset-boss-sprite {
+  width: min(100%, 300px) !important;
+  height: auto !important;
+}
+
+.mp-battle .mp-arena {
+  grid-template-columns: minmax(0, 1fr) 82px minmax(0, 1fr);
+  min-height: 385px;
+  gap: clamp(8px, 1.4vw, 16px);
+  padding: 20px clamp(14px, 2.2vw, 26px) 14px;
+}
+
+.mp-battle .mp-battle-side {
+  min-height: 330px;
+  padding: 13px 10px 8px;
+}
+
+.mp-character-name {
+  max-width: 100%;
+  margin-top: 3px;
+  color: var(--fighter-accent);
+  font-size: .65rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.mp-battle .mp-sprite-frame {
+  width: min(100%, 330px);
+  min-height: 260px;
+}
+
+.mp-battle .mp-player-frame > div.sprite-wrap {
+  width: min(100%, 290px) !important;
+}
+
+.mp-battle .mp-boss-frame > div.asset-boss-sprite {
+  width: min(100%, 320px) !important;
+}
+
+.mp-battle-side[style*="--fighter-accent"] {
+  border-color: color-mix(in srgb, var(--fighter-accent) 26%, transparent);
+}
+
+.mp-battle-side[style*="--fighter-accent"] .mp-hp i {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--fighter-accent) 72%, white), var(--fighter-accent));
+}
+
+@media (max-width: 820px) {
+  .multiplayer .multi-character-selection-lobby .character-showcase {
+    grid-template-columns: minmax(165px, .75fr) minmax(265px, 1.2fr) minmax(205px, .9fr);
+  }
+
+  .mp-battle .mp-battle-side {
+    min-height: 280px;
+  }
+
+  .mp-battle .mp-sprite-frame {
+    min-height: 205px;
+  }
+}
+
+@media (max-width: 760px) {
+  .multiplayer .multi-character-selection-lobby .character-showcase {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(270px, 38dvh) auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  .multiplayer .multi-character-selection-lobby .character-showcase-stage {
+    min-height: 270px;
+  }
+
+  .multiplayer .multi-character-selection-lobby .character-showcase-list {
+    max-height: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .multiplayer .multi-room .players {
+    grid-template-columns: 1fr;
+    width: min(380px, 100%);
+    margin-top: 16px;
+  }
+
+  .multiplayer .multi-room .p-card {
+    min-height: 176px;
+  }
+
+  .multiplayer .multi-character-selection-lobby .character-showcase {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(250px, 34dvh) auto;
+  }
+
+  .multiplayer .multi-character-selection-lobby .character-showcase-stage {
+    min-height: 250px;
+  }
+
+  .mp-battle .mp-arena {
+    grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr);
+    gap: 4px;
+    padding: 9px 5px 7px;
+  }
+
+  .mp-battle .mp-battle-side {
+    min-height: 0;
+    padding: 7px 4px 4px;
+  }
+
+  .mp-character-name {
+    font-size: .54rem;
+  }
+
+  .mp-battle .mp-sprite-frame {
+    min-height: 148px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-battle-side,
+  .mp-hp i {
+    transition: none !important;
+  }
+}
+
+/* Compact multiplayer header with a balanced back control. */
+.multiplayer .multi-header {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: clamp(12px, 2vw, 22px) !important;
+  width: min(1180px, 100%);
+  min-height: 76px;
+  margin: 0 auto 16px;
+  padding: 10px clamp(12px, 1.7vw, 20px);
+  border: 1px solid rgba(154, 196, 192, .12);
+  border-radius: 10px;
+  background: rgba(5, 16, 19, .76);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .16);
+  backdrop-filter: blur(14px);
+}
+
+.multiplayer .multi-header .multi-back-btn {
+  display: inline-flex !important;
+  width: auto;
+  min-width: 96px;
+  min-height: 38px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  padding: 0 11px !important;
+  transform: none !important;
+  border: 1px solid rgba(164, 203, 195, .16);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .025);
+  color: #d7e3da;
+  transition: background .16s ease, border-color .16s ease, color .16s ease;
+}
+
+.multiplayer .multi-header .multi-back-btn:hover {
+  transform: none;
+  border-color: rgba(201, 218, 169, .38);
+  background: rgba(176, 202, 157, .08);
+  color: #f0e7c9;
+}
+
+.multiplayer .multi-header .multi-back-btn .solvox-back-art {
+  display: block !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
+}
+
+.multiplayer .multi-header .multi-back-btn .solvox-back-label {
+  display: inline-flex !important;
+  height: auto !important;
+  align-items: center !important;
+  font-family: inherit;
+  font-size: .68rem !important;
+  font-weight: 700;
+  letter-spacing: .01em !important;
+  line-height: 1 !important;
+}
+
+.multiplayer .multi-header-copy {
+  min-width: 0;
+}
+
+.multiplayer .multi-header-copy .eyebrow {
+  margin-bottom: 4px;
+  color: #91aaa3;
+  font-size: .53rem;
+  letter-spacing: .15em;
+}
+
+.multiplayer .multi-header-copy h1 {
+  margin: 0;
+  color: #eceddf;
+  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+  font-weight: 700;
+  letter-spacing: -.025em;
+  line-height: 1.15;
+}
+
+.multiplayer .multi-header-copy p {
+  margin: 4px 0 0;
+  color: #94a6a1;
+  font-size: .68rem;
+  line-height: 1.35;
+}
+
+.multiplayer .multi-header .multi-connection-status {
+  display: inline-flex !important;
+  min-height: 30px;
+  align-items: center;
+  justify-self: end;
+  gap: 7px;
+  padding: 0 9px;
+  border: 1px solid rgba(129, 181, 152, .14);
+  border-radius: 5px;
+  background: rgba(117, 171, 134, .045);
+  color: #9ebba6;
+  font-size: .56rem;
+  font-weight: 800;
+  letter-spacing: .09em;
+  white-space: nowrap;
+}
+
+.multiplayer .multi-header .multi-connection-status i {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: #79c99a;
+  box-shadow: 0 0 9px rgba(121, 201, 154, .3);
+}
+
+@media (max-width: 520px) {
+  .multiplayer .multi-header {
+    grid-template-columns: 38px minmax(0, 1fr) auto !important;
+    gap: 9px !important;
+    min-height: 62px;
+    padding: 9px 10px;
+    border-radius: 8px;
+  }
+
+  .multiplayer .multi-header .multi-back-btn {
+    width: 36px;
+    min-width: 36px;
+    min-height: 36px !important;
+    padding: 0 !important;
+  }
+
+  .multiplayer .multi-header .multi-back-btn .solvox-back-label {
+    display: none !important;
+  }
+
+  .multiplayer .multi-header-copy .eyebrow,
+  .multiplayer .multi-header-copy p {
+    display: none;
+  }
+
+  .multiplayer .multi-header-copy h1 {
+    font-size: clamp(.92rem, 4vw, 1.08rem);
+  }
+
+  .multiplayer .multi-header .multi-connection-status {
+    min-height: 27px;
+    gap: 5px;
+    padding: 0 7px;
+    font-size: .5rem;
+    letter-spacing: .06em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .multiplayer .multi-header .multi-back-btn {
+    transition: none;
+  }
+}

@@ -8,9 +8,59 @@
 const freezeSequence = (frames, step, impactMs = null) =>
   Object.freeze({ frames: Object.freeze(frames), step, impactMs });
 
+const freezeMirror = (sequenceFolders, sequences, effects, effectFolders) => Object.freeze({
+  base: null,
+  sequenceFolders: Object.freeze(sequenceFolders),
+  sequences: Object.freeze(sequences),
+  effects: effects ? Object.freeze(effects) : undefined,
+  effectFolders: effectFolders ? Object.freeze(effectFolders) : undefined,
+});
+
+const BOSS_MIRRORS = Object.freeze({
+  wolf: freezeMirror(
+    { idle: 'idle-wolf', attack: 'attack-wolf', hurt: 'hurt-wolf', die: 'die-wolf' },
+    {
+      idle: freezeSequence(['16.webp','17.webp','18.webp','19.webp','20.webp','21.webp'], 175),
+      attack: freezeSequence(['16.webp','17.webp','18.webp','19.webp','20.webp','21.webp'], 92, 320),
+      hurt: freezeSequence(['16.webp','17.webp','18.webp','19.webp','20.webp'], 82),
+      die: freezeSequence(['16.webp','17.webp','18.webp','19.webp','20.webp'], 145),
+    },
+  ),
+  wraith: freezeMirror(
+    { idle: 'idle-wraith', attack: 'attack-wraith', hurt: 'hurt-wraith', die: 'die-wraith' },
+    {
+      idle: freezeSequence(['17.webp','18.webp','19.webp','20.webp','21.webp','22.webp'], 175),
+      attack: freezeSequence(['attack-wraith_001.webp','attack-wraith_002.webp','attack-wraith_003.webp','attack-wraith_004.webp','attack-wraith_005.webp','attack-wraith_006.webp','attack-wraith_007.webp'], 92, 360),
+      hurt: freezeSequence(['hurt-wraith_001.webp','hurt-wraith_002.webp','hurt-wraith_003.webp','hurt-wraith_004.webp','hurt-wraith_005.webp'], 82),
+      die: freezeSequence(['ezgif-webp-maker_001.webp','ezgif-webp-maker_002.webp','ezgif-webp-maker_003.webp','ezgif-webp-maker_004.webp','ezgif-webp-maker_005.webp','ezgif-webp-maker_006.webp'], 145),
+    },
+  ),
+  'equation-drake': freezeMirror(
+    { idle: 'idle', attack: 'attack-enemy', hurt: 'hurt', die: 'die' },
+    {
+      idle: freezeSequence(['idle_01.webp','idle_02.webp','idle_03.webp','idle_04.webp','idle_05.webp','idle_06.webp'], 170),
+      attack: freezeSequence(['attack-enemy_01.webp','attack-enemy_02.webp','attack-enemy_03.webp','attack-enemy_04.webp','attack-enemy_05.webp','attack-enemy_06.webp','attack-enemy_07.webp','attack-enemy_08.webp','attack-enemy_09.webp'], 82, 420),
+      hurt: freezeSequence(['hurt_01.webp','hurt_02.webp','hurt_03.webp','hurt_04.webp','hurt_05.webp','hurt_06.webp'], 76),
+      die: freezeSequence(['die_01.webp','die_02.webp','die_03.webp','die_04.webp','die_05.webp'], 145),
+    },
+    { attackElement: freezeSequence(['attack-element_01.webp','attack-element_02.webp','attack-element_03.webp'], 74) },
+    { attackElement: 'attack-element' },
+  ),
+  titan: freezeMirror(
+    { idle: 'idle-titan', attack: 'attack-titan', hurt: 'hurt-titan', die: 'die-titan' },
+    {
+      idle: freezeSequence(['idle-titan_00.webp','idle-titan_01.webp','idle-titan_02.webp','idle-titan_03.webp','idle-titan_04.webp','idle-titan_05.webp'], 120),
+      attack: freezeSequence(['attack-titan_00.webp','attack-titan_01.webp','attack-titan_02.webp','attack-titan_03.webp','attack-titan_04.webp','attack-titan_05.webp','attack-titan_06.webp'], 100, 380),
+      hurt: freezeSequence(['hurt-titan_00.webp','hurt-titan_01.webp','hurt-titan_02.webp','hurt-titan_03.webp','hurt-titan_04.webp','hurt-titan_05.webp'], 82),
+      die: freezeSequence(['die-titan_00.webp','die-titan_01.webp','die-titan_02.webp','die-titan_03.webp','die-titan_04.webp'], 110),
+    },
+  ),
+});
+
 export const BOSS_ASSETS = Object.freeze({
   wolf: Object.freeze({
     base: '/assets/characters/wolf',
+    mirror: Object.freeze({ ...BOSS_MIRRORS.wolf, base: '/assets/characters/wolf/mirror' }),
     sequences: Object.freeze({
       idle: freezeSequence(['01.webp','02.webp','03.webp','04.webp','05.webp','06.webp'], 175),
       attack: freezeSequence(['01.webp','02.webp','03.webp','04.webp','05.webp','06.webp'], 92, 320),
@@ -20,6 +70,7 @@ export const BOSS_ASSETS = Object.freeze({
   }),
   wraith: Object.freeze({
     base: '/assets/characters/wraith',
+    mirror: Object.freeze({ ...BOSS_MIRRORS.wraith, base: '/assets/characters/wraith/mirror' }),
     sequences: Object.freeze({
       idle: freezeSequence(['17.webp','18.webp','19.webp','20.webp','21.webp','22.webp'], 175),
       attack: freezeSequence(['01.webp','02.webp','03.webp','04.webp','05.webp','06.webp','07.webp'], 92, 360),
@@ -29,6 +80,7 @@ export const BOSS_ASSETS = Object.freeze({
   }),
   'equation-drake': Object.freeze({
     base: '/assets/characters/equation-drake',
+    mirror: Object.freeze({ ...BOSS_MIRRORS['equation-drake'], base: '/assets/characters/equation-drake/mirror' }),
     sequences: Object.freeze({
       idle: freezeSequence(['01.webp','02.webp','03.webp','04.webp','05.webp','06.webp'], 170),
       attack: freezeSequence(['01.webp','02.webp','03.webp','04.webp','05.webp','06.webp','07.webp','08.webp','09.webp'], 82, 420),
@@ -41,6 +93,7 @@ export const BOSS_ASSETS = Object.freeze({
   }),
   titan: Object.freeze({
     base: '/assets/characters/titan',
+    mirror: Object.freeze({ ...BOSS_MIRRORS.titan, base: '/assets/characters/titan/mirror' }),
     sequences: Object.freeze({
       idle: freezeSequence(['01.webp','02.webp','03.webp','04.webp','05.webp','06.webp'], 120),
       attack: freezeSequence(['01.webp','02.webp','03.webp','04.webp','05.webp','06.webp','07.webp'], 100, 380),

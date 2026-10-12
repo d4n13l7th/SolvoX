@@ -123,43 +123,43 @@ export default function BattleQuestionPanel({
 
 
   return (
-    <section style={panelTheme} className={`battle-question-panel-v43 theme-level-${Number(levelId)} ${isStoryChapter ? 'is-story-chapter-v74' : ''}`} aria-label={t('questionPanel')}>
-      <div className={`battle-question-main-v66 ${isStoryChapter ? 'is-story-main-v74' : ''}`}>
-        <header className="question-header-v66">
-          <div className="question-meta-v66">
-            <span className="question-chip-v66 is-stage">
+    <section style={panelTheme} className={`battle-question-panel theme-level-${Number(levelId)} ${isStoryChapter ? 'is-story-chapter' : ''}`} aria-label={t('questionPanel')}>
+      <div className={`battle-question-main ${isStoryChapter ? 'is-story-main' : ''}`}>
+        <header className="question-header">
+          <div className="question-meta">
+            <span className="question-chip is-stage">
               <PixelIcon name="quest" size={12} />
               {t('stage')} {levelId}
             </span>
-            <span className="question-chip-v66 is-title" title={stageTitle || ''}>
+            <span className="question-chip is-title" title={stageTitle || ''}>
               {stageTitle}
             </span>
-            <span className="question-chip-v66 is-round">
+            <span className="question-chip is-round">
               {t('round')} {round}/{totalRounds}
             </span>
           </div>
 
-          <div className="question-progress-v66" aria-label={`${progress}%`}>
+          <div className="question-progress" aria-label={`${progress}%`}>
             <b>{progress}%</b>
             <span><i style={{ width: `${progress}%` }} /></span>
           </div>
         </header>
 
-        <div className={`question-content-v66 ${isStoryChapter ? 'is-scrollable-v74' : ''}`}>
-          <div className="question-kicker-v66">{t('missionBrief')}</div>
-          {q?.context ? <p className="question-context-v66">{q.context}</p> : null}
-          <h1 className="question-text-v66">{q?.text}</h1>
-          <div className="question-concept-v66">
+        <div className={`question-content ${isStoryChapter ? 'is-scrollable' : ''}`}>
+          <div className="question-kicker">{t('missionBrief')}</div>
+          {q?.context ? <p className="question-context">{q.context}</p> : null}
+          <h1 className="question-text">{q?.text}</h1>
+          <div className="question-concept">
             <span>{t('concept')}</span>
             <b>{q?.concept || '-'}</b>
           </div>
         </div>
 
-        <div className="question-answer-v66">
-          <label className="answer-shell-v66">
-            <span className="answer-icon-v66"><PixelIcon name="keyboard" size={16} /></span>
+        <div className="question-answer">
+          <label className="answer-shell">
+            <span className="answer-icon"><PixelIcon name="keyboard" size={16} /></span>
             <input
-              className="battle-answer-input-v66"
+              className="battle-answer-input"
               disabled={busy}
               value={answer}
               onChange={(event) => setAnswer(event.target.value)}
@@ -174,7 +174,7 @@ export default function BattleQuestionPanel({
           </label>
 
           <button
-            className="attack-btn-v66"
+            className="attack-btn"
             disabled={busy || !answer.trim()}
             onClick={submit}
           >
@@ -183,9 +183,9 @@ export default function BattleQuestionPanel({
           </button>
         </div>
 
-        <div className="question-tools-v66">
+        <div className="question-tools">
           <button
-            className="keypad-toggle-v66"
+            className="keypad-toggle"
             type="button"
             onClick={onToggleKeypad}
             disabled={busy}
@@ -194,15 +194,15 @@ export default function BattleQuestionPanel({
             <PixelIcon name="keyboard" size={15} />
             <span>{keypadVisible ? t('hideKeyboard') : t('showKeyboard')}</span>
           </button>
-          <span className="attempts-v66">
-            {t('attempt')}: {attempts}/2
+          <span className="attempts">
+            {t('attempt')}: {attempts}/3
           </span>
         </div>
       </div>
 
-      <aside className="hint-rail-v37" aria-label={t('hint')}>
-        <div className="hint-rail-head-v37">
-          <span className="hint-rail-icon-v37">
+      <aside className="hint-rail" aria-label={t('hint')}>
+        <div className="hint-rail-head">
+          <span className="hint-rail-icon">
             <PixelIcon name="hint" size={15} />
           </span>
           <div>
@@ -211,16 +211,16 @@ export default function BattleQuestionPanel({
           </div>
         </div>
 
-        <div className="hint-rail-body-v37">
+        <div className="hint-rail-body">
           {hintsUsed > 0 ? (
             (q?.hints || []).slice(0, hintsUsed).map((hint, index) => (
-              <div className="hint-reveal-v37" key={`${index}-${hint}`}>
+              <div className="hint-reveal" key={`${index}-${hint}`}>
                 <span>{index + 1}</span>
                 <p>{hint}</p>
               </div>
             ))
           ) : (
-            <div className="hint-empty-v37">
+            <div className="hint-empty">
               <strong>{t('hintAvailable')}</strong>
               <p>{t('hintCostDynamic', { cost: hintCost })}</p>
             </div>
@@ -228,7 +228,7 @@ export default function BattleQuestionPanel({
         </div>
 
         <button
-          className="hint-reveal-btn-v37"
+          className="hint-reveal-btn"
           type="button"
           disabled={busy || hintsLeft <= 0 || !q?.hints?.length || currentHp <= hintCost}
           onClick={useHint}
@@ -240,15 +240,15 @@ export default function BattleQuestionPanel({
       </aside>
 
       <aside
-        className={`battle-keypad-side-v35 ${keypadVisible ? 'is-visible' : 'is-hidden'}`}
+        className={`battle-keypad-side ${keypadVisible ? 'is-visible' : 'is-hidden'}`}
         aria-label={t('keyboardLabel')}
       >
-        <div className="battle-keypad-side-head-v35">
+        <div className="battle-keypad-side-head">
           <span>
             <PixelIcon name="keyboard" size={15} />
             <b>{t('keyboardLabel')}</b>
           </span>
-          <small className="keypad-status-v66">{t('power')}</small>
+          <small className="keypad-status">{t('power')}</small>
         </div>
 
         {keypadVisible ? (
@@ -261,7 +261,7 @@ export default function BattleQuestionPanel({
             visible={keypadVisible}
           />
         ) : (
-          <div className="battle-keypad-hidden-v35">
+          <div className="battle-keypad-hidden">
             <PixelIcon name="keyboard" size={28} />
             <span>{t('showKeyboard')}</span>
           </div>

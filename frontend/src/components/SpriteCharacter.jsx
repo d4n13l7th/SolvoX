@@ -17,7 +17,7 @@ function load(src) {
 }
 
 const SpriteCharacter = forwardRef(function SpriteCharacter(
-  { size = 280, className = '', onImpact, playerId },
+  { size = 280, className = '', onImpact, playerId, mirrored = false, attackDirection = 1 },
   ref,
 ) {
   const canvasRef = useRef(null);
@@ -29,7 +29,10 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
   }, [onImpact]);
 
   const asset = getPlayerAsset(playerId);
-  const durationFor = (mode) => asset.sequences[mode]?.step || 120;
+  const activeAsset = mirrored && asset.mirror ? asset.mirror : asset;
+  const direction = attackDirection < 0 ? -1 : 1;
+  const flipArt = mirrored;
+  const durationFor = (mode) => activeAsset.sequences[mode]?.step || 120;
   const stateRef = useRef({
     mode: 'idle',
     startedAt: 0,
@@ -42,14 +45,17 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
   useEffect(() => {
     let alive = true;
     const state = stateRef.current;
+    state.images = {};
+    state.ready = false;
+    state.mode = 'idle';
 
     (async () => {
       const entries = await Promise.all(
-        Object.entries(asset.sequences).map(async ([mode, sequence]) => {
+        Object.entries(activeAsset.sequences).map(async ([mode, sequence]) => {
           const loaded = await Promise.all(
             sequence.frames.map(async (name) => {
               try {
-                return await load(`${asset.base}/${asset.sequenceFolders?.[mode] || mode}/${name}`);
+                return await load(`${activeAsset.base}/${activeAsset.sequenceFolders?.[mode] || mode}/${name}`);
               } catch (error) {
                 console.warn('[Player] missing sprite', `${mode}/${name}`);
                 return null;
@@ -158,7 +164,7 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
           const breath = Math.sin(elapsed / 1420);
           const weight = Math.sin(elapsed / 2760 + 0.35);
           motionY = breath * 0.75;
-          motionX = weight * 0.28;
+          motionX = weight * 0.28 * direction;
           rotation = weight * 0.0015;
           scaleMul = 1 + breath * 0.0025;
         } else if (mode === 'attack') {
@@ -171,21 +177,21 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
             : p < 0.66
               ? 0.06 + 0.94 * easeOutCubic((p - 0.16) / 0.50)
               : 1 - (p - 0.66) / 0.34;
-          motionX = Math.max(0, f) * travel;
+          motionX = Math.max(0, f) * travel * direction;
           motionY = -easeInOutSine(p) * 4.5;
           rotation = -easeInOutSine(p) * 0.03;
           scaleMul = 1 + easeInOutSine(p) * 0.024;
         } else if (mode === 'hurt') {
           const p = clamp(elapsed / Math.max(activeTotal, 1), 0, 1);
           const decay = 1 - p;
-          motionX = Math.sin(elapsed / 24) * 6.2 * decay;
+          motionX = Math.sin(elapsed / 24) * 6.2 * decay * direction;
           motionY = Math.abs(Math.sin(elapsed / 38)) * 1.2 * decay;
           rotation = Math.sin(elapsed / 22) * 0.014 * decay;
           scaleMul = 1 - 0.012 * Math.sin(Math.PI * p);
         } else if (mode === 'die') {
           const p = clamp(elapsed / Math.max(activeTotal, 1), 0, 1);
           motionY = 10 * easeOutCubic(p);
-          rotation = -0.10 * p;
+          rotation = -0.10 * p * direction;
           scaleMul = 1 - 0.08 * p;
           alpha = 1 - 0.18 * p;
         }
@@ -231,7 +237,7 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
           ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.moveTo(logicalW * 0.50, logicalH * 0.48);
-          ctx.lineTo(logicalW * 0.50 + slash, logicalH * 0.39);
+          ctx.lineTo(logicalW * 0.50 + slash * direction, logicalH * 0.39);
           ctx.stroke();
           ctx.restore();
         }
@@ -241,6 +247,10 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
         // motion is smoothed by the time-based lunge rather than blur.
         ctx.globalAlpha = alpha;
         ctx.filter = 'none';
+        if (flipArt) {
+          ctx.translate(x * 2 + w, 0);
+          ctx.scale(-1, 1);
+        }
         ctx.drawImage(image, 0, 0, image.width, image.height, x, y, w, h);
         ctx.restore();
         ctx.restore();
@@ -254,7 +264,7 @@ const SpriteCharacter = forwardRef(function SpriteCharacter(
       alive = false;
       cancelAnimationFrame(rafRef.current);
     };
-  }, [asset, size]);
+  }, [asset, activeAsset, size]);
 
   useImperativeHandle(ref, () => ({
     play(mode = 'attack', options = {}) {

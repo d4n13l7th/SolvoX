@@ -77,3 +77,5 @@ export const BOSSES = Object.freeze({
 });
 
 export const getBoss = (levelId) => BOSSES[Number(levelId)] || BOSSES[5];
+export const getBossBySpriteId = (spriteId) =>
+  Object.values(BOSSES).find((boss) => boss.spriteId === spriteId) || null;
