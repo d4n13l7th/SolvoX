@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { singlePlayerSaves } from '../services/singlePlayerSaves';
+import { singlePlayerSaves, singlePlayerRequestError } from '../services/singlePlayerSaves';
 import { SolvoxUtilityArt } from './SolvoxUtilityArt';
 import PixelIcon from './PixelIcon';
 import { getPlayerAsset } from '../data/playerAssets';
@@ -16,24 +16,33 @@ export default function SinglePlayerSavesList({ lang, t, onBack, onSelectSave, o
   const [saves, setSaves] = useState([]);
   const [error, setError] = useState('');
   const [creating, setCreating] = useState(false);
+  const [retryAction, setRetryAction] = useState(null);
 
   const ensureGuest = async () => {
     const g = await singlePlayerSaves.getGuestSession();
-    if (g.ok) return g;
-    return singlePlayerSaves.createGuestSession('Player');
+    if (g.ok) return g.data?.profile ? g : { ...g, ok: false, error: { kind: 'invalid_response' } };
+    // A missing/expired token is the only reason to create a new guest. Keep
+    // network and Worker errors intact so we don't mask them with another call.
+    if (g.status !== 401) return g;
+    const created = await singlePlayerSaves.createGuestSession('Player');
+    if (created.ok && !created.data?.token) return { ...created, ok: false, error: { kind: 'invalid_response' } };
+    return created;
   };
 
   const load = async () => {
     setLoading(true);
     setError('');
+    setRetryAction(null);
     try {
       const g = await ensureGuest();
-      if (!g.ok) throw new Error('Gagal memuat sesi');
+      if (!g.ok) throw new Error(singlePlayerRequestError(g, lang, 'Gagal memuat sesi.'));
       const r = await singlePlayerSaves.listSaves();
-      if (!r.ok) throw new Error(r.data?.message || 'Gagal memuat petualangan');
+      if (!r.ok) throw new Error(singlePlayerRequestError(r, lang, 'Gagal memuat petualangan.'));
+      if (!Array.isArray(r.data?.saves)) throw new Error(singlePlayerRequestError({ error: { kind: 'invalid_response' } }, lang));
       setSaves(r.data.saves || []);
     } catch (e) {
       setError(String(e.message || e));
+      setRetryAction({ type: 'load' });
     } finally {
       setLoading(false);
     }
@@ -46,9 +55,10 @@ export default function SinglePlayerSavesList({ lang, t, onBack, onSelectSave, o
   const handleCreate = async () => {
     setCreating(true);
     setError('');
+    setRetryAction(null);
     try {
       const g = await ensureGuest();
-      if (!g.ok) throw new Error('Gagal memuat sesi');
+      if (!g.ok) throw new Error(singlePlayerRequestError(g, lang, 'Gagal memuat sesi.'));
       const name = `Petualangan ${saves.length + 1}`;
       let initialChar = 'traveler';
       try {
@@ -71,9 +81,10 @@ export default function SinglePlayerSavesList({ lang, t, onBack, onSelectSave, o
         setError('Batas 5 petualangan tercapai');
         return;
       }
-      throw new Error(r.data?.message || 'Gagal membuat petualangan');
+      throw new Error(singlePlayerRequestError(r, lang, 'Gagal membuat petualangan.'));
     } catch (e) {
       setError(String(e.message || e));
+      setRetryAction({ type: 'create' });
     } finally {
       setCreating(false);
     }
@@ -82,21 +93,30 @@ export default function SinglePlayerSavesList({ lang, t, onBack, onSelectSave, o
   const handleSelectSave = async (sv) => {
     setLoading(true);
     setError('');
+    setRetryAction(null);
     try {
       const g = await ensureGuest();
-      if (!g.ok) throw new Error('Gagal memuat sesi');
-      try {
-        sessionStorage.setItem('solvox.sp.saveId', sv.id);
-      } catch (e) {}
+      if (!g.ok) throw new Error(singlePlayerRequestError(g, lang, 'Gagal memuat sesi.'));
       const r = await singlePlayerSaves.getSave(sv.id);
-      if (!r.ok || !r.data?.save) throw new Error(r.data?.message || 'Gagal membuka petualangan');
+      if (!r.ok || !r.data?.save || r.data.save.id !== sv.id) throw new Error(singlePlayerRequestError(r, lang, 'Data petualangan tidak valid atau tidak ditemukan.'));
       const saveData = r.data.save;
+      try {
+        sessionStorage.setItem('solvox.sp.saveId', saveData.id);
+      } catch (e) {}
       if (onSelectSave) onSelectSave(saveData);
     } catch (e) {
       setError(String(e.message || e));
+      setRetryAction({ type: 'select', save: sv });
     } finally {
       setLoading(false);
     }
+  };
+
+  const retry = () => {
+    if (!retryAction) return;
+    if (retryAction.type === 'select') handleSelectSave(retryAction.save);
+    else if (retryAction.type === 'create') handleCreate();
+    else load();
   };
 
   return (
@@ -156,7 +176,10 @@ export default function SinglePlayerSavesList({ lang, t, onBack, onSelectSave, o
           </button>
         )}
       </main>
-      {error && (<div style={{ padding: '1rem 2rem', color: '#ffb4b4', textAlign: 'center' }}>{error}</div>)}
+      {error && (<div role="alert" style={{ padding: '1rem 2rem', color: '#ffb4b4', textAlign: 'center' }}>
+        <p>{error}</p>
+        {retryAction && <button type="button" onClick={retry} disabled={loading || creating}>{lang === 'en' ? 'Try again' : 'Coba lagi'}</button>}
+      </div>)}
       {(loading || creating) && !error && (<div style={{ padding: '0 2rem 1rem', color: '#e6e6e6', textAlign: 'center', opacity: 0.9 }}>Memuat...</div>)}
     </div>
   );
